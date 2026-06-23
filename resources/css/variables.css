@@ -1,0 +1,130 @@
+:root {
+    /* Brand surfaces */
+    --color-surface-warm: #fff8f1;
+    --color-surface-app: #f8fafc;
+    --color-surface-card: #ffffff;
+    --color-surface-inverse: #020617;
+
+    /* Base */
+    --color-base-white: #ffffff;
+    --color-base-black: #000000;
+    --color-base-transparent: transparent;
+
+    /* Primary food accent */
+    --color-brand-50: #fff7ed;
+    --color-brand-100: #ffedd5;
+    --color-brand-200: #fed7aa;
+    --color-brand-300: #fdba74;
+    --color-brand-400: #fb923c;
+    --color-brand-500: #f97316;
+    --color-brand-600: #ea580c;
+    --color-brand-700: #c2410c;
+    --color-brand-800: #9a3412;
+    --color-brand-900: #7c2d12;
+    --color-brand-950: #431407;
+
+    /* Warm red accent */
+    --color-accent-50: #fef2f2;
+    --color-accent-100: #fee2e2;
+    --color-accent-200: #fecaca;
+    --color-accent-300: #fca5a5;
+    --color-accent-400: #f87171;
+    --color-accent-500: #ef4444;
+    --color-accent-600: #dc2626;
+    --color-accent-700: #b91c1c;
+    --color-accent-800: #991b1b;
+    --color-accent-900: #7f1d1d;
+    --color-accent-950: #450a0a;
+
+    /* Neutral text and borders */
+    --color-neutral-50: #f8fafc;
+    --color-neutral-100: #f1f5f9;
+    --color-neutral-200: #e2e8f0;
+    --color-neutral-300: #cbd5e1;
+    --color-neutral-400: #94a3b8;
+    --color-neutral-500: #64748b;
+    --color-neutral-600: #475569;
+    --color-neutral-700: #334155;
+    --color-neutral-800: #1e293b;
+    --color-neutral-900: #0f172a;
+    --color-neutral-950: #020617;
+
+    /* Success */
+    --color-success-50: #ecfdf5;
+    --color-success-100: #d1fae5;
+    --color-success-200: #a7f3d0;
+    --color-success-300: #6ee7b7;
+    --color-success-400: #34d399;
+    --color-success-500: #10b981;
+    --color-success-600: #059669;
+    --color-success-700: #047857;
+    --color-success-800: #065f46;
+    --color-success-900: #064e3b;
+    --color-success-950: #022c22;
+
+    /* Warning */
+    --color-warning-50: #fffbeb;
+    --color-warning-100: #fef3c7;
+    --color-warning-200: #fde68a;
+    --color-warning-300: #fcd34d;
+    --color-warning-400: #fbbf24;
+    --color-warning-500: #f59e0b;
+    --color-warning-600: #d97706;
+    --color-warning-700: #b45309;
+    --color-warning-800: #92400e;
+    --color-warning-900: #78350f;
+    --color-warning-950: #451a03;
+
+    /* Informational accents */
+    --color-info-50: #eff6ff;
+    --color-info-100: #dbeafe;
+    --color-info-200: #bfdbfe;
+    --color-info-300: #93c5fd;
+    --color-info-400: #60a5fa;
+    --color-info-500: #3b82f6;
+    --color-info-600: #2563eb;
+    --color-info-700: #1d4ed8;
+    --color-info-800: #1e40af;
+    --color-info-900: #1e3a8a;
+    --color-info-950: #172554;
+
+    --color-support-indigo-50: #eef2ff;
+    --color-support-indigo-100: #e0e7ff;
+    --color-support-indigo-500: #6366f1;
+    --color-support-indigo-700: #4338ca;
+
+    --color-support-teal-600: #0d9488;
+    --color-support-yellow-200: #fef08a;
+
+    --color-support-sky-50: #f0f9ff;
+    --color-support-sky-100: #e0f2fe;
+    --color-support-sky-500: #0ea5e9;
+    --color-support-sky-700: #0369a1;
+
+    --color-support-violet-50: #f5f3ff;
+    --color-support-violet-100: #ede9fe;
+    --color-support-violet-500: #8b5cf6;
+    --color-support-violet-600: #7c3aed;
+    --color-support-violet-700: #6d28d9;
+
+    --color-support-purple-50: #faf5ff;
+    --color-support-purple-100: #f3e8ff;
+    --color-support-purple-500: #a855f7;
+    --color-support-purple-700: #7e22ce;
+
+    /* Selection */
+    --color-selection-bg: var(--color-brand-200);
+    --color-selection-text: var(--color-brand-900);
+
+    /* Shadows */
+    --shadow-token-2xs: 0 1px rgb(15 23 42 / 0.04);
+    --shadow-token-xs: 0 1px 2px rgb(15 23 42 / 0.05);
+    --shadow-token-sm: 0 1px 3px rgb(15 23 42 / 0.10), 0 1px 2px -1px rgb(15 23 42 / 0.10);
+    --shadow-token-md: 0 4px 6px -1px rgb(15 23 42 / 0.10), 0 2px 4px -2px rgb(15 23 42 / 0.10);
+    --shadow-token-lg: 0 10px 15px -3px rgb(15 23 42 / 0.10), 0 4px 6px -4px rgb(15 23 42 / 0.10);
+    --shadow-token-xl: 0 20px 25px -5px rgb(15 23 42 / 0.10), 0 8px 10px -6px rgb(15 23 42 / 0.10);
+    --shadow-token-2xl: 0 25px 50px -12px rgb(15 23 42 / 0.25);
+    --shadow-brand-soft: 0 24px 80px rgb(234 88 12 / 0.16);
+    --shadow-dark-soft: 0 24px 80px rgb(15 23 42 / 0.08);
+    --shadow-bottom-nav: 0 -10px 30px rgb(15 23 42 / 0.08);
+}
