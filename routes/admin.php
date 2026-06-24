@@ -13,6 +13,9 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function (): void {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/live', [AdminDashboardController::class, 'live'])->name('dashboard.live');
+        Route::post('/dashboard/orders/{order}/confirm', [AdminDashboardController::class, 'confirmPendingOrder'])->name('dashboard.orders.confirm');
+        Route::post('/dashboard/orders/{order}/decline', [AdminDashboardController::class, 'declinePendingOrder'])->name('dashboard.orders.decline');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');

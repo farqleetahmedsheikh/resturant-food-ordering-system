@@ -246,8 +246,8 @@ $cartCount = \App\Support\Cart::count();
 
                                 <div class="relative grid h-full place-items-center p-5 text-center">
                                     <div>
-                                        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-white/90 text-3xl shadow-lg">
-                                            🍔
+                                        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-white/90 text-orange-600 shadow-lg">
+                                            <x-ui-icon name="burger" class="h-8 w-8" />
                                         </div>
 
                                         <p class="mt-4 text-xl font-black text-orange-700">
@@ -367,8 +367,8 @@ $cartCount = \App\Support\Cart::count();
             <div class="relative hidden lg:block">
                 <div class="absolute -left-5 top-10 z-10 rounded-2xl border border-orange-100 bg-white px-5 py-4 shadow-xl">
                     <div class="flex items-center gap-3">
-                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-orange-50 text-xl">
-                            🍽️
+                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-orange-50 text-orange-600">
+                            <x-ui-icon name="utensils" class="h-5 w-5" />
                         </span>
 
                         <div>
@@ -385,8 +385,8 @@ $cartCount = \App\Support\Cart::count();
 
                 <div class="absolute -bottom-5 right-8 z-10 rounded-2xl border border-emerald-100 bg-white px-5 py-4 shadow-xl">
                     <div class="flex items-center gap-3">
-                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-xl">
-                            🛵
+                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
+                            <x-ui-icon name="scooter" class="h-5 w-5" />
                         </span>
 
                         <div>
@@ -416,8 +416,8 @@ $cartCount = \App\Support\Cart::count();
                             </div>
 
                             <div class="relative p-8 text-center">
-                                <div class="mx-auto grid h-24 w-24 place-items-center rounded-full bg-white/80 text-4xl shadow-lg">
-                                    🍔
+                                <div class="mx-auto grid h-24 w-24 place-items-center rounded-full bg-white/80 text-orange-600 shadow-lg">
+                                    <x-ui-icon name="burger" class="h-12 w-12" />
                                 </div>
 
                                 <p class="mt-6 text-4xl font-black tracking-tight text-orange-700">
@@ -722,8 +722,8 @@ $cartCount = \App\Support\Cart::count();
                     </article>
                 @empty
                     <div class="col-span-2 rounded-[1.5rem] border border-dashed border-orange-200 bg-orange-50 p-8 text-center lg:col-span-3">
-                        <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white text-2xl shadow-sm">
-                            🍽️
+                        <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white text-orange-600 shadow-sm">
+                            <x-ui-icon name="utensils" class="h-7 w-7" />
                         </div>
 
                         <h3 class="mt-4 text-lg font-black text-slate-950">

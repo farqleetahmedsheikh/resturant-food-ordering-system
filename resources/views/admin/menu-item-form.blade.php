@@ -1,1087 +1,2161 @@
 @component('layouts.admin', ['title' => $mode === 'create' ? 'Add Menu Item' : 'Edit Menu Item'])
 @php
 $isCreateMode = $mode === 'create';
-$pageTitle = $isCreateMode ? 'Add menu item' : 'Edit menu item';
-$submitLabel = $isCreateMode ? 'Create Menu Item' : 'Save Changes';
-$currentImage = $menuItem->image_url ?? null;
 
-    $selectedCategoryId = old('category_id', $menuItem->category_id ?? '');
-    $selectedCategory = $categories->firstWhere('id', $selectedCategoryId);
+    $pageTitle = $isCreateMode
+        ? 'Add menu item'
+        : 'Edit menu item';
 
-    $sizeRows = collect(old('sizes', $menuItem->sizes?->map(fn ($size) => [
-        'name' => $size->name,
-        'price' => (string) $size->price,
-        'sort_order' => $size->sort_order,
-        'is_active' => (bool) $size->is_active,
-    ])->values()->all() ?? []))->values()->all();
+    $submitLabel = $isCreateMode
+        ? 'Create Menu Item'
+        : 'Save Changes';
 
-    $addonRows = collect(old('addons', $menuItem->addons?->map(fn ($addon) => [
-        'name' => $addon->name,
-        'type' => $addon->type,
-        'price' => (string) $addon->price,
-        'sort_order' => $addon->sort_order,
-        'is_active' => (bool) $addon->is_active,
-    ])->values()->all() ?? []))->values()->all();
+    $currentImage = $menuItem->image_url ?? null;
+
+    $selectedCategoryId = old(
+        'category_id',
+        $menuItem->category_id ?? ''
+    );
+
+    $selectedCategory = $categories->firstWhere(
+        'id',
+        $selectedCategoryId
+    );
+
+    $rawSizeRows = old('sizes');
+
+    if ($rawSizeRows === null) {
+        $rawSizeRows = $menuItem->sizes
+            ?->map(fn ($size) => [
+                'name' => $size->name,
+                'price' => (string) $size->price,
+                'sort_order' => $size->sort_order,
+                'is_active' => (bool) $size->is_active,
+            ])
+            ->values()
+            ->all() ?? [];
+    }
+
+    $sizeRows = collect($rawSizeRows)
+        ->map(fn ($size) => [
+            'name' => $size['name'] ?? '',
+            'price' => (string) ($size['price'] ?? ''),
+            'sort_order' => (int) ($size['sort_order'] ?? 0),
+            'is_active' => filter_var(
+                $size['is_active'] ?? true,
+                FILTER_VALIDATE_BOOL
+            ),
+        ])
+        ->values()
+        ->all();
+
+    $rawAddonRows = old('addons');
+
+    if ($rawAddonRows === null) {
+        $rawAddonRows = $menuItem->addons
+            ?->map(fn ($addon) => [
+                'name' => $addon->name,
+                'type' => $addon->type,
+                'price' => (string) $addon->price,
+                'sort_order' => $addon->sort_order,
+                'is_active' => (bool) $addon->is_active,
+            ])
+            ->values()
+            ->all() ?? [];
+    }
+
+    $addonRows = collect($rawAddonRows)
+        ->map(fn ($addon) => [
+            'name' => $addon['name'] ?? '',
+            'type' => $addon['type'] ?? 'topping',
+            'price' => (string) ($addon['price'] ?? ''),
+            'sort_order' => (int) ($addon['sort_order'] ?? 0),
+            'is_active' => filter_var(
+                $addon['is_active'] ?? true,
+                FILTER_VALIDATE_BOOL
+            ),
+        ])
+        ->values()
+        ->all();
 
     $addonTypes = \App\Models\MenuItemAddon::TYPES;
+
+    $initialName = old(
+        'name',
+        $menuItem->name ?? ''
+    );
+
+    $initialSlug = old(
+        'slug',
+        $menuItem->slug ?? ''
+    );
+
+    $initialDescription = old(
+        'description',
+        $menuItem->description ?? ''
+    );
+
+    $initialPrice = old(
+        'price',
+        $menuItem->price ?? ''
+    );
+
+    $initialCompareAtPrice = old(
+        'compare_at_price',
+        $menuItem->compare_at_price ?? ''
+    );
+
+    $initialPreparationTime = old(
+        'preparation_time',
+        $menuItem->preparation_time ?? ''
+    );
+
+    $initialCalories = old(
+        'calories',
+        $menuItem->calories ?? ''
+    );
+
+    $initialSortOrder = old(
+        'sort_order',
+        $menuItem->sort_order ?? 0
+    );
+
+    $initialAvailable = (bool) old(
+        'is_available',
+        $menuItem->is_available ?? true
+    );
+
+    $initialFeatured = (bool) old(
+        'is_featured',
+        $menuItem->is_featured ?? false
+    );
 @endphp
 
-{{-- Page Header --}}
-<div class="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-    <div>
-        <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-600">
-            Menu Management
-        </p>
-
-        <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-            {{ $pageTitle }}
-        </h1>
-
-        <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-            {{ $isCreateMode
-                ? 'Create a new food item with pricing, category, image, preparation details, and public availability.'
-                : 'Update item information, pricing, image, menu visibility, and featured status.' }}
-        </p>
-    </div>
-
-    <a
-        href="{{ route('admin.menu-items.index') }}"
-        class="inline-flex items-center justify-center gap-2 rounded-2xl border border-orange-200 bg-white px-5 py-3 text-sm font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-orange-50 hover:text-orange-700"
-    >
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            class="h-4 w-4"
-        >
-            <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" />
-        </svg>
-
-        Back to Menu
-    </a>
-</div>
-
-{{-- Validation Summary --}}
-@if ($errors->any())
-    <div class="mb-7 rounded-[1.5rem] border border-red-200 bg-red-50 p-5 shadow-sm">
-        <div class="flex items-start gap-4">
-            <div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-red-600 shadow-sm">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    class="h-5 w-5"
-                >
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4M12 17h.01M10.3 4.4 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.4a2 2 0 0 0-3.4 0z" />
-                </svg>
-            </div>
-
-            <div>
-                <p class="font-black text-red-800">
-                    Please check the form
-                </p>
-
-                <ul class="mt-2 list-inside list-disc space-y-1 text-sm font-semibold text-red-700">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    </div>
-@endif
-
-<form
-    action="{{ $isCreateMode
-        ? route('admin.menu-items.store')
-        : route('admin.menu-items.update', $menuItem) }}"
-    method="POST"
-    enctype="multipart/form-data"
-    class="grid gap-7 xl:grid-cols-[minmax(0,1fr)_380px]"
+<div
     x-data="{
         preview: @js($currentImage),
-        itemName: @js(old('name', $menuItem->name ?? '')),
-        itemDescription: @js(old('description', $menuItem->description ?? '')),
-        price: @js((string) old('price', $menuItem->price ?? '')),
-        compareAtPrice: @js((string) old('compare_at_price', $menuItem->compare_at_price ?? '')),
-        preparationTime: @js((string) old('preparation_time', $menuItem->preparation_time ?? '')),
-        calories: @js((string) old('calories', $menuItem->calories ?? '')),
+        originalImage: @js($currentImage),
+        fileName: '',
+        itemName: @js($initialName),
+        slug: @js($initialSlug),
+        itemDescription: @js($initialDescription),
+        price: @js((string) $initialPrice),
+        compareAtPrice: @js((string) $initialCompareAtPrice),
+        preparationTime: @js((string) $initialPreparationTime),
+        calories: @js((string) $initialCalories),
+        sortOrder: @js((string) $initialSortOrder),
         categoryName: @js($selectedCategory?->name ?? 'Uncategorized'),
-        available: @js((bool) old('is_available', $menuItem->is_available ?? true)),
-        featured: @js((bool) old('is_featured', $menuItem->is_featured ?? false)),
+        available: {{ $initialAvailable ? 'true' : 'false' }},
+        featured: {{ $initialFeatured ? 'true' : 'false' }},
         sizes: @js($sizeRows),
         addons: @js($addonRows),
-        addSize() {
-            this.sizes.push({ name: '', price: '', sort_order: this.sizes.length, is_active: true });
+        submitting: false,
+
+        slugify(value) {
+            return (value || '')
+                .toString()
+                .normalize('NFKD')
+                .replace(/[^\w\s-]/g, '')
+                .trim()
+                .toLowerCase()
+                .replace(/[-\s]+/g, '-');
         },
+
+        displaySlug() {
+            return this.slug.trim() !== ''
+                ? this.slug.trim()
+                : this.slugify(this.itemName);
+        },
+
+        discountPercent() {
+            const sellingPrice = Number(this.price || 0);
+            const originalPrice = Number(this.compareAtPrice || 0);
+
+            if (
+                sellingPrice <= 0
+                || originalPrice <= sellingPrice
+            ) {
+                return 0;
+            }
+
+            return Math.round(
+                ((originalPrice - sellingPrice) / originalPrice) * 100
+            );
+        },
+
+        handleImage(event) {
+            const file = event.target.files?.[0];
+
+            if (!file) {
+                return;
+            }
+
+            if (
+                this.preview
+                && typeof this.preview === 'string'
+                && this.preview.startsWith('blob:')
+            ) {
+                URL.revokeObjectURL(this.preview);
+            }
+
+            this.preview = URL.createObjectURL(file);
+            this.fileName = file.name;
+        },
+
+        resetSelectedImage() {
+            if (
+                this.preview
+                && typeof this.preview === 'string'
+                && this.preview.startsWith('blob:')
+            ) {
+                URL.revokeObjectURL(this.preview);
+            }
+
+            this.preview = this.originalImage;
+            this.fileName = '';
+
+            if (this.$refs.imageInput) {
+                this.$refs.imageInput.value = '';
+            }
+        },
+
+        addSize() {
+            this.sizes.push({
+                name: '',
+                price: '',
+                sort_order: this.sizes.length,
+                is_active: true
+            });
+        },
+
         removeSize(index) {
             this.sizes.splice(index, 1);
         },
+
         addAddon() {
-            this.addons.push({ name: '', type: 'topping', price: '', sort_order: this.addons.length, is_active: true });
+            this.addons.push({
+                name: '',
+                type: 'topping',
+                price: '',
+                sort_order: this.addons.length,
+                is_active: true
+            });
         },
+
         removeAddon(index) {
             this.addons.splice(index, 1);
         }
     }"
+    class="space-y-5 pb-28 sm:space-y-6 xl:pb-8"
 >
-    @csrf
+    {{-- Mobile Header --}}
+    <header class="xl:hidden">
+        <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                    Menu Management
+                </p>
 
-    @unless ($isCreateMode)
-        @method('PUT')
-    @endunless
+                <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-950">
+                    {{ $pageTitle }}
+                </h1>
 
-    {{-- Main Form --}}
-    <div class="space-y-7">
-        {{-- Basic Details --}}
-        <section class="rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
-            <div class="flex items-start gap-4">
-                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
+                <p class="mt-1 text-sm font-semibold leading-5 text-slate-500">
+                    {{ $isCreateMode
+                        ? 'Create a customer-ready menu item.'
+                        : 'Update menu item information.' }}
+                </p>
+            </div>
+
+            <a
+                href="{{ route('admin.menu-items.index') }}"
+                class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-orange-100 bg-white text-slate-700 shadow-sm transition active:scale-95"
+                aria-label="Back to menu"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.25"
+                    class="h-5 w-5"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m15 18-6-6 6-6"
+                    />
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    {{-- Desktop Header --}}
+    <header class="hidden items-end justify-between gap-8 xl:flex">
+        <div>
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
+                Menu Management
+            </p>
+
+            <h1 class="mt-2 text-4xl font-black tracking-tight text-slate-950">
+                {{ $pageTitle }}
+            </h1>
+
+            <p class="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-600">
+                {{ $isCreateMode
+                    ? 'Create a complete food listing with pricing, availability, variants, paid extras, and a customer-facing preview.'
+                    : 'Update the menu item, pricing, ordering options, public visibility, and customer-facing image.' }}
+            </p>
+        </div>
+
+        <a
+            href="{{ route('admin.menu-items.index') }}"
+            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl border border-orange-200 bg-white px-5 py-3 text-sm font-black text-orange-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-orange-50"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="h-4 w-4"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m15 18-6-6 6-6"
+                />
+            </svg>
+
+            Back to Menu
+        </a>
+    </header>
+
+    {{-- Workflow Overview --}}
+    <section class="relative overflow-hidden rounded-[1.5rem] border border-orange-100 bg-gradient-to-r from-orange-50 via-white to-amber-50 p-4 shadow-sm sm:p-5">
+        <div class="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-orange-200/50 blur-3xl"></div>
+
+        <div class="relative flex items-center gap-4">
+            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-600 text-white shadow-lg shadow-orange-600/20">
+                @if ($isCreateMode)
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        class="h-5 w-5"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            d="M12 5v14M5 12h14"
+                        />
+                    </svg>
+                @else
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2"
-                        class="h-6 w-6"
+                        class="h-5 w-5"
                     >
-                        <path d="M4 4h16v16H4z" />
-                        <path d="M8 8h8M8 12h8M8 16h5" />
+                        <path d="m14 4 6 6L8 22H2v-6L14 4z" />
+                        <path d="m12 6 6 6" />
                     </svg>
-                </div>
+                @endif
+            </span>
 
-                <div>
-                    <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
-                        Basic Information
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                    <p class="text-sm font-black text-slate-950">
+                        {{ $isCreateMode
+                            ? 'Creating a new menu item'
+                            : 'Editing menu item' }}
                     </p>
 
-                    <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                        Item details
-                    </h2>
+                    <span
+                        class="rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em]"
+                        x-bind:class="available
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-red-50 text-red-700'"
+                        x-text="available ? 'Available' : 'Unavailable'"
+                    ></span>
 
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Add the item name, restaurant, category, slug, and customer-facing description.
-                    </p>
+                    <span
+                        x-show="featured"
+                        x-cloak
+                        class="rounded-full bg-orange-100 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-orange-700"
+                    >
+                        Featured
+                    </span>
                 </div>
+
+                <p class="mt-1 text-xs font-semibold leading-5 text-slate-500 sm:text-sm">
+                    Complete the item information, selling setup, ordering options, and image before saving.
+                </p>
             </div>
 
-            <div class="mt-7 grid gap-5 sm:grid-cols-2">
-                {{-- Restaurant --}}
-                <div>
-                    <label for="restaurant_id" class="block text-sm font-black text-slate-800">
-                        Restaurant
-                    </label>
+            <div class="hidden items-center gap-2 lg:flex">
+                @foreach (['Details', 'Selling', 'Options', 'Image'] as $index => $step)
+                    <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[10px] font-black text-slate-600 shadow-sm">
+                        <span class="grid h-5 w-5 place-items-center rounded-full bg-orange-100 text-[9px] text-orange-700">
+                            {{ $index + 1 }}
+                        </span>
 
-                    <select
-                        id="restaurant_id"
-                        name="restaurant_id"
-                        class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                        {{ $step }}
+                    </span>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    {{-- Validation Summary --}}
+    @if ($errors->any())
+        <section
+            role="alert"
+            aria-live="polite"
+            class="rounded-[1.5rem] border border-red-200 bg-red-50 p-4 shadow-sm sm:p-5"
+        >
+            <div class="flex items-start gap-3">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-red-600 shadow-sm">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        class="h-5 w-5"
                     >
-                        <option value="">No restaurant</option>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 9v4M12 17h.01M10.3 4.4 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.4a2 2 0 0 0-3.4 0z"
+                        />
+                    </svg>
+                </span>
 
-                        @foreach ($restaurants as $restaurant)
-                            <option
-                                value="{{ $restaurant->id }}"
-                                @selected(old('restaurant_id', $menuItem->restaurant_id ?? '') == $restaurant->id)
-                            >
-                                {{ $restaurant->name }}
-                            </option>
+                <div class="min-w-0">
+                    <p class="font-black text-red-900">
+                        Some information needs your attention
+                    </p>
+
+                    <p class="mt-1 text-sm font-semibold text-red-700">
+                        Review the highlighted fields and submit the form again.
+                    </p>
+
+                    <div class="mt-3 grid gap-1 sm:grid-cols-2">
+                        @foreach ($errors->all() as $error)
+                            <div class="flex items-start gap-2 text-xs font-semibold leading-5 text-red-700">
+                                <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500"></span>
+                                <span>{{ $error }}</span>
+                            </div>
                         @endforeach
-                    </select>
-
-                    @error('restaurant_id')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                {{-- Category --}}
-                <div>
-                    <label for="category_id" class="block text-sm font-black text-slate-800">
-                        Category
-                    </label>
-
-                    <select
-                        id="category_id"
-                        name="category_id"
-                        x-on:change="categoryName = $event.target.options[$event.target.selectedIndex].text"
-                        class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                    >
-                        <option value="">Uncategorized</option>
-
-                        @foreach ($categories as $category)
-                            <option
-                                value="{{ $category->id }}"
-                                @selected(old('category_id', $menuItem->category_id ?? '') == $category->id)
-                            >
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    @error('category_id')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                {{-- Name --}}
-                <div>
-                    <label for="name" class="block text-sm font-black text-slate-800">
-                        Item Name
-                        <span class="text-red-500">*</span>
-                    </label>
-
-                    <input
-                        id="name"
-                        name="name"
-                        value="{{ old('name', $menuItem->name ?? '') }}"
-                        x-model="itemName"
-                        required
-                        placeholder="For example: Classic Beef Burger"
-                        class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                    >
-
-                    @error('name')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                {{-- Slug --}}
-                <div>
-                    <label for="slug" class="block text-sm font-black text-slate-800">
-                        URL Slug
-                    </label>
-
-                    <input
-                        id="slug"
-                        name="slug"
-                        value="{{ old('slug', $menuItem->slug ?? '') }}"
-                        placeholder="classic-beef-burger"
-                        class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                    >
-
-                    <p class="mt-2 text-xs font-semibold leading-5 text-slate-500">
-                        Leave empty to generate it automatically from the item name.
-                    </p>
-
-                    @error('slug')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                {{-- Description --}}
-                <div class="sm:col-span-2">
-                    <label for="description" class="block text-sm font-black text-slate-800">
-                        Description
-                    </label>
-
-                    <textarea
-                        id="description"
-                        name="description"
-                        rows="5"
-                        x-model="itemDescription"
-                        placeholder="Describe the ingredients, taste, portion, and anything customers should know."
-                        class="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold leading-7 text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                    >{{ old('description', $menuItem->description ?? '') }}</textarea>
-
-                    @error('description')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
+                    </div>
                 </div>
             </div>
         </section>
+    @endif
 
-        {{-- Pricing --}}
-        <section class="rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
-            <div class="flex items-start gap-4">
-                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        class="h-6 w-6"
-                    >
-                        <rect x="3" y="6" width="18" height="12" rx="2" />
-                        <circle cx="12" cy="12" r="2" />
-                        <path d="M7 9h.01M17 15h.01" />
-                    </svg>
-                </div>
+    <form
+        id="menu-item-form"
+        action="{{ $isCreateMode
+            ? route('admin.menu-items.store')
+            : route('admin.menu-items.update', $menuItem) }}"
+        method="POST"
+        enctype="multipart/form-data"
+        class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_390px] xl:items-start xl:gap-6"
+        x-on:submit="submitting = true"
+    >
+        @csrf
 
-                <div>
-                    <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
-                        Pricing
-                    </p>
+        @unless ($isCreateMode)
+            @method('PUT')
+        @endunless
 
-                    <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                        Item price and discount
-                    </h2>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Set the selling price and an optional original price to show a discount.
-                    </p>
-                </div>
-            </div>
-
-            <div class="mt-7 grid gap-5 sm:grid-cols-2">
-                <div>
-                    <label for="price" class="block text-sm font-black text-slate-800">
-                        Selling Price
-                        <span class="text-red-500">*</span>
-                    </label>
-
-                    <div class="relative mt-2">
-                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-sm font-black text-slate-500">
-                            Rs.
+        {{-- Main Form --}}
+        <div class="min-w-0 space-y-5">
+            {{-- Step 1: Essentials --}}
+            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
+                <div class="border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+                    <div class="flex items-start gap-3">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-600 text-sm font-black text-white shadow-lg shadow-orange-600/20">
+                            1
                         </span>
 
-                        <input
-                            id="price"
-                            name="price"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value="{{ old('price', $menuItem->price ?? '') }}"
-                            x-model="price"
-                            required
-                            placeholder="0.00"
-                            class="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                        >
-                    </div>
-
-                    @error('price')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="compare_at_price" class="block text-sm font-black text-slate-800">
-                        Compare-at Price
-                        <span class="font-semibold text-slate-400">(optional)</span>
-                    </label>
-
-                    <div class="relative mt-2">
-                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-sm font-black text-slate-500">
-                            Rs.
-                        </span>
-
-                        <input
-                            id="compare_at_price"
-                            name="compare_at_price"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value="{{ old('compare_at_price', $menuItem->compare_at_price ?? '') }}"
-                            x-model="compareAtPrice"
-                            placeholder="0.00"
-                            class="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                        >
-                    </div>
-
-                    <p class="mt-2 text-xs font-semibold leading-5 text-slate-500">
-                        This should be higher than the selling price.
-                    </p>
-
-                    @error('compare_at_price')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-            </div>
-        </section>
-
-        {{-- Item Metadata --}}
-        <section class="rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
-            <div class="flex items-start gap-4">
-                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        class="h-6 w-6"
-                    >
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M12 7v5l3 2" />
-                    </svg>
-                </div>
-
-                <div>
-                    <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
-                        Item Metadata
-                    </p>
-
-                    <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                        Preparation and nutrition
-                    </h2>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Add useful information customers can review before ordering.
-                    </p>
-                </div>
-            </div>
-
-            <div class="mt-7 grid gap-5 sm:grid-cols-3">
-                {{-- Preparation Time --}}
-                <div>
-                    <label for="preparation_time" class="block text-sm font-black text-slate-800">
-                        Preparation Time
-                    </label>
-
-                    <div class="relative mt-2">
-                        <input
-                            id="preparation_time"
-                            name="preparation_time"
-                            type="number"
-                            min="1"
-                            value="{{ old('preparation_time', $menuItem->preparation_time ?? '') }}"
-                            x-model="preparationTime"
-                            placeholder="15"
-                            class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-14 text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                        >
-
-                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-bold text-slate-400">
-                            min
-                        </span>
-                    </div>
-
-                    @error('preparation_time')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                {{-- Calories --}}
-                <div>
-                    <label for="calories" class="block text-sm font-black text-slate-800">
-                        Calories
-                    </label>
-
-                    <div class="relative mt-2">
-                        <input
-                            id="calories"
-                            name="calories"
-                            type="number"
-                            min="0"
-                            value="{{ old('calories', $menuItem->calories ?? '') }}"
-                            x-model="calories"
-                            placeholder="450"
-                            class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-14 text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                        >
-
-                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-bold text-slate-400">
-                            kcal
-                        </span>
-                    </div>
-
-                    @error('calories')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                {{-- Sort Order --}}
-                <div>
-                    <label for="sort_order" class="block text-sm font-black text-slate-800">
-                        Sort Order
-                        <span class="text-red-500">*</span>
-                    </label>
-
-                    <input
-                        id="sort_order"
-                        name="sort_order"
-                        type="number"
-                        min="0"
-                        value="{{ old('sort_order', $menuItem->sort_order ?? 0) }}"
-                        required
-                        class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                    >
-
-                    @error('sort_order')
-                        <p class="mt-2 text-sm font-semibold text-red-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-            </div>
-        </section>
-
-        {{-- Visibility --}}
-        <section class="rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
-            <div class="flex items-start gap-4">
-                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        class="h-6 w-6"
-                    >
-                        <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
-                        <circle cx="12" cy="12" r="3" />
-                    </svg>
-                </div>
-
-                <div>
-                    <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
-                        Public Visibility
-                    </p>
-
-                    <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                        Availability and promotion
-                    </h2>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Control whether customers can order this item and whether it appears in featured sections.
-                    </p>
-                </div>
-            </div>
-
-            <div class="mt-7 grid gap-4 md:grid-cols-2">
-                {{-- Available Toggle --}}
-                <label class="flex cursor-pointer items-center justify-between gap-4 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 transition hover:border-orange-200">
-                    <span>
-                        <span class="block text-sm font-black text-slate-950">
-                            Available for Ordering
-                        </span>
-
-                        <span class="mt-1 block text-xs font-semibold leading-5 text-slate-500">
-                            Customers can see and add this item to their cart.
-                        </span>
-                    </span>
-
-                    <span class="relative shrink-0">
-                        <input type="hidden" name="is_available" value="0">
-
-                        <input
-                            type="checkbox"
-                            name="is_available"
-                            value="1"
-                            x-model="available"
-                            @checked(old('is_available', $menuItem->is_available ?? true))
-                            class="peer sr-only"
-                        >
-
-                        <span class="block h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-emerald-500 peer-focus:ring-4 peer-focus:ring-emerald-100"></span>
-                        <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
-                    </span>
-                </label>
-
-                {{-- Featured Toggle --}}
-                <label class="flex cursor-pointer items-center justify-between gap-4 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 transition hover:border-orange-200">
-                    <span>
-                        <span class="block text-sm font-black text-slate-950">
-                            Featured Item
-                        </span>
-
-                        <span class="mt-1 block text-xs font-semibold leading-5 text-slate-500">
-                            Promote this item in featured menu sections.
-                        </span>
-                    </span>
-
-                    <span class="relative shrink-0">
-                        <input type="hidden" name="is_featured" value="0">
-
-                        <input
-                            type="checkbox"
-                            name="is_featured"
-                            value="1"
-                            x-model="featured"
-                            @checked(old('is_featured', $menuItem->is_featured ?? false))
-                            class="peer sr-only"
-                        >
-
-                        <span class="block h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-orange-600 peer-focus:ring-4 peer-focus:ring-orange-100"></span>
-                        <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
-                    </span>
-                </label>
-            </div>
-        </section>
-
-        {{-- Sizes and Add-ons --}}
-        <section class="rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
-            <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
-                <div class="flex items-start gap-4">
-                    <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            class="h-6 w-6"
-                        >
-                            <path d="M4 4h16v16H4z" />
-                            <path d="M8 8h8M8 12h8M8 16h5" />
-                        </svg>
-                    </div>
-
-                    <div>
-                        <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
-                            Ordering Options
-                        </p>
-
-                        <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                            Sizes, toppings, and paid extras
-                        </h2>
-
-                        <p class="mt-2 text-sm leading-6 text-slate-600">
-                            Add pizza sizes like Small, Medium, Large, and Party. Add paid extras like extra cheese, toppings, and dips.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-7 grid gap-7 xl:grid-cols-2">
-                <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
-                    <div class="flex items-center justify-between gap-4">
                         <div>
-                            <h3 class="text-base font-black text-slate-950">
-                                Size Prices
-                            </h3>
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                                Item Information
+                            </p>
 
-                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
-                                These are final selling prices. Leave empty if this item has no sizes.
+                            <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                                Customer-facing details
+                            </h2>
+
+                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500 sm:text-sm">
+                                Add a recognizable name, category, and useful description.
                             </p>
                         </div>
+                    </div>
+                </div>
 
-                        <button
-                            type="button"
-                            x-on:click="addSize()"
-                            class="shrink-0 rounded-2xl bg-orange-600 px-4 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-orange-700"
-                        >
-                            Add Size
-                        </button>
+                <div class="space-y-5 p-4 sm:p-6">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        {{-- Restaurant --}}
+                        <div>
+                            <div class="flex items-center justify-between gap-3">
+                                <label
+                                    for="restaurant_id"
+                                    class="text-sm font-black text-slate-800"
+                                >
+                                    Restaurant
+                                </label>
+
+                                <span class="text-[10px] font-bold text-slate-400">
+                                    Optional
+                                </span>
+                            </div>
+
+                            <div class="relative mt-2">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                                >
+                                    <path d="M3 10h18" />
+                                    <path d="m5 10 1-6h12l1 6" />
+                                    <path d="M5 10v10h14V10" />
+                                </svg>
+
+                                <select
+                                    id="restaurant_id"
+                                    name="restaurant_id"
+                                    class="min-h-12 w-full appearance-none rounded-xl border bg-slate-50 py-3 pl-12 pr-11 text-sm font-semibold text-slate-900 outline-none transition focus:bg-white focus:ring-4 focus:ring-orange-100 @error('restaurant_id') border-red-300 focus:border-red-400 @else border-slate-200 focus:border-orange-400 @enderror"
+                                >
+                                    <option value="">No restaurant</option>
+
+                                    @foreach ($restaurants as $restaurant)
+                                        <option
+                                            value="{{ $restaurant->id }}"
+                                            @selected(old('restaurant_id', $menuItem->restaurant_id ?? '') == $restaurant->id)
+                                        >
+                                            {{ $restaurant->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m6 9 6 6 6-6"
+                                    />
+                                </svg>
+                            </div>
+
+                            @error('restaurant_id')
+                                <p class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        {{-- Category --}}
+                        <div>
+                            <div class="flex items-center justify-between gap-3">
+                                <label
+                                    for="category_id"
+                                    class="text-sm font-black text-slate-800"
+                                >
+                                    Category
+                                </label>
+
+                                <span class="text-[10px] font-bold text-slate-400">
+                                    Optional
+                                </span>
+                            </div>
+
+                            <div class="relative mt-2">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                                >
+                                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                                </svg>
+
+                                <select
+                                    id="category_id"
+                                    name="category_id"
+                                    x-on:change="categoryName = $event.target.options[$event.target.selectedIndex].text"
+                                    class="min-h-12 w-full appearance-none rounded-xl border bg-slate-50 py-3 pl-12 pr-11 text-sm font-semibold text-slate-900 outline-none transition focus:bg-white focus:ring-4 focus:ring-orange-100 @error('category_id') border-red-300 focus:border-red-400 @else border-slate-200 focus:border-orange-400 @enderror"
+                                >
+                                    <option value="">Uncategorized</option>
+
+                                    @foreach ($categories as $category)
+                                        <option
+                                            value="{{ $category->id }}"
+                                            @selected($selectedCategoryId == $category->id)
+                                        >
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m6 9 6 6 6-6"
+                                    />
+                                </svg>
+                            </div>
+
+                            @error('category_id')
+                                <p class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="mt-5 space-y-3">
-                        <template x-if="sizes.length === 0">
-                            <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-5 text-center text-sm font-semibold text-slate-500">
-                                No size prices yet. Customers will use the base selling price.
+                    <div class="grid gap-5 md:grid-cols-2">
+                        {{-- Name --}}
+                        <div>
+                            <label
+                                for="name"
+                                class="block text-sm font-black text-slate-800"
+                            >
+                                Item Name
+                                <span class="text-red-500">*</span>
+                            </label>
+
+                            <input
+                                id="name"
+                                name="name"
+                                value="{{ $initialName }}"
+                                x-model="itemName"
+                                required
+                                maxlength="150"
+                                autocomplete="off"
+                                placeholder="For example: Classic Beef Burger"
+                                class="mt-2 min-h-12 w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 focus:ring-orange-100 @error('name') border-red-300 focus:border-red-400 @else border-slate-200 focus:border-orange-400 @enderror"
+                            >
+
+                            <div class="mt-2 flex items-center justify-between gap-3">
+                                <p class="text-xs font-semibold text-slate-500">
+                                    Use a short and recognizable product name.
+                                </p>
+
+                                <span
+                                    class="shrink-0 text-[10px] font-bold text-slate-400"
+                                    x-text="`${itemName.length}/150`"
+                                ></span>
                             </div>
-                        </template>
 
-                        <template x-for="(size, index) in sizes" x-bind:key="'size-' + index">
-                            <div class="rounded-2xl border border-white bg-white p-4 shadow-sm">
-                                <div class="grid gap-3 sm:grid-cols-[1fr_130px_90px_auto] sm:items-end">
-                                    <div>
-                                        <label class="block text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                                            Size Name
-                                        </label>
+                            @error('name')
+                                <p class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
 
-                                        <input
-                                            type="text"
-                                            x-model="size.name"
-                                            x-bind:name="'sizes[' + index + '][name]'"
-                                            placeholder="Large"
-                                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                        {{-- Slug --}}
+                        <div>
+                            <div class="flex items-center justify-between gap-3">
+                                <label
+                                    for="slug"
+                                    class="text-sm font-black text-slate-800"
+                                >
+                                    URL Slug
+                                </label>
+
+                                <span class="text-[10px] font-bold text-slate-400">
+                                    Auto-generated
+                                </span>
+                            </div>
+
+                            <input
+                                id="slug"
+                                name="slug"
+                                value="{{ $initialSlug }}"
+                                x-model="slug"
+                                maxlength="180"
+                                autocomplete="off"
+                                placeholder="classic-beef-burger"
+                                class="mt-2 min-h-12 w-full rounded-xl border bg-slate-50 px-4 py-3 font-mono text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 focus:ring-orange-100 @error('slug') border-red-300 focus:border-red-400 @else border-slate-200 focus:border-orange-400 @enderror"
+                            >
+
+                            <div class="mt-2 flex min-w-0 items-center gap-2 rounded-lg bg-slate-50 px-3 py-2">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    class="h-3.5 w-3.5 shrink-0 text-slate-400"
+                                >
+                                    <path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
+                                    <path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1" />
+                                </svg>
+
+                                <span class="text-[10px] font-bold text-slate-400">
+                                    /menu/
+                                </span>
+
+                                <span
+                                    class="min-w-0 truncate font-mono text-[10px] font-bold text-slate-600"
+                                    x-text="displaySlug() || 'item-name'"
+                                ></span>
+                            </div>
+
+                            @error('slug')
+                                <p class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    {{-- Description --}}
+                    <div>
+                        <div class="flex items-center justify-between gap-3">
+                            <label
+                                for="description"
+                                class="text-sm font-black text-slate-800"
+                            >
+                                Description
+                            </label>
+
+                            <span class="text-[10px] font-bold text-slate-400">
+                                Optional
+                            </span>
+                        </div>
+
+                        <textarea
+                            id="description"
+                            name="description"
+                            rows="4"
+                            maxlength="1000"
+                            x-model="itemDescription"
+                            placeholder="Describe the ingredients, taste, portion size, and anything customers should know."
+                            class="mt-2 w-full resize-y rounded-xl border bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:bg-white focus:ring-4 focus:ring-orange-100 @error('description') border-red-300 focus:border-red-400 @else border-slate-200 focus:border-orange-400 @enderror"
+                        >{{ $initialDescription }}</textarea>
+
+                        <div class="mt-2 flex items-center justify-between gap-3">
+                            <p class="text-xs font-semibold text-slate-500">
+                                Mention ingredients, flavour, serving size, or dietary information.
+                            </p>
+
+                            <span
+                                class="shrink-0 text-[10px] font-bold text-slate-400"
+                                x-text="`${itemDescription.length}/1000`"
+                            ></span>
+                        </div>
+
+                        @error('description')
+                            <p class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                                <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+                </div>
+            </section>
+
+            {{-- Step 2: Selling Setup --}}
+            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
+                <div class="border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+                    <div class="flex items-start gap-3">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-100 text-sm font-black text-orange-700">
+                            2
+                        </span>
+
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                                Selling Setup
+                            </p>
+
+                            <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                                Pricing, metadata and visibility
+                            </h2>
+
+                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500 sm:text-sm">
+                                Configure the base price, discount, preparation details, and public status.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-5 p-4 sm:p-6">
+                    {{-- Price Cards --}}
+                    <div class="grid gap-4 md:grid-cols-2">
+                        {{-- Selling Price --}}
+                        <div class="rounded-2xl border border-orange-100 bg-orange-50 p-4">
+                            <div class="flex items-start gap-3">
+                                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-orange-600 shadow-sm">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        class="h-5 w-5"
+                                    >
+                                        <rect x="3" y="6" width="18" height="12" rx="2" />
+                                        <circle cx="12" cy="12" r="2" />
+                                    </svg>
+                                </span>
+
+                                <div>
+                                    <label
+                                        for="price"
+                                        class="block text-sm font-black text-orange-950"
+                                    >
+                                        Selling Price
+                                        <span class="text-red-500">*</span>
+                                    </label>
+
+                                    <p class="mt-1 text-xs font-semibold text-orange-700">
+                                        Main price shown to customers.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="relative mt-4">
+                                <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-orange-700">
+                                    Rs.
+                                </span>
+
+                                <input
+                                    id="price"
+                                    name="price"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value="{{ $initialPrice }}"
+                                    x-model="price"
+                                    required
+                                    inputmode="decimal"
+                                    placeholder="0.00"
+                                    class="min-h-12 w-full rounded-xl border bg-white py-3 pl-12 pr-4 text-base font-black text-slate-950 outline-none transition placeholder:text-slate-300 focus:ring-4 focus:ring-orange-100 @error('price') border-red-300 focus:border-red-400 @else border-orange-200 focus:border-orange-400 @enderror"
+                                >
+                            </div>
+
+                            @error('price')
+                                <p class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        {{-- Compare Price --}}
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-start gap-3">
+                                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-slate-600 shadow-sm">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            class="h-5 w-5"
                                         >
-                                    </div>
+                                            <path d="M3 6h18M7 3v6M17 3v6M5 12h14M5 16h9" />
+                                        </svg>
+                                    </span>
 
                                     <div>
-                                        <label class="block text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                                            Price
-                                        </label>
-
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            x-model="size.price"
-                                            x-bind:name="'sizes[' + index + '][price]'"
-                                            placeholder="1499"
-                                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                                        <label
+                                            for="compare_at_price"
+                                            class="block text-sm font-black text-slate-950"
                                         >
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                                            Sort
+                                            Original Price
                                         </label>
 
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            x-model="size.sort_order"
-                                            x-bind:name="'sizes[' + index + '][sort_order]'"
-                                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                                        <p class="mt-1 text-xs font-semibold text-slate-500">
+                                            Optional crossed-out price.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <span
+                                    x-show="discountPercent() > 0"
+                                    x-cloak
+                                    class="rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black text-emerald-700"
+                                    x-text="`${discountPercent()}% off`"
+                                ></span>
+                            </div>
+
+                            <div class="relative mt-4">
+                                <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-slate-500">
+                                    Rs.
+                                </span>
+
+                                <input
+                                    id="compare_at_price"
+                                    name="compare_at_price"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value="{{ $initialCompareAtPrice }}"
+                                    x-model="compareAtPrice"
+                                    inputmode="decimal"
+                                    placeholder="0.00"
+                                    class="min-h-12 w-full rounded-xl border bg-white py-3 pl-12 pr-4 text-base font-black text-slate-950 outline-none transition placeholder:text-slate-300 focus:ring-4 focus:ring-orange-100 @error('compare_at_price') border-red-300 focus:border-red-400 @else border-slate-200 focus:border-orange-400 @enderror"
+                                >
+                            </div>
+
+                            @error('compare_at_price')
+                                <p class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    {{-- Metadata --}}
+                    <div class="grid gap-4 sm:grid-cols-3">
+                        <div>
+                            <label
+                                for="preparation_time"
+                                class="block text-sm font-black text-slate-800"
+                            >
+                                Preparation Time
+                            </label>
+
+                            <div class="relative mt-2">
+                                <input
+                                    id="preparation_time"
+                                    name="preparation_time"
+                                    type="number"
+                                    min="1"
+                                    value="{{ $initialPreparationTime }}"
+                                    x-model="preparationTime"
+                                    inputmode="numeric"
+                                    placeholder="15"
+                                    class="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-14 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                >
+
+                                <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
+                                    min
+                                </span>
+                            </div>
+
+                            @error('preparation_time')
+                                <p class="mt-2 text-xs font-semibold text-red-600">
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label
+                                for="calories"
+                                class="block text-sm font-black text-slate-800"
+                            >
+                                Calories
+                            </label>
+
+                            <div class="relative mt-2">
+                                <input
+                                    id="calories"
+                                    name="calories"
+                                    type="number"
+                                    min="0"
+                                    value="{{ $initialCalories }}"
+                                    x-model="calories"
+                                    inputmode="numeric"
+                                    placeholder="450"
+                                    class="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-14 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                >
+
+                                <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
+                                    kcal
+                                </span>
+                            </div>
+
+                            @error('calories')
+                                <p class="mt-2 text-xs font-semibold text-red-600">
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label
+                                for="sort_order"
+                                class="block text-sm font-black text-slate-800"
+                            >
+                                Display Position
+                                <span class="text-red-500">*</span>
+                            </label>
+
+                            <input
+                                id="sort_order"
+                                name="sort_order"
+                                type="number"
+                                min="0"
+                                value="{{ $initialSortOrder }}"
+                                x-model="sortOrder"
+                                required
+                                inputmode="numeric"
+                                class="mt-2 min-h-12 w-full rounded-xl border bg-slate-50 px-4 py-3 text-center text-base font-black text-slate-900 outline-none transition focus:bg-white focus:ring-4 focus:ring-orange-100 @error('sort_order') border-red-300 focus:border-red-400 @else border-slate-200 focus:border-orange-400 @enderror"
+                            >
+
+                            @error('sort_order')
+                                <p class="mt-2 text-xs font-semibold text-red-600">
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    {{-- Status Toggles --}}
+                    <div class="grid gap-4 md:grid-cols-2">
+                        {{-- Available --}}
+                        <label
+                            class="cursor-pointer rounded-2xl border p-4 transition"
+                            x-bind:class="available
+                                ? 'border-emerald-200 bg-emerald-50'
+                                : 'border-slate-200 bg-slate-50'"
+                        >
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex items-start gap-3">
+                                    <span
+                                        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white shadow-sm"
+                                        x-bind:class="available
+                                            ? 'text-emerald-600'
+                                            : 'text-slate-500'"
+                                    >
+                                        <svg
+                                            x-show="available"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            class="h-5 w-5"
                                         >
-                                    </div>
+                                            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" />
+                                            <circle cx="12" cy="12" r="2.5" />
+                                        </svg>
 
-                                    <div class="flex items-center justify-between gap-3 sm:justify-end">
-                                        <label class="flex items-center gap-2 rounded-2xl bg-slate-50 px-3 py-2 text-xs font-black text-slate-700">
-                                            <input type="hidden" x-bind:name="'sizes[' + index + '][is_active]'" value="0">
-                                            <input type="checkbox" value="1" x-model="size.is_active" x-bind:name="'sizes[' + index + '][is_active]'" class="rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                            Active
-                                        </label>
+                                        <svg
+                                            x-show="! available"
+                                            x-cloak
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            class="h-5 w-5"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                d="m3 3 18 18"
+                                            />
+                                            <path d="M10.6 6.2A10 10 0 0 1 12 6c6.5 0 10 6 10 6a17 17 0 0 1-2.2 2.8" />
+                                        </svg>
+                                    </span>
+
+                                    <span>
+                                        <span
+                                            class="block text-sm font-black"
+                                            x-bind:class="available
+                                                ? 'text-emerald-950'
+                                                : 'text-slate-950'"
+                                            x-text="available
+                                                ? 'Available for ordering'
+                                                : 'Unavailable to customers'"
+                                        ></span>
+
+                                        <span
+                                            class="mt-1 block text-xs font-semibold leading-5"
+                                            x-bind:class="available
+                                                ? 'text-emerald-700'
+                                                : 'text-slate-500'"
+                                            x-text="available
+                                                ? 'Customers can view and order this item.'
+                                                : 'The item remains saved but cannot be ordered.'"
+                                        ></span>
+                                    </span>
+                                </div>
+
+                                <span class="relative mt-1 shrink-0">
+                                    <input
+                                        type="hidden"
+                                        name="is_available"
+                                        value="0"
+                                    >
+
+                                    <input
+                                        type="checkbox"
+                                        name="is_available"
+                                        value="1"
+                                        x-model="available"
+                                        @checked($initialAvailable)
+                                        class="peer sr-only"
+                                    >
+
+                                    <span class="block h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-emerald-600 peer-focus:ring-4 peer-focus:ring-emerald-100"></span>
+
+                                    <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+                                </span>
+                            </div>
+                        </label>
+
+                        {{-- Featured --}}
+                        <label
+                            class="cursor-pointer rounded-2xl border p-4 transition"
+                            x-bind:class="featured
+                                ? 'border-orange-200 bg-orange-50'
+                                : 'border-slate-200 bg-slate-50'"
+                        >
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex items-start gap-3">
+                                    <span
+                                        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white shadow-sm"
+                                        x-bind:class="featured
+                                            ? 'text-orange-600'
+                                            : 'text-slate-500'"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            class="h-5 w-5"
+                                        >
+                                            <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3z" />
+                                        </svg>
+                                    </span>
+
+                                    <span>
+                                        <span
+                                            class="block text-sm font-black"
+                                            x-bind:class="featured
+                                                ? 'text-orange-950'
+                                                : 'text-slate-950'"
+                                            x-text="featured
+                                                ? 'Featured menu item'
+                                                : 'Standard menu item'"
+                                        ></span>
+
+                                        <span
+                                            class="mt-1 block text-xs font-semibold leading-5"
+                                            x-bind:class="featured
+                                                ? 'text-orange-700'
+                                                : 'text-slate-500'"
+                                            x-text="featured
+                                                ? 'Promoted in featured menu areas.'
+                                                : 'Shown normally inside its category.'"
+                                        ></span>
+                                    </span>
+                                </div>
+
+                                <span class="relative mt-1 shrink-0">
+                                    <input
+                                        type="hidden"
+                                        name="is_featured"
+                                        value="0"
+                                    >
+
+                                    <input
+                                        type="checkbox"
+                                        name="is_featured"
+                                        value="1"
+                                        x-model="featured"
+                                        @checked($initialFeatured)
+                                        class="peer sr-only"
+                                    >
+
+                                    <span class="block h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-orange-600 peer-focus:ring-4 peer-focus:ring-orange-100"></span>
+
+                                    <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            {{-- Step 3: Ordering Options --}}
+            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
+                <div class="flex flex-col gap-4 border-b border-orange-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
+                    <div class="flex items-start gap-3">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-100 text-sm font-black text-orange-700">
+                            3
+                        </span>
+
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                                Ordering Options
+                            </p>
+
+                            <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                                Sizes and paid extras
+                            </h2>
+
+                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500 sm:text-sm">
+                                Optional choices customers can select before adding the item to their cart.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <span class="rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-black text-slate-600">
+                            <span x-text="sizes.length"></span>
+                            sizes
+                        </span>
+
+                        <span class="rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-black text-orange-700">
+                            <span x-text="addons.length"></span>
+                            extras
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid gap-5 p-4 sm:p-6 2xl:grid-cols-2">
+                    {{-- Sizes --}}
+                    <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 class="text-base font-black text-slate-950">
+                                    Size Pricing
+                                </h3>
+
+                                <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                    Use final selling prices for each available size.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                x-on:click="addSize()"
+                                class="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-black text-white shadow-sm transition active:scale-95 hover:bg-orange-700"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    class="h-4 w-4"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        d="M12 5v14M5 12h14"
+                                    />
+                                </svg>
+
+                                Add Size
+                            </button>
+                        </div>
+
+                        <div class="mt-4 space-y-3">
+                            <template x-if="sizes.length === 0">
+                                <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-7 text-center">
+                                    <span class="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-orange-50 text-orange-600">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            class="h-5 w-5"
+                                        >
+                                            <circle cx="12" cy="12" r="8" />
+                                            <path d="M8 12h8" />
+                                        </svg>
+                                    </span>
+
+                                    <p class="mt-3 text-sm font-black text-slate-800">
+                                        No size options
+                                    </p>
+
+                                    <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                        Customers will use the base selling price.
+                                    </p>
+                                </div>
+                            </template>
+
+                            <template
+                                x-for="(size, index) in sizes"
+                                x-bind:key="'size-' + index"
+                            >
+                                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex min-w-0 items-center gap-3">
+                                            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-50 text-xs font-black text-orange-700">
+                                                <span x-text="index + 1"></span>
+                                            </span>
+
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-black text-slate-950">
+                                                    Size option
+                                                </p>
+
+                                                <p
+                                                    class="mt-0.5 truncate text-xs font-semibold text-slate-500"
+                                                    x-text="size.name || 'Unnamed size'"
+                                                ></p>
+                                            </div>
+                                        </div>
 
                                         <button
                                             type="button"
                                             x-on:click="removeSize(index)"
-                                            class="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-black text-red-600 hover:bg-red-100"
+                                            class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600 transition active:scale-95 hover:bg-red-600 hover:text-white"
+                                            aria-label="Remove size"
                                         >
-                                            Remove
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                class="h-4 w-4"
+                                            >
+                                                <path d="M4 7h16" />
+                                                <path d="M10 11v6M14 11v6" />
+                                                <path d="m6 7 1 14h10l1-14" />
+                                            </svg>
                                         </button>
                                     </div>
+
+                                    <div class="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_130px_85px]">
+                                        <div>
+                                            <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                                Size Name
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                x-model="size.name"
+                                                x-bind:name="'sizes[' + index + '][name]'"
+                                                placeholder="Large"
+                                                class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                            >
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                                Final Price
+                                            </label>
+
+                                            <div class="relative mt-1.5">
+                                                <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">
+                                                    Rs.
+                                                </span>
+
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    x-model="size.price"
+                                                    x-bind:name="'sizes[' + index + '][price]'"
+                                                    placeholder="1499"
+                                                    class="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                                Sort
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                x-model="size.sort_order"
+                                                x-bind:name="'sizes[' + index + '][sort_order]'"
+                                                class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-center text-sm font-black text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                            >
+                                        </div>
+                                    </div>
+
+                                    <label class="mt-3 flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-3">
+                                        <span class="text-xs font-black text-slate-700">
+                                            Available to customers
+                                        </span>
+
+                                        <span class="relative shrink-0">
+                                            <input
+                                                type="hidden"
+                                                x-bind:name="'sizes[' + index + '][is_active]'"
+                                                value="0"
+                                            >
+
+                                            <input
+                                                type="checkbox"
+                                                value="1"
+                                                x-model="size.is_active"
+                                                x-bind:name="'sizes[' + index + '][is_active]'"
+                                                class="peer sr-only"
+                                            >
+
+                                            <span class="block h-6 w-11 rounded-full bg-slate-300 transition peer-checked:bg-emerald-500"></span>
+
+                                            <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+                                        </span>
+                                    </label>
                                 </div>
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </div>
-                </div>
 
-                <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <h3 class="text-base font-black text-slate-950">
-                                Add-ons and Toppings
-                            </h3>
+                    {{-- Add-ons --}}
+                    <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 class="text-base font-black text-slate-950">
+                                    Add-ons and Extras
+                                </h3>
 
-                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
-                                These appear as paid checkboxes during ordering.
-                            </p>
+                                <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                    Additional paid selections shown during ordering.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                x-on:click="addAddon()"
+                                class="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-orange-600 px-3.5 py-2 text-xs font-black text-white shadow-sm transition active:scale-95 hover:bg-orange-700"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    class="h-4 w-4"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        d="M12 5v14M5 12h14"
+                                    />
+                                </svg>
+
+                                Add Extra
+                            </button>
                         </div>
 
-                        <button
-                            type="button"
-                            x-on:click="addAddon()"
-                            class="shrink-0 rounded-2xl bg-orange-600 px-4 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-orange-700"
-                        >
-                            Add Add-on
-                        </button>
-                    </div>
-
-                    <div class="mt-5 space-y-3">
-                        <template x-if="addons.length === 0">
-                            <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-5 text-center text-sm font-semibold text-slate-500">
-                                No paid extras yet. Add toppings, extra cheese, sauces, or dips.
-                            </div>
-                        </template>
-
-                        <template x-for="(addon, index) in addons" x-bind:key="'addon-' + index">
-                            <div class="rounded-2xl border border-white bg-white p-4 shadow-sm">
-                                <div class="grid gap-3 sm:grid-cols-[1fr_130px_110px_80px_auto] sm:items-end">
-                                    <div>
-                                        <label class="block text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                                            Add-on Name
-                                        </label>
-
-                                        <input
-                                            type="text"
-                                            x-model="addon.name"
-                                            x-bind:name="'addons[' + index + '][name]'"
-                                            placeholder="Extra Cheese"
-                                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                        <div class="mt-4 space-y-3">
+                            <template x-if="addons.length === 0">
+                                <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-7 text-center">
+                                    <span class="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-orange-50 text-orange-600">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            class="h-5 w-5"
                                         >
-                                    </div>
+                                            <path d="M12 5v14M5 12h14" />
+                                        </svg>
+                                    </span>
 
-                                    <div>
-                                        <label class="block text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                                            Type
-                                        </label>
+                                    <p class="mt-3 text-sm font-black text-slate-800">
+                                        No paid extras
+                                    </p>
 
-                                        <select
-                                            x-model="addon.type"
-                                            x-bind:name="'addons[' + index + '][type]'"
-                                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                                        >
-                                            @foreach ($addonTypes as $value => $label)
-                                                <option value="{{ $value }}">{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+                                    <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                        Add cheese, toppings, sauces, or dips.
+                                    </p>
+                                </div>
+                            </template>
 
-                                    <div>
-                                        <label class="block text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                                            Price
-                                        </label>
+                            <template
+                                x-for="(addon, index) in addons"
+                                x-bind:key="'addon-' + index"
+                            >
+                                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex min-w-0 items-center gap-3">
+                                            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-50 text-xs font-black text-orange-700">
+                                                <span x-text="index + 1"></span>
+                                            </span>
 
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            x-model="addon.price"
-                                            x-bind:name="'addons[' + index + '][price]'"
-                                            placeholder="150"
-                                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                                        >
-                                    </div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-black text-slate-950">
+                                                    Paid extra
+                                                </p>
 
-                                    <div>
-                                        <label class="block text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                                            Sort
-                                        </label>
-
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            x-model="addon.sort_order"
-                                            x-bind:name="'addons[' + index + '][sort_order]'"
-                                            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                                        >
-                                    </div>
-
-                                    <div class="flex items-center justify-between gap-3 sm:justify-end">
-                                        <label class="flex items-center gap-2 rounded-2xl bg-slate-50 px-3 py-2 text-xs font-black text-slate-700">
-                                            <input type="hidden" x-bind:name="'addons[' + index + '][is_active]'" value="0">
-                                            <input type="checkbox" value="1" x-model="addon.is_active" x-bind:name="'addons[' + index + '][is_active]'" class="rounded border-slate-300 text-orange-600 focus:ring-orange-500">
-                                            Active
-                                        </label>
+                                                <p
+                                                    class="mt-0.5 truncate text-xs font-semibold text-slate-500"
+                                                    x-text="addon.name || 'Unnamed extra'"
+                                                ></p>
+                                            </div>
+                                        </div>
 
                                         <button
                                             type="button"
                                             x-on:click="removeAddon(index)"
-                                            class="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-black text-red-600 hover:bg-red-100"
+                                            class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600 transition active:scale-95 hover:bg-red-600 hover:text-white"
+                                            aria-label="Remove add-on"
                                         >
-                                            Remove
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                class="h-4 w-4"
+                                            >
+                                                <path d="M4 7h16" />
+                                                <path d="M10 11v6M14 11v6" />
+                                                <path d="m6 7 1 14h10l1-14" />
+                                            </svg>
                                         </button>
                                     </div>
+
+                                    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                                        <div>
+                                            <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                                Name
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                x-model="addon.name"
+                                                x-bind:name="'addons[' + index + '][name]'"
+                                                placeholder="Extra Cheese"
+                                                class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                            >
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                                Type
+                                            </label>
+
+                                            <select
+                                                x-model="addon.type"
+                                                x-bind:name="'addons[' + index + '][type]'"
+                                                class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                            >
+                                                @foreach ($addonTypes as $value => $label)
+                                                    <option value="{{ $value }}">
+                                                        {{ $label }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                                Additional Price
+                                            </label>
+
+                                            <div class="relative mt-1.5">
+                                                <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">
+                                                    Rs.
+                                                </span>
+
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    x-model="addon.price"
+                                                    x-bind:name="'addons[' + index + '][price]'"
+                                                    placeholder="150"
+                                                    class="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                                Display Position
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                x-model="addon.sort_order"
+                                                x-bind:name="'addons[' + index + '][sort_order]'"
+                                                class="mt-1.5 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-center text-sm font-black text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                            >
+                                        </div>
+                                    </div>
+
+                                    <label class="mt-3 flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-3">
+                                        <span class="text-xs font-black text-slate-700">
+                                            Available to customers
+                                        </span>
+
+                                        <span class="relative shrink-0">
+                                            <input
+                                                type="hidden"
+                                                x-bind:name="'addons[' + index + '][is_active]'"
+                                                value="0"
+                                            >
+
+                                            <input
+                                                type="checkbox"
+                                                value="1"
+                                                x-model="addon.is_active"
+                                                x-bind:name="'addons[' + index + '][is_active]'"
+                                                class="peer sr-only"
+                                            >
+
+                                            <span class="block h-6 w-11 rounded-full bg-slate-300 transition peer-checked:bg-emerald-500"></span>
+
+                                            <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+                                        </span>
+                                    </label>
                                 </div>
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            @error('sizes')
-                <p class="mt-3 text-sm font-semibold text-red-600">{{ $message }}</p>
-            @enderror
+                @error('sizes')
+                    <p class="mx-4 mb-4 text-sm font-semibold text-red-600 sm:mx-6">
+                        {{ $message }}
+                    </p>
+                @enderror
 
-            @error('addons')
-                <p class="mt-3 text-sm font-semibold text-red-600">{{ $message }}</p>
-            @enderror
-        </section>
+                @error('addons')
+                    <p class="mx-4 mb-4 text-sm font-semibold text-red-600 sm:mx-6">
+                        {{ $message }}
+                    </p>
+                @enderror
+            </section>
 
-        {{-- Image Upload --}}
-        <section class="rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
-            <div class="flex items-start gap-4">
-                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        class="h-6 w-6"
+            {{-- Step 4: Image --}}
+            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
+                <div class="border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+                    <div class="flex items-start gap-3">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-100 text-sm font-black text-orange-700">
+                            4
+                        </span>
+
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                                Item Image
+                            </p>
+
+                            <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                                Customer-facing food image
+                            </h2>
+
+                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500 sm:text-sm">
+                                Choose a clear landscape photo that accurately represents the item.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 sm:p-6">
+                    <label
+                        for="image"
+                        class="group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[1.5rem] border-2 border-dashed border-orange-200 bg-orange-50/60 px-5 py-9 text-center transition hover:border-orange-400 hover:bg-orange-50 sm:py-10"
                     >
-                        <rect x="3" y="4" width="18" height="16" rx="2" />
-                        <circle cx="8.5" cy="9" r="1.5" />
-                        <path d="m21 15-5-5L5 20" />
-                    </svg>
+                        <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-orange-200/40 blur-3xl"></div>
+
+                        <span class="relative grid h-14 w-14 place-items-center rounded-2xl bg-white text-orange-600 shadow-sm transition group-hover:-translate-y-0.5 group-hover:shadow-md">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                class="h-7 w-7"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M12 16V4M7 9l5-5 5 5M5 20h14"
+                                />
+                            </svg>
+                        </span>
+
+                        <p class="relative mt-4 text-sm font-black text-slate-950">
+                            <span x-show="! fileName">
+                                Choose menu item image
+                            </span>
+
+                            <span
+                                x-show="fileName"
+                                x-cloak
+                            >
+                                Replace selected image
+                            </span>
+                        </p>
+
+                        <p class="relative mt-1 text-xs font-semibold text-slate-500">
+                            JPG, PNG or WEBP · Maximum 2 MB
+                        </p>
+
+                        <input
+                            id="image"
+                            name="image"
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                            x-ref="imageInput"
+                            x-on:change="handleImage($event)"
+                            class="sr-only"
+                        >
+                    </label>
+
+                    <div
+                        x-show="fileName"
+                        x-cloak
+                        class="mt-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3"
+                    >
+                        <div class="flex min-w-0 items-center gap-3">
+                            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-emerald-600 shadow-sm">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    class="h-4 w-4"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m5 12 4 4L19 6"
+                                    />
+                                </svg>
+                            </span>
+
+                            <div class="min-w-0">
+                                <p class="text-xs font-black text-emerald-900">
+                                    New image selected
+                                </p>
+
+                                <p
+                                    class="mt-0.5 truncate text-xs font-semibold text-emerald-700"
+                                    x-text="fileName"
+                                ></p>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            x-on:click="resetSelectedImage"
+                            class="shrink-0 rounded-lg px-2.5 py-2 text-xs font-black text-red-600 transition hover:bg-red-50"
+                        >
+                            Undo
+                        </button>
+                    </div>
+
+                    @error('image')
+                        <p class="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                            <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+            </section>
+        </div>
+
+        {{-- Preview and Actions --}}
+        <aside class="order-first space-y-5 xl:order-none xl:sticky xl:top-24">
+            {{-- Live Preview --}}
+            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-xl shadow-orange-900/5">
+                <div class="flex items-center justify-between gap-4 border-b border-orange-100 px-5 py-4">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                            Live Preview
+                        </p>
+
+                        <h2 class="mt-1 text-lg font-black text-slate-950">
+                            Customer menu card
+                        </h2>
+                    </div>
+
+                    <span
+                        class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.1em]"
+                        x-bind:class="available
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-red-50 text-red-700'"
+                    >
+                        <span
+                            class="h-1.5 w-1.5 rounded-full"
+                            x-bind:class="available
+                                ? 'bg-emerald-500'
+                                : 'bg-red-500'"
+                        ></span>
+
+                        <span x-text="available ? 'Available' : 'Unavailable'"></span>
+                    </span>
                 </div>
 
-                <div>
-                    <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
-                        Item Image
-                    </p>
+                <div class="p-4 sm:p-5">
+                    <div class="overflow-hidden rounded-[1.5rem] border border-orange-100 bg-white shadow-sm">
+                        {{-- Preview Image --}}
+                        <div class="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-orange-100 via-amber-50 to-red-100">
+                            <template x-if="preview">
+                                <img
+                                    x-bind:src="preview"
+                                    alt="Menu item preview"
+                                    class="absolute inset-0 h-full w-full object-cover"
+                                >
+                            </template>
 
-                    <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                        Upload a food image
-                    </h2>
+                            <div
+                                x-show="! preview"
+                                class="absolute inset-0 grid place-items-center"
+                            >
+                                <span
+                                    class="grid h-20 w-20 place-items-center rounded-full border border-white/70 bg-white/80 text-3xl font-black text-orange-700 shadow-xl backdrop-blur"
+                                    x-text="(itemName || 'M').charAt(0).toUpperCase()"
+                                ></span>
+                            </div>
 
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Use a clear landscape image that accurately represents the menu item.
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+
+                            <div class="absolute left-3 top-3 flex flex-wrap gap-2">
+                                <span
+                                    x-show="featured"
+                                    x-cloak
+                                    class="rounded-full bg-orange-600 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-white shadow-lg"
+                                >
+                                    Featured
+                                </span>
+
+                                <span
+                                    x-show="discountPercent() > 0"
+                                    x-cloak
+                                    class="rounded-full bg-emerald-600 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-white shadow-lg"
+                                    x-text="`${discountPercent()}% Off`"
+                                ></span>
+                            </div>
+
+                            <div
+                                x-show="! available"
+                                x-cloak
+                                class="absolute inset-0 grid place-items-center bg-slate-950/55 backdrop-blur-[1px]"
+                            >
+                                <span class="rounded-full bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-red-600 shadow-xl">
+                                    Currently Unavailable
+                                </span>
+                            </div>
+                        </div>
+
+                        {{-- Preview Content --}}
+                        <div class="p-4">
+                            <p
+                                class="text-[9px] font-black uppercase tracking-[0.14em] text-orange-600"
+                                x-text="categoryName || 'Uncategorized'"
+                            ></p>
+
+                            <h3
+                                class="mt-1.5 break-words text-xl font-black tracking-tight text-slate-950"
+                                x-text="itemName.trim() || 'Menu Item Name'"
+                            ></h3>
+
+                            <p
+                                class="mt-2 line-clamp-3 min-h-[60px] text-xs font-semibold leading-5 text-slate-600"
+                                x-text="itemDescription.trim() || 'Your item description will appear here for customers.'"
+                            ></p>
+
+                            <div class="mt-4 flex flex-wrap items-end gap-2">
+                                <p class="text-2xl font-black text-orange-600">
+                                    Rs.
+                                    <span x-text="Number(price || 0).toLocaleString()"></span>
+                                </p>
+
+                                <p
+                                    x-show="Number(compareAtPrice) > Number(price) && Number(compareAtPrice) > 0"
+                                    x-cloak
+                                    class="pb-0.5 text-sm font-bold text-slate-400 line-through"
+                                >
+                                    Rs.
+                                    <span x-text="Number(compareAtPrice || 0).toLocaleString()"></span>
+                                </p>
+                            </div>
+
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                <span
+                                    x-show="preparationTime"
+                                    class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-bold text-slate-600"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        class="h-3.5 w-3.5"
+                                    >
+                                        <circle cx="12" cy="12" r="9" />
+                                        <path d="M12 7v5l3 2" />
+                                    </svg>
+
+                                    <span x-text="`${preparationTime} min`"></span>
+                                </span>
+
+                                <span
+                                    x-show="calories"
+                                    class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-bold text-slate-600"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        class="h-3.5 w-3.5"
+                                    >
+                                        <path d="M12 22c4-3 6-6.2 6-10a6 6 0 0 0-12 0c0 3.8 2 7 6 10z" />
+                                    </svg>
+
+                                    <span x-text="`${calories} kcal`"></span>
+                                </span>
+
+                                <span
+                                    x-show="sizes.length > 0"
+                                    class="rounded-full bg-indigo-50 px-3 py-1.5 text-[10px] font-bold text-indigo-700"
+                                >
+                                    <span x-text="sizes.length"></span>
+                                    sizes
+                                </span>
+
+                                <span
+                                    x-show="addons.length > 0"
+                                    class="rounded-full bg-violet-50 px-3 py-1.5 text-[10px] font-bold text-violet-700"
+                                >
+                                    <span x-text="addons.length"></span>
+                                    extras
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                disabled
+                                class="mt-5 min-h-12 w-full rounded-xl px-5 py-3 text-sm font-black shadow-sm"
+                                x-bind:class="available
+                                    ? 'bg-orange-600 text-white'
+                                    : 'cursor-not-allowed bg-slate-200 text-slate-500'"
+                            >
+                                <span x-text="available ? 'Add to Cart' : 'Unavailable'"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Preview Metadata --}}
+                    <div class="mt-3 grid grid-cols-2 gap-2">
+                        <div class="min-w-0 rounded-xl bg-slate-50 px-3 py-3">
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                URL Slug
+                            </p>
+
+                            <p
+                                class="mt-1 truncate font-mono text-[10px] font-bold text-slate-700"
+                                x-text="displaySlug() || 'item-name'"
+                            ></p>
+                        </div>
+
+                        <div class="rounded-xl bg-orange-50 px-3 py-3">
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-orange-600">
+                                Position
+                            </p>
+
+                            <p
+                                class="mt-1 text-sm font-black text-orange-950"
+                                x-text="`#${sortOrder || 0}`"
+                            ></p>
+                        </div>
+                    </div>
+
+                    <p class="mt-3 text-center text-[10px] font-semibold leading-4 text-slate-400">
+                        Preview represents how the item may appear on the customer menu.
                     </p>
                 </div>
-            </div>
+            </section>
 
-            <div class="mt-7">
-                <label
-                    for="image"
-                    class="group flex cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed border-orange-200 bg-orange-50/60 px-5 py-10 text-center transition hover:border-orange-400 hover:bg-orange-50"
-                >
-                    <div class="grid h-14 w-14 place-items-center rounded-2xl bg-white text-orange-600 shadow-sm transition group-hover:scale-105">
+            {{-- Completion Summary --}}
+            <section class="rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                    Item Summary
+                </p>
+
+                <h2 class="mt-1 text-lg font-black text-slate-950">
+                    Before publishing
+                </h2>
+
+                <div class="mt-4 space-y-2">
+                    <div class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-3">
+                        <span class="text-xs font-semibold text-slate-500">
+                            Base price
+                        </span>
+
+                        <span class="text-sm font-black text-slate-950">
+                            Rs.
+                            <span x-text="Number(price || 0).toLocaleString()"></span>
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-3">
+                        <span class="text-xs font-semibold text-slate-500">
+                            Size options
+                        </span>
+
+                        <span
+                            class="text-sm font-black text-slate-950"
+                            x-text="sizes.length"
+                        ></span>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-3">
+                        <span class="text-xs font-semibold text-slate-500">
+                            Paid extras
+                        </span>
+
+                        <span
+                            class="text-sm font-black text-slate-950"
+                            x-text="addons.length"
+                        ></span>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-3">
+                        <span class="text-xs font-semibold text-slate-500">
+                            Public status
+                        </span>
+
+                        <span
+                            class="rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em]"
+                            x-bind:class="available
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-red-100 text-red-700'"
+                            x-text="available ? 'Available' : 'Unavailable'"
+                        ></span>
+                    </div>
+                </div>
+            </section>
+
+            {{-- Desktop Save Actions --}}
+            <section class="hidden rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-sm xl:block">
+                <div class="flex items-start gap-3">
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 text-orange-600">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
-                            class="h-7 w-7"
+                            class="h-5 w-5"
                         >
-                            <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
+                            <path d="M5 5h12l2 2v12H5z" />
+                            <path d="M8 5v5h8V5M8 19v-6h8v6" />
                         </svg>
-                    </div>
+                    </span>
 
-                    <p class="mt-4 text-sm font-black text-slate-950">
-                        Click to select an image
-                    </p>
+                    <div>
+                        <p class="text-sm font-black text-slate-950">
+                            Ready to save?
+                        </p>
 
-                    <p class="mt-2 text-xs font-semibold text-slate-500">
-                        JPG, PNG or WEBP — maximum 2MB
-                    </p>
-
-                    <input
-                        id="image"
-                        name="image"
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                        class="sr-only"
-                        x-on:change="
-                            const file = $event.target.files[0];
-
-                            if (file) {
-                                if (preview && preview.startsWith('blob:')) {
-                                    URL.revokeObjectURL(preview);
-                                }
-
-                                preview = URL.createObjectURL(file);
-                            }
-                        "
-                    >
-                </label>
-
-                @error('image')
-                    <p class="mt-2 text-sm font-semibold text-red-600">
-                        {{ $message }}
-                    </p>
-                @enderror
-            </div>
-        </section>
-    </div>
-
-    {{-- Preview Sidebar --}}
-    <aside class="h-fit space-y-5 xl:sticky xl:top-28">
-        <section class="overflow-hidden rounded-[2rem] border border-orange-100 bg-white shadow-xl shadow-orange-900/5">
-            <div class="border-b border-orange-100 px-6 py-5">
-                <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
-                    Live Preview
-                </p>
-
-                <h2 class="mt-2 text-xl font-black text-slate-950">
-                    Customer menu card
-                </h2>
-            </div>
-
-            <div class="p-5">
-                <div class="overflow-hidden rounded-[1.5rem] border border-orange-100 bg-white shadow-sm">
-                    {{-- Preview Image --}}
-                    <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-orange-100 via-amber-50 to-red-100">
-                        <template x-if="preview">
-                            <img
-                                x-bind:src="preview"
-                                alt="Menu item preview"
-                                class="h-full w-full object-cover"
-                            >
-                        </template>
-
-                        <div
-                            x-show="! preview"
-                            class="absolute inset-0 grid place-items-center"
-                        >
-                            <div class="grid h-24 w-24 place-items-center rounded-full bg-white/80 text-5xl font-black text-orange-700 shadow-xl backdrop-blur">
-                                <span x-text="itemName ? itemName.charAt(0).toUpperCase() : 'M'"></span>
-                            </div>
-                        </div>
-
-                        <div class="absolute left-4 top-4 flex flex-wrap gap-2">
-                            <span
-                                x-show="featured"
-                                x-cloak
-                                class="rounded-full bg-orange-600 px-3 py-1.5 text-xs font-black text-white shadow-lg"
-                            >
-                                Featured
-                            </span>
-
-                            <span
-                                x-show="!available"
-                                x-cloak
-                                class="rounded-full bg-red-600 px-3 py-1.5 text-xs font-black text-white shadow-lg"
-                            >
-                                Unavailable
-                            </span>
-                        </div>
-                    </div>
-
-                    {{-- Preview Content --}}
-                    <div class="p-5">
-                        <p
-                            class="text-xs font-black uppercase tracking-[0.16em] text-orange-600"
-                            x-text="categoryName"
-                        ></p>
-
-                        <h3
-                            class="mt-2 break-words text-xl font-black tracking-tight text-slate-950"
-                            x-text="itemName || 'Menu Item Name'"
-                        ></h3>
-
-                        <p
-                            class="mt-2 line-clamp-3 text-sm leading-6 text-slate-600"
-                            x-text="itemDescription || 'The menu item description will appear here.'"
-                        ></p>
-
-                        <div class="mt-5 flex flex-wrap items-end gap-3">
-                            <p class="text-2xl font-black text-orange-600">
-                                Rs.
-                                <span x-text="Number(price || 0).toLocaleString()"></span>
-                            </p>
-
-                            <p
-                                x-show="Number(compareAtPrice) > Number(price) && Number(compareAtPrice) > 0"
-                                x-cloak
-                                class="pb-0.5 text-sm font-bold text-slate-400 line-through"
-                            >
-                                Rs.
-                                <span x-text="Number(compareAtPrice || 0).toLocaleString()"></span>
-                            </p>
-                        </div>
-
-                        <div class="mt-5 flex flex-wrap gap-2">
-                            <span
-                                x-show="preparationTime"
-                                class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600"
-                            >
-                                <span x-text="preparationTime"></span> min
-                            </span>
-
-                            <span
-                                x-show="calories"
-                                class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600"
-                            >
-                                <span x-text="calories"></span> kcal
-                            </span>
-                        </div>
-
-                        <button
-                            type="button"
-                            disabled
-                            x-bind:class="available
-                                ? 'bg-orange-600 text-white'
-                                : 'cursor-not-allowed bg-slate-200 text-slate-500'"
-                            class="mt-5 w-full rounded-2xl px-5 py-3 text-sm font-black shadow-sm"
-                        >
-                            <span x-text="available ? 'Add to Cart' : 'Unavailable'"></span>
-                        </button>
+                        <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                            Review the preview, price, availability, and ordering options.
+                        </p>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        {{-- Save Actions --}}
-        <section class="rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm">
-            <button
-                type="submit"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:-translate-y-0.5 hover:bg-orange-700 hover:shadow-xl"
+                <button
+                    type="submit"
+                    x-bind:disabled="submitting"
+                    class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:-translate-y-0.5 hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                    <svg
+                        x-show="submitting"
+                        x-cloak
+                        class="h-5 w-5 animate-spin"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"
+                        ></circle>
+
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                        ></path>
+                    </svg>
+
+                    <svg
+                        x-show="! submitting"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        class="h-5 w-5"
+                    >
+                        <path d="M5 5h12l2 2v12H5z" />
+                        <path d="M8 5v5h8V5M8 19v-6h8v6" />
+                    </svg>
+
+                    <span
+                        x-text="submitting
+                            ? 'Saving menu item...'
+                            : @js($submitLabel)"
+                    ></span>
+                </button>
+
+                <a
+                    href="{{ route('admin.menu-items.index') }}"
+                    class="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                >
+                    Cancel
+                </a>
+            </section>
+        </aside>
+    </form>
+
+    {{-- Persistent Mobile / Tablet Actions --}}
+    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-orange-100 bg-white/95 px-4 pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.14)] backdrop-blur xl:hidden">
+        <div class="mx-auto flex items-center gap-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+            <a
+                href="{{ route('admin.menu-items.index') }}"
+                class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-orange-200 bg-orange-50 text-orange-700 transition active:scale-95"
+                aria-label="Cancel and return to menu"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1091,24 +2165,64 @@ $currentImage = $menuItem->image_url ?? null;
                     stroke-width="2"
                     class="h-5 w-5"
                 >
-                    <path d="M5 5h12l2 2v12H5zM8 5v5h8V5M8 19v-6h8v6" />
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m15 18-6-6 6-6"
+                    />
                 </svg>
-
-                {{ $submitLabel }}
-            </button>
-
-            <a
-                href="{{ route('admin.menu-items.index') }}"
-                class="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
-            >
-                Cancel
             </a>
 
-            <p class="mt-4 text-center text-xs font-semibold leading-5 text-slate-500">
-                Review the item preview, pricing, and availability before saving.
-            </p>
-        </section>
-    </aside>
-</form>
+            <button
+                type="submit"
+                form="menu-item-form"
+                x-bind:disabled="submitting"
+                class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/25 transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+                <svg
+                    x-show="submitting"
+                    x-cloak
+                    class="h-5 w-5 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                >
+                    <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                    ></circle>
+
+                    <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                    ></path>
+                </svg>
+
+                <svg
+                    x-show="! submitting"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="h-5 w-5"
+                >
+                    <path d="M5 5h12l2 2v12H5z" />
+                    <path d="M8 5v5h8V5M8 19v-6h8v6" />
+                </svg>
+
+                <span
+                    x-text="submitting
+                        ? 'Saving...'
+                        : @js($submitLabel)"
+                ></span>
+            </button>
+        </div>
+    </div>
+</div>
 
 @endcomponent

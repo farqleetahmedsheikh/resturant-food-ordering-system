@@ -19,9 +19,13 @@
 </head>
 
 <body class="min-h-screen bg-[var(--color-surface-warm)] font-sans text-slate-900 antialiased">
-    <div class="min-h-screen overflow-x-hidden" x-data="{ mobileMenu: false }">
+    <div
+        class="min-h-screen overflow-x-hidden"
+        x-data="{ mobileMenu: false }"
+        x-on:keydown.escape.window="mobileMenu = false"
+    >
         {{-- Mobile Header --}}
-        <header class="sticky top-0 z-50 border-b border-orange-100 bg-white/90 shadow-sm shadow-orange-900/5 backdrop-blur-xl lg:hidden">
+        <header class="sticky top-0 z-[90] border-b border-orange-100 bg-white/90 shadow-sm shadow-orange-900/5 backdrop-blur-xl lg:hidden">
             <div class="flex items-center justify-between px-4 py-3">
                 <a href="{{ route('home') }}" class="flex items-center gap-3">
                     <span class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-sm font-black text-white shadow-lg shadow-orange-600/20">
@@ -47,9 +51,25 @@
                 <span x-show="mobileMenu" x-cloak>Close</span>
             </button>
         </div>
+    </header>
 
-        <div x-show="mobileMenu" x-transition x-cloak class="border-t border-orange-100 bg-white px-4 py-4 shadow-lg shadow-orange-900/5">
-            <div class="grid gap-2 text-sm font-bold">
+    <div
+        x-show="mobileMenu"
+        x-transition.opacity
+        x-cloak
+        x-on:click.self="mobileMenu = false"
+        class="fixed inset-x-0 bottom-0 top-16 z-[200] max-h-[calc(100dvh-4rem)] overflow-y-auto bg-slate-950/35 p-2 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm lg:hidden sm:p-3"
+        >
+            <div
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="-translate-y-3 opacity-0"
+                x-transition:enter-end="translate-y-0 opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="translate-y-0 opacity-100"
+                x-transition:leave-end="-translate-y-3 opacity-0"
+                class="min-h-max rounded-[1.5rem] border border-orange-100 bg-white px-3 py-3 shadow-2xl shadow-slate-950/20 sm:px-4 sm:py-4"
+            >
+                <div class="grid gap-2 text-sm font-bold">
                 <a href="{{ route('home') }}" class="rounded-2xl px-4 py-3 text-slate-700 hover:bg-orange-50">
                     Home
                 </a>
@@ -88,9 +108,9 @@
                         Logout
                     </button>
                 </form>
+                </div>
             </div>
         </div>
-    </header>
 
     <div class="min-h-screen lg:pl-[300px]">
         {{-- Desktop Sidebar --}}
@@ -136,7 +156,7 @@
                         href="{{ route('home') }}"
                         class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-700 transition hover:bg-orange-50 hover:text-orange-700"
                     >
-                        <span class="text-lg">🏠</span>
+                        <x-ui-icon name="home" class="h-5 w-5 shrink-0" />
                         <span>Home</span>
                     </a>
 
@@ -144,7 +164,7 @@
                         href="{{ route('menu') }}"
                         class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-700 transition hover:bg-orange-50 hover:text-orange-700"
                     >
-                        <span class="text-lg">🍔</span>
+                        <x-ui-icon name="burger" class="h-5 w-5 shrink-0" />
                         <span>Menu</span>
                     </a>
 
@@ -152,7 +172,7 @@
                         href="{{ route('customer.dashboard') }}"
                         class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('customer.dashboard') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
                     >
-                        <span class="text-lg">📊</span>
+                        <x-ui-icon name="chart" class="h-5 w-5 shrink-0" />
                         <span>Dashboard</span>
                     </a>
 
@@ -160,7 +180,7 @@
                         href="{{ route('customer.orders') }}"
                         class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('customer.orders*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
                     >
-                        <span class="text-lg">🧾</span>
+                        <x-ui-icon name="receipt" class="h-5 w-5 shrink-0" />
                         <span>My Orders</span>
                     </a>
 
@@ -169,7 +189,7 @@
                         class="flex items-center justify-between rounded-2xl px-4 py-3 text-slate-700 transition hover:bg-orange-50 hover:text-orange-700"
                     >
                         <span class="flex items-center gap-3">
-                            <span class="text-lg">🛒</span>
+                            <x-ui-icon name="cart" class="h-5 w-5 shrink-0" />
                             <span>Cart</span>
                         </span>
 
@@ -182,7 +202,7 @@
                         href="{{ route('checkout.index') }}"
                         class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-700 transition hover:bg-orange-50 hover:text-orange-700"
                     >
-                        <span class="text-lg">💳</span>
+                        <x-ui-icon name="credit-card" class="h-5 w-5 shrink-0" />
                         <span>Checkout</span>
                     </a>
 
@@ -190,7 +210,7 @@
                         href="{{ route('account.security') }}"
                         class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('account.security') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
                     >
-                        <span class="text-lg">🔒</span>
+                        <x-ui-icon name="shield" class="h-5 w-5 shrink-0" />
                         <span>Security</span>
                     </a>
                 </nav>

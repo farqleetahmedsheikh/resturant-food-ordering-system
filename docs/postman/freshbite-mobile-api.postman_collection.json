@@ -1,0 +1,123 @@
+{
+  "info": {
+    "name": "FreshBite Mobile API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://your-domain.com/api/v1"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Public Restaurant",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/restaurant"
+      }
+    },
+    {
+      "name": "Public Menu Items",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/menu-items?per_page=20"
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"customer@example.com\",\"password\":\"password\",\"device_name\":\"Postman\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/auth/login"
+      }
+    },
+    {
+      "name": "Customer Cart",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/customer/cart"
+      }
+    },
+    {
+      "name": "Customer Checkout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "demo-checkout-001"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"customer_name\":\"Demo Customer\",\"customer_phone\":\"03001234567\",\"customer_email\":\"customer@example.com\",\"delivery_address\":\"Demo delivery address\",\"payment_method\":\"cod\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/customer/checkout"
+      }
+    },
+    {
+      "name": "Admin Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/admin/dashboard"
+      }
+    },
+    {
+      "name": "Rider Deliveries",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{base_url}}/rider/deliveries"
+      }
+    }
+  ]
+}

@@ -19,11 +19,14 @@
 </head>
 
 <body class="min-h-screen bg-[var(--color-surface-warm)] font-sans text-slate-900 antialiased">
-    <div class="min-h-screen overflow-x-hidden">
+    <div
+        class="min-h-screen overflow-x-hidden"
+        x-data="{ open: false }"
+        x-on:keydown.escape.window="open = false"
+    >
         {{-- Navbar --}}
         <header
-            class="sticky top-0 z-50 border-b border-orange-100/80 bg-white/90 shadow-sm shadow-orange-900/5 backdrop-blur-xl"
-            x-data="{ open: false }"
+            class="sticky top-0 z-[90] border-b border-orange-100/80 bg-white/90 shadow-sm shadow-orange-900/5 backdrop-blur-xl"
         >
             <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
                 {{-- Brand --}}
@@ -139,15 +142,26 @@
                 @endauth
             </div>
         </nav>
+    </header>
 
-        {{-- Mobile Menu --}}
-        <div
-            class="border-t border-orange-100 bg-white px-4 py-4 shadow-lg shadow-orange-900/5 md:hidden"
-            x-show="open"
-            x-transition
-            x-cloak
+    {{-- Mobile Menu --}}
+    <div
+        class="fixed inset-x-0 bottom-0 top-16 z-[200] max-h-[calc(100dvh-4rem)] overflow-y-auto bg-slate-950/35 p-2 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm md:hidden sm:p-3"
+        x-show="open"
+        x-transition.opacity
+        x-cloak
+        x-on:click.self="open = false"
         >
-            <div class="grid gap-2 text-sm font-bold">
+            <div
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="-translate-y-3 opacity-0"
+                x-transition:enter-end="translate-y-0 opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="translate-y-0 opacity-100"
+                x-transition:leave-end="-translate-y-3 opacity-0"
+                class="min-h-max rounded-[1.5rem] border border-orange-100 bg-white px-3 py-3 shadow-2xl shadow-slate-950/20 sm:px-4 sm:py-4"
+            >
+                <div class="grid gap-2 text-sm font-bold">
                 <a
                     href="{{ route('home') }}"
                     class="rounded-2xl px-4 py-3 {{ request()->routeIs('home') ? 'bg-orange-50 text-orange-700' : 'text-slate-700 hover:bg-orange-50' }}"
@@ -214,9 +228,9 @@
                         </a>
                     </div>
                 @endauth
+                </div>
             </div>
         </div>
-    </header>
 
     {{-- Flash Messages --}}
     @if (session('status') || session('success') || session('error'))

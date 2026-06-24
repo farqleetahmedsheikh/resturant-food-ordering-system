@@ -52,24 +52,24 @@
 
             <div class="mt-10 grid max-w-xl gap-4 sm:grid-cols-3">
                 <div class="rounded-3xl border border-orange-100 bg-white/80 p-5 shadow-sm backdrop-blur">
-                    <div class="grid h-11 w-11 place-items-center rounded-2xl bg-orange-50 text-2xl">
-                        🍔
+                    <div class="grid h-11 w-11 place-items-center rounded-2xl bg-orange-50 text-orange-600">
+                        <x-ui-icon name="burger" class="h-5 w-5" />
                     </div>
                     <p class="mt-4 text-sm font-black text-slate-950">Fresh Menu</p>
                     <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">Browse categories and items.</p>
                 </div>
 
                 <div class="rounded-3xl border border-orange-100 bg-white/80 p-5 shadow-sm backdrop-blur">
-                    <div class="grid h-11 w-11 place-items-center rounded-2xl bg-orange-50 text-2xl">
-                        🛒
+                    <div class="grid h-11 w-11 place-items-center rounded-2xl bg-orange-50 text-orange-600">
+                        <x-ui-icon name="cart" class="h-5 w-5" />
                     </div>
                     <p class="mt-4 text-sm font-black text-slate-950">Easy Cart</p>
                     <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">Add items and checkout.</p>
                 </div>
 
                 <div class="rounded-3xl border border-orange-100 bg-white/80 p-5 shadow-sm backdrop-blur">
-                    <div class="grid h-11 w-11 place-items-center rounded-2xl bg-orange-50 text-2xl">
-                        🛵
+                    <div class="grid h-11 w-11 place-items-center rounded-2xl bg-orange-50 text-orange-600">
+                        <x-ui-icon name="scooter" class="h-5 w-5" />
                     </div>
                     <p class="mt-4 text-sm font-black text-slate-950">Delivery</p>
                     <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">Track order progress.</p>

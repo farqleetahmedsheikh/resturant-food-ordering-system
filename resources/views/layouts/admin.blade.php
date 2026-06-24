@@ -25,7 +25,7 @@
         x-on:keydown.escape.window="mobileMenu = false"
     >
         {{-- Mobile Header --}}
-        <header class="sticky top-0 z-50 border-b border-orange-100 bg-white/95 shadow-sm backdrop-blur-xl lg:hidden">
+        <header class="sticky top-0 z-[90] border-b border-orange-100 bg-white/95 shadow-sm backdrop-blur-xl lg:hidden">
             <div class="flex items-center justify-between px-4 py-3">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
                     <span class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-sm font-black text-white shadow-lg shadow-orange-600/20">
@@ -75,32 +75,43 @@
                 </svg>
             </button>
         </div>
+    </header>
 
-        {{-- Mobile Navigation --}}
-        <div
-            x-show="mobileMenu"
-            x-transition
-            x-cloak
-            class="max-h-[calc(100vh-68px)] overflow-y-auto border-t border-orange-100 bg-white px-4 py-4 shadow-xl"
+    {{-- Mobile Navigation --}}
+    <div
+        x-show="mobileMenu"
+        x-transition.opacity
+        x-cloak
+        x-on:click.self="mobileMenu = false"
+        class="fixed inset-x-0 bottom-0 top-16 z-[200] max-h-[calc(100dvh-4rem)] overflow-y-auto bg-slate-950/35 p-2 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm lg:hidden sm:p-3"
         >
-            {{-- Mobile Admin Card --}}
-            <div class="mb-4 flex items-center gap-3 rounded-2xl border border-orange-100 bg-[var(--color-surface-warm)] p-4">
-                <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-orange-600 text-sm font-black text-white">
-                    {{ mb_substr(auth()->user()->name ?? 'A', 0, 1) }}
+            <div
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="-translate-y-3 opacity-0"
+                x-transition:enter-end="translate-y-0 opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="translate-y-0 opacity-100"
+                x-transition:leave-end="-translate-y-3 opacity-0"
+                class="min-h-max rounded-[1.5rem] border border-orange-100 bg-white px-3 py-3 shadow-2xl shadow-slate-950/20 sm:px-4 sm:py-4"
+            >
+                {{-- Mobile Admin Card --}}
+                <div class="mb-4 flex items-center gap-3 rounded-2xl border border-orange-100 bg-[var(--color-surface-warm)] p-4">
+                    <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-orange-600 text-sm font-black text-white">
+                        {{ mb_substr(auth()->user()->name ?? 'A', 0, 1) }}
+                    </div>
+
+                    <div class="min-w-0">
+                        <p class="truncate text-sm font-black text-slate-950">
+                            {{ auth()->user()->name ?? 'Administrator' }}
+                        </p>
+
+                        <p class="truncate text-xs font-semibold text-slate-500">
+                            {{ auth()->user()->email ?? '' }}
+                        </p>
+                    </div>
                 </div>
 
-                <div class="min-w-0">
-                    <p class="truncate text-sm font-black text-slate-950">
-                        {{ auth()->user()->name ?? 'Administrator' }}
-                    </p>
-
-                    <p class="truncate text-xs font-semibold text-slate-500">
-                        {{ auth()->user()->email ?? '' }}
-                    </p>
-                </div>
-            </div>
-
-            <nav class="grid gap-2 text-sm font-bold">
+                <nav class="grid gap-2 text-sm font-bold">
                 <a
                     href="{{ route('admin.dashboard') }}"
                     class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.dashboard') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
@@ -217,9 +228,9 @@
                         Logout
                     </button>
                 </form>
-            </nav>
+                </nav>
+            </div>
         </div>
-    </header>
 
     <div class="min-h-screen lg:pl-[300px]">
         {{-- Desktop Sidebar --}}
@@ -396,7 +407,7 @@
         </aside>
 
         {{-- Main Area --}}
-        <main class="min-w-0">
+        <main class="min-w-0 pb-24 lg:pb-0">
             {{-- Desktop Topbar --}}
             <header class="sticky top-0 z-40 hidden border-b border-orange-100 bg-white/90 px-6 py-4 shadow-sm shadow-orange-900/5 backdrop-blur-xl lg:block">
                 <div class="flex items-center justify-between gap-6">
@@ -451,6 +462,35 @@
             </div>
         </main>
     </div>
+
+    {{-- Mobile Admin Quick Actions --}}
+    <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-orange-100 bg-white/95 px-3 py-2 shadow-[var(--shadow-bottom-nav)] backdrop-blur-xl lg:hidden">
+        <div class="mx-auto grid max-w-md grid-cols-3 gap-2">
+            <a
+                href="{{ route('admin.orders.index') }}"
+                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.orders*') ? 'bg-orange-50 text-orange-700' : 'text-slate-500 hover:bg-orange-50 hover:text-orange-700' }}"
+            >
+                <x-ui-icon name="receipt" class="h-5 w-5" />
+                Orders
+            </a>
+
+            <a
+                href="{{ route('admin.riders.index') }}"
+                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.riders*') ? 'bg-orange-50 text-orange-700' : 'text-slate-500 hover:bg-orange-50 hover:text-orange-700' }}"
+            >
+                <x-ui-icon name="scooter" class="h-5 w-5" />
+                Riders
+            </a>
+
+            <a
+                href="{{ route('admin.menu-items.index') }}"
+                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.menu-items*') || request()->routeIs('admin.categories*') ? 'bg-orange-50 text-orange-700' : 'text-slate-500 hover:bg-orange-50 hover:text-orange-700' }}"
+            >
+                <x-ui-icon name="menu" class="h-5 w-5" />
+                Menu
+            </a>
+        </div>
+    </nav>
 </div>
 
 </body>
