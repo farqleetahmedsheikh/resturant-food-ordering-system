@@ -71,8 +71,8 @@ method_exists($orders, 'items')
 
 <div class="space-y-5 pb-8 sm:space-y-6">
     {{-- Hero --}}
-    <header class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950 p-5 text-white shadow-xl shadow-slate-950/20 sm:p-7 lg:rounded-[2rem] lg:p-8">
-        <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-orange-500/30 blur-3xl"></div>
+    <header class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-warm-950 via-warm-900 to-brand-900 p-5 text-white shadow-xl shadow-warm-950/20 sm:p-7 lg:rounded-[2rem] lg:p-8">
+        <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl"></div>
         <div class="pointer-events-none absolute -bottom-28 left-12 h-72 w-72 rounded-full bg-red-500/20 blur-3xl"></div>
 
         <div class="relative grid gap-7 xl:grid-cols-[minmax(0,1fr)_500px] xl:items-center">
@@ -85,7 +85,7 @@ method_exists($orders, 'items')
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
-                            class="h-3.5 w-3.5 text-orange-300"
+                            class="h-3.5 w-3.5 text-brand-200"
                         >
                             <path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" />
                             <path d="M9 7h6M9 11h6M9 15h3" />
@@ -94,7 +94,7 @@ method_exists($orders, 'items')
                         Order Management
                     </span>
 
-                    <span class="rounded-full bg-orange-500 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]">
+                    <span class="rounded-full bg-brand-500 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]">
                         {{ $currentStatusLabel }}
                     </span>
                 </div>
@@ -103,14 +103,14 @@ method_exists($orders, 'items')
                     Orders
                 </h1>
 
-                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-300 sm:text-base sm:leading-7">
+                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-warm-300 sm:text-base sm:leading-7">
                     Review new orders, contact customers, assign riders, and monitor fulfilment from one operational queue.
                 </p>
 
                 <div class="mt-6 flex flex-col gap-3 sm:flex-row">
                     <a
                         href="{{ route('admin.riders.index') }}"
-                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-950/30 transition active:scale-[0.98] hover:-translate-y-0.5 hover:bg-orange-500 sm:rounded-2xl"
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-950/30 transition active:scale-[0.98] hover:-translate-y-0.5 hover:bg-brand-600 sm:rounded-2xl"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -165,7 +165,7 @@ method_exists($orders, 'items')
                             </p>
                         </div>
 
-                        <span class="mt-1 h-2.5 w-2.5 rounded-full bg-orange-400"></span>
+                        <span class="mt-1 h-2.5 w-2.5 rounded-full bg-brand-500"></span>
                     </div>
 
                     <p class="mt-1 text-[9px] font-semibold text-white/45">
@@ -180,12 +180,12 @@ method_exists($orders, 'items')
                                 Pending
                             </p>
 
-                            <p class="mt-1 text-2xl font-black text-amber-300">
+                            <p class="mt-1 text-2xl font-black text-gold-500">
                                 {{ $pendingOrdersOnPage }}
                             </p>
                         </div>
 
-                        <span class="mt-1 h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+                        <span class="mt-1 h-2.5 w-2.5 rounded-full bg-gold-500"></span>
                     </div>
 
                     <p class="mt-1 text-[9px] font-semibold text-white/45">
@@ -218,8 +218,8 @@ method_exists($orders, 'items')
                         Page Value
                     </p>
 
-                    <p class="mt-1 truncate text-lg font-black text-emerald-300 sm:text-xl">
-                        Rs. {{ number_format($pageOrderValue, 0) }}
+                    <p class="mt-1 truncate text-lg font-black text-leaf-500 sm:text-xl">
+                        @money($pageOrderValue)
                     </p>
 
                     <p class="mt-1 text-[9px] font-semibold text-white/45">
@@ -231,18 +231,18 @@ method_exists($orders, 'items')
     </header>
 
     {{-- Status Filters --}}
-    <section class="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm sm:p-5">
+    <section class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-5">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                     Order Queue
                 </p>
 
-                <h2 class="mt-1 text-xl font-black text-slate-950">
+                <h2 class="mt-1 text-xl font-black text-warm-950">
                     Filter by fulfilment status
                 </h2>
 
-                <p class="mt-1 text-xs font-semibold text-slate-500">
+                <p class="mt-1 text-xs font-semibold text-warm-500">
                     Select a status to focus the operational queue.
                 </p>
             </div>
@@ -250,7 +250,7 @@ method_exists($orders, 'items')
             @if ($currentStatus)
                 <a
                     href="{{ route('admin.orders.index') }}"
-                    class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-black text-orange-700 transition hover:bg-orange-100"
+                    class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2 text-xs font-black text-brand-600 transition hover:bg-brand-100"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -280,15 +280,15 @@ method_exists($orders, 'items')
                 href="{{ route('admin.orders.index') }}"
                 @class([
                     'inline-flex min-h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 text-xs font-black transition',
-                    'border-orange-600 bg-orange-600 text-white shadow-lg shadow-orange-600/20' => ! $currentStatus,
-                    'border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:bg-orange-50' => $currentStatus,
+                    'border-brand-600 bg-brand-500 text-white shadow-lg shadow-brand-500/20' => ! $currentStatus,
+                    'border-warm-200 bg-white text-warm-600 hover:border-brand-200 hover:bg-brand-50' => $currentStatus,
                 ])
             >
                 <span
                     @class([
                         'h-1.5 w-1.5 rounded-full',
                         'bg-white' => ! $currentStatus,
-                        'bg-slate-400' => $currentStatus,
+                        'bg-warm-500' => $currentStatus,
                     ])
                 ></span>
 
@@ -300,15 +300,15 @@ method_exists($orders, 'items')
                     href="{{ route('admin.orders.index', ['status' => $value]) }}"
                     @class([
                         'inline-flex min-h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 text-xs font-black transition',
-                        'border-orange-600 bg-orange-600 text-white shadow-lg shadow-orange-600/20' => $currentStatus === $value,
-                        'border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:bg-orange-50' => $currentStatus !== $value,
+                        'border-brand-600 bg-brand-500 text-white shadow-lg shadow-brand-500/20' => $currentStatus === $value,
+                        'border-warm-200 bg-white text-warm-600 hover:border-brand-200 hover:bg-brand-50' => $currentStatus !== $value,
                     ])
                 >
                     <span
                         @class([
                             'h-1.5 w-1.5 rounded-full',
                             'bg-white' => $currentStatus === $value,
-                            'bg-slate-400' => $currentStatus !== $value,
+                            'bg-warm-500' => $currentStatus !== $value,
                         ])
                     ></span>
 
@@ -320,8 +320,8 @@ method_exists($orders, 'items')
 
     @if ($visibleOrders->isEmpty())
         {{-- Empty State --}}
-        <section class="rounded-[1.75rem] border border-dashed border-orange-200 bg-white p-7 text-center shadow-sm sm:p-12">
-            <span class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-orange-50 text-orange-600 sm:h-20 sm:w-20">
+        <section class="rounded-[1.75rem] border border-dashed border-brand-200 bg-white p-7 text-center shadow-sm sm:p-12">
+            <span class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-500 sm:h-20 sm:w-20">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -335,7 +335,7 @@ method_exists($orders, 'items')
                 </svg>
             </span>
 
-            <h2 class="mt-5 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+            <h2 class="mt-5 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                 @if ($currentStatus)
                     No {{ strtolower($currentStatusLabel) }} orders
                 @else
@@ -343,7 +343,7 @@ method_exists($orders, 'items')
                 @endif
             </h2>
 
-            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-slate-600">
+            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-warm-600">
                 @if ($currentStatus)
                     No orders currently match this status. Select another status or return to the complete order queue.
                 @else
@@ -355,7 +355,7 @@ method_exists($orders, 'items')
                 @if ($currentStatus)
                     <a
                         href="{{ route('admin.orders.index') }}"
-                        class="inline-flex min-h-12 items-center justify-center rounded-xl border border-orange-200 bg-orange-50 px-5 py-3 text-sm font-black text-orange-700 transition hover:bg-orange-100"
+                        class="inline-flex min-h-12 items-center justify-center rounded-xl border border-brand-200 bg-brand-50 px-5 py-3 text-sm font-black text-brand-600 transition hover:bg-brand-100"
                     >
                         View All Orders
                     </a>
@@ -365,7 +365,7 @@ method_exists($orders, 'items')
                     href="{{ route('home') }}"
                     target="_blank"
                     rel="noopener"
-                    class="inline-flex min-h-12 items-center justify-center rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:bg-orange-700"
+                    class="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600"
                 >
                     Open Customer Website
                 </a>
@@ -373,18 +373,18 @@ method_exists($orders, 'items')
         </section>
     @else
         {{-- Unified Responsive Order Directory --}}
-        <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-            <div class="flex items-center justify-between gap-4 border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+        <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between gap-4 border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                 <div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                         Order Directory
                     </p>
 
-                    <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                    <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                         {{ $currentStatusLabel }}
                     </h2>
 
-                    <p class="mt-1 text-xs font-semibold text-slate-500">
+                    <p class="mt-1 text-xs font-semibold text-warm-500">
                         Showing {{ $pageOrderCount }}
                         {{ $pageOrderCount === 1 ? 'order' : 'orders' }}
                         on this page
@@ -393,13 +393,13 @@ method_exists($orders, 'items')
 
                 <a
                     href="{{ route('admin.riders.index') }}"
-                    class="hidden min-h-10 items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-black text-orange-700 transition hover:bg-orange-100 sm:inline-flex"
+                    class="hidden min-h-10 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2 text-xs font-black text-brand-600 transition hover:bg-brand-100 sm:inline-flex"
                 >
                     Manage Riders
                 </a>
             </div>
 
-            <div class="divide-y divide-slate-100">
+            <div class="divide-y divide-warm-100">
                 @foreach ($orders as $order)
                     @php
                         $deliveryStatus = $order->delivery?->status
@@ -455,23 +455,23 @@ method_exists($orders, 'items')
                             );
 
                         $statusAccent = match ($order->order_status) {
-                            'delivered' => 'bg-emerald-500',
+                            'delivered' => 'bg-leaf-500',
                             'cancelled' => 'bg-red-500',
                             'out_for_delivery' => 'bg-blue-500',
                             'assigned_to_rider' => 'bg-indigo-500',
                             'ready' => 'bg-violet-500',
-                            'preparing' => 'bg-orange-500',
-                            'accepted' => 'bg-amber-500',
-                            default => 'bg-slate-400',
+                            'preparing' => 'bg-food-tan',
+                            'accepted' => 'bg-gold-500',
+                            default => 'bg-warm-500',
                         };
                     @endphp
 
-                    <article class="group relative p-4 transition hover:bg-orange-50/30 sm:p-5">
+                    <article class="group relative p-4 transition hover:bg-brand-50/30 sm:p-5">
                         <div class="absolute inset-y-0 left-0 w-1 {{ $statusAccent }}"></div>
 
                         <div class="grid gap-4 pl-2 md:grid-cols-[54px_minmax(0,1fr)] md:pl-3 xl:grid-cols-[54px_minmax(0,1fr)_160px_185px_auto] xl:items-center">
                             {{-- Customer Avatar --}}
-                            <span class="grid h-12 w-12 place-items-center rounded-xl bg-slate-100 text-sm font-black text-slate-700 shadow-sm md:h-13 md:w-13">
+                            <span class="grid h-12 w-12 place-items-center rounded-xl bg-warm-100 text-sm font-black text-warm-600 shadow-sm md:h-13 md:w-13">
                                 {{ mb_strtoupper(
                                     mb_substr(
                                         $order->customer_name ?? 'C',
@@ -498,7 +498,7 @@ method_exists($orders, 'items')
                                             Attention
                                         </span>
                                     @elseif ($needsRider)
-                                        <span class="rounded-full bg-amber-50 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-amber-700">
+                                        <span class="rounded-full bg-gold-50 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-gold-700">
                                             Rider needed
                                         </span>
                                     @endif
@@ -506,23 +506,23 @@ method_exists($orders, 'items')
 
                                 <a
                                     href="{{ route('admin.orders.show', $order) }}"
-                                    class="mt-2 block break-all text-base font-black tracking-tight text-slate-950 transition hover:text-orange-700 sm:text-lg"
+                                    class="mt-2 block break-all text-base font-black tracking-tight text-warm-950 transition hover:text-brand-600 sm:text-lg"
                                 >
                                     {{ $order->order_number }}
                                 </a>
 
-                                <div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-slate-500">
-                                    <span class="truncate font-black text-slate-700">
+                                <div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-warm-500">
+                                    <span class="truncate font-black text-warm-600">
                                         {{ $order->customer_name }}
                                     </span>
 
-                                    <span class="text-slate-300">•</span>
+                                    <span class="text-warm-300">•</span>
 
                                     <span>
                                         {{ $order->created_at->format('M d, Y') }}
                                     </span>
 
-                                    <span class="text-slate-300">•</span>
+                                    <span class="text-warm-300">•</span>
 
                                     <span>
                                         {{ $order->created_at->format('h:i A') }}
@@ -530,32 +530,32 @@ method_exists($orders, 'items')
                                 </div>
 
                                 @if ($order->delivery_address)
-                                    <p class="mt-2 line-clamp-1 text-xs font-semibold text-slate-400">
+                                    <p class="mt-2 line-clamp-1 text-xs font-semibold text-warm-500">
                                         {{ $order->delivery_address }}
                                     </p>
                                 @endif
                             </div>
 
                             {{-- Payment Summary --}}
-                            <div class="rounded-xl bg-orange-50 px-4 py-3 md:col-span-2 xl:col-span-1">
-                                <p class="text-[8px] font-black uppercase tracking-[0.1em] text-orange-600">
+                            <div class="rounded-xl bg-brand-50 px-4 py-3 md:col-span-2 xl:col-span-1">
+                                <p class="text-[8px] font-black uppercase tracking-[0.1em] text-brand-500">
                                     Order Value
                                 </p>
 
-                                <p class="mt-1 text-lg font-black text-orange-950">
-                                    Rs. {{ number_format($order->total, 0) }}
+                                <p class="mt-1 text-lg font-black text-brand-900">
+                                    ($order->total)
                                 </p>
 
-                                <div class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-orange-700">
+                                <div class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-brand-600">
                                     <span>{{ $paymentMethod }}</span>
-                                    <span class="text-orange-300">•</span>
+                                    <span class="text-brand-200">•</span>
                                     <span>{{ $paymentStatusLabel }}</span>
                                 </div>
                             </div>
 
                             {{-- Delivery Summary --}}
-                            <div class="rounded-xl bg-slate-50 px-4 py-3 md:col-span-2 xl:col-span-1">
-                                <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                            <div class="rounded-xl bg-warm-50 px-4 py-3 md:col-span-2 xl:col-span-1">
+                                <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                     Delivery
                                 </p>
 
@@ -572,18 +572,18 @@ method_exists($orders, 'items')
                                         </span>
 
                                         <div class="min-w-0">
-                                            <p class="truncate text-xs font-black text-slate-950">
+                                            <p class="truncate text-xs font-black text-warm-950">
                                                 {{ $order->rider->name }}
                                             </p>
 
-                                            <p class="mt-0.5 truncate text-[9px] font-semibold text-slate-500">
+                                            <p class="mt-0.5 truncate text-[9px] font-semibold text-warm-500">
                                                 {{ $deliveryStatusLabel }}
                                             </p>
                                         </div>
                                     </div>
                                 @else
                                     <div class="mt-2 flex items-center gap-2">
-                                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-600">
+                                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gold-50 text-gold-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 24 24"
@@ -598,11 +598,11 @@ method_exists($orders, 'items')
                                         </span>
 
                                         <div>
-                                            <p class="text-xs font-black text-amber-800">
+                                            <p class="text-xs font-black text-gold-700">
                                                 Unassigned
                                             </p>
 
-                                            <p class="mt-0.5 text-[9px] font-semibold text-slate-500">
+                                            <p class="mt-0.5 text-[9px] font-semibold text-warm-500">
                                                 {{ $deliveryStatusLabel }}
                                             </p>
                                         </div>
@@ -634,7 +634,7 @@ method_exists($orders, 'items')
 
                                 <a
                                     href="{{ route('admin.orders.show', $order) }}"
-                                    class="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-xs font-black text-white shadow-lg shadow-orange-600/15 transition active:scale-[0.98] hover:bg-orange-700 xl:min-w-[104px]"
+                                    class="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-xs font-black text-white shadow-lg shadow-brand-500/15 transition active:scale-[0.98] hover:bg-brand-600 xl:min-w-[104px]"
                                 >
                                     Manage
 
@@ -662,7 +662,7 @@ method_exists($orders, 'items')
 
         {{-- Pagination --}}
         @if ($hasPages)
-            <div class="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm">
+            <div class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm">
                 {{ $orders->withQueryString()->links() }}
             </div>
         @endif

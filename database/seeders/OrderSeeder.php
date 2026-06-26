@@ -12,7 +12,7 @@ class OrderSeeder extends Seeder
 {
     public function run(): void
     {
-        $restaurant = Restaurant::where('slug', 'freshbite-restaurant')->first();
+        $restaurant = Restaurant::current();
         $customers = User::where('role', 'customer')->orderBy('email')->get();
         $riders = User::where('role', 'rider')->orderBy('email')->get();
         $menuItems = MenuItem::where('is_available', true)->orderBy('id')->take(8)->get();
@@ -93,7 +93,7 @@ class OrderSeeder extends Seeder
                 ->filter();
 
             $subtotal = $selectedItems->sum(fn (MenuItem $item): float => (float) $item->price);
-            $deliveryFee = 199.00;
+            $deliveryFee = (float) ($restaurant->delivery_fee ?? 4.99);
             $assignedAt = $demo['rider'] ? now()->subHours(6 - $index) : null;
             $pickedUpAt = ($demo['picked_up'] ?? false) ? now()->subHours(4 - min($index, 3)) : null;
             $deliveredAt = ($demo['delivered'] ?? false) ? now()->subHour() : null;

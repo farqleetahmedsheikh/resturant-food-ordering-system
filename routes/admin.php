@@ -25,6 +25,8 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('/settings/restaurant', [AdminRestaurantSettingsController::class, 'edit'])->name('settings.restaurant.edit');
         Route::put('/settings/restaurant', [AdminRestaurantSettingsController::class, 'update'])->name('settings.restaurant.update');
+        Route::delete('/settings/restaurant/logo', [AdminRestaurantSettingsController::class, 'destroyLogo'])->name('settings.restaurant.logo.destroy');
+        Route::delete('/settings/restaurant/cover-image', [AdminRestaurantSettingsController::class, 'destroyCoverImage'])->name('settings.restaurant.cover.destroy');
 
         Route::resource('menu-items', AdminMenuItemController::class)->except(['show']);
         Route::resource('categories', AdminCategoryController::class)->except(['show']);

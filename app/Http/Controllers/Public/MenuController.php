@@ -6,15 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\MenuItem;
 use App\Models\Restaurant;
+use App\Services\RestaurantAvailabilityService;
 use App\Services\SmartMenuSuggestionService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class MenuController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, RestaurantAvailabilityService $availability): View
     {
-        $restaurant = Restaurant::where('is_active', true)->first();
+        $restaurant = Restaurant::current();
+        $availabilityStatus = $availability->status($restaurant);
 
         $categories = Category::query()
             ->where('is_active', true)
@@ -55,10 +57,10 @@ class MenuController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('pages.menu', compact('restaurant', 'categories', 'featuredItems', 'menuItems', 'selectedCategory'));
+        return view('pages.menu', compact('restaurant', 'availabilityStatus', 'categories', 'featuredItems', 'menuItems', 'selectedCategory'));
     }
 
-    public function show(MenuItem $menuItem): View
+    public function show(MenuItem $menuItem, RestaurantAvailabilityService $availability): View
     {
         abort_unless($menuItem->is_available && (! $menuItem->category || $menuItem->category->is_active), 404);
 
@@ -76,9 +78,10 @@ class MenuController extends Controller
             ->take(3)
             ->get();
 
-        $restaurant = Restaurant::where('is_active', true)->first();
+        $restaurant = Restaurant::current();
+        $availabilityStatus = $availability->status($restaurant);
         $suggestions = app(SmartMenuSuggestionService::class)->forItem($menuItem);
 
-        return view('pages.menu-item', compact('restaurant', 'menuItem', 'relatedItems', 'suggestions'));
+        return view('pages.menu-item', compact('restaurant', 'availabilityStatus', 'menuItem', 'relatedItems', 'suggestions'));
     }
 }

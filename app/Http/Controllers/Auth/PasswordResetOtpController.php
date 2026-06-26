@@ -16,6 +16,7 @@ use Illuminate\View\View;
 class PasswordResetOtpController extends Controller
 {
     private const OTP_EXPIRES_MINUTES = 10;
+
     private const OTP_MAX_ATTEMPTS = 5;
 
     public function requestForm(): View
@@ -59,10 +60,10 @@ class PasswordResetOtpController extends Controller
             );
 
             Mail::raw(
-                "Your FreshBite password reset OTP is {$otp}. It expires in ".self::OTP_EXPIRES_MINUTES.' minutes.',
+                "Your Arcade Kebab House password reset OTP is {$otp}. It expires in ".self::OTP_EXPIRES_MINUTES.' minutes.',
                 fn ($message) => $message
                     ->to($user->email, $user->name)
-                    ->subject('FreshBite password reset OTP'),
+                    ->subject('Arcade Kebab House password reset OTP'),
             );
         }
 

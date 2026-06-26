@@ -1,10 +1,10 @@
-# FreshBite Backend Audit
+# Arcade Kebab House Backend Audit
 
 Date: 2026-06-24
 
 ## Current Architecture
 
-FreshBite is a Laravel 13.16.1 application running on PHP 8.4 locally. The existing product is a Blade-based food ordering website with role-specific web dashboards for customers, admins, and riders.
+Arcade Kebab House is a Laravel 13.16.1 application running on PHP 8.4 locally. The existing product is a Blade-based food ordering website with role-specific web dashboards for customers, admins, and riders.
 
 Current route files:
 

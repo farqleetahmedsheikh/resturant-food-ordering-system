@@ -134,7 +134,7 @@ class Cart
 
     public static function restaurant(): ?Restaurant
     {
-        return Restaurant::where('is_active', true)->first();
+        return Restaurant::current();
     }
 
     /**

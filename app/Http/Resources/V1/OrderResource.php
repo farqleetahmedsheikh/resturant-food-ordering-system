@@ -3,6 +3,7 @@
 namespace App\Http\Resources\V1;
 
 use App\Models\Order;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,11 +23,13 @@ class OrderResource extends JsonResource
             'rider' => new UserResource($this->whenLoaded('rider')),
             'restaurant' => new RestaurantResource($this->whenLoaded('restaurant')),
             'delivery_address' => $this->delivery_address,
+            'delivery_latitude' => $this->delivery_latitude !== null ? (float) $this->delivery_latitude : null,
+            'delivery_longitude' => $this->delivery_longitude !== null ? (float) $this->delivery_longitude : null,
             'order_notes' => $this->order_notes,
             'subtotal' => (float) $this->subtotal,
             'delivery_fee' => (float) $this->delivery_fee,
             'total' => (float) $this->total,
-            'currency' => 'PKR',
+            'currency' => Money::code(),
             'payment_method' => $this->payment_method,
             'payment_status' => $this->payment_status,
             'order_status' => $this->order_status,

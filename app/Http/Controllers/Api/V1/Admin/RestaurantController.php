@@ -17,19 +17,19 @@ class RestaurantController extends Controller
 
     public function show(): JsonResponse
     {
-        $restaurant = Restaurant::query()->firstOrFail();
+        $restaurant = Restaurant::query()->oldest('id')->firstOrFail();
 
         return ApiResponse::success(new RestaurantResource($restaurant));
     }
 
     public function update(AdminRestaurantRequest $request): JsonResponse
     {
-        $restaurant = Restaurant::query()->firstOrFail();
+        $restaurant = Restaurant::query()->oldest('id')->firstOrFail();
         $old = $restaurant->toArray();
         $payload = $request->validated();
 
         $payload['is_open'] = $request->boolean('is_open', $restaurant->is_open);
-        $payload['is_active'] = $request->boolean('is_active', $restaurant->is_active);
+        $payload['formatted_address'] = $payload['formatted_address'] ?? $payload['address'] ?? null;
 
         if ($request->hasFile('logo')) {
             $payload['logo'] = ImageUpload::store($request->file('logo'), 'restaurant/logos', $restaurant->logo);

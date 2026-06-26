@@ -86,17 +86,17 @@ $user = auth()->user();
 
     $statusTheme = match (true) {
         in_array($effectiveStatus, ['cancelled', 'failed'], true) => [
-            'gradient' => 'from-red-600 via-red-500 to-rose-600',
+            'gradient' => 'from-red-600 via-red-500 to-red-600',
             'badge' => 'border-white/20 bg-white/15 text-white',
             'progress' => 'bg-white',
             'soft' => 'border-red-100 bg-red-50 text-red-700',
         ],
 
         $effectiveStatus === 'delivered' => [
-            'gradient' => 'from-emerald-600 via-emerald-500 to-teal-600',
+            'gradient' => 'from-leaf-700 via-leaf-500 to-teal-600',
             'badge' => 'border-white/20 bg-white/15 text-white',
             'progress' => 'bg-white',
-            'soft' => 'border-emerald-100 bg-emerald-50 text-emerald-700',
+            'soft' => 'border-leaf-100 bg-leaf-50 text-leaf-700',
         ],
 
         in_array(
@@ -120,42 +120,42 @@ $user = auth()->user();
             ['accepted', 'preparing', 'ready'],
             true
         ) => [
-            'gradient' => 'from-amber-500 via-orange-500 to-orange-600',
+            'gradient' => 'from-gold-500 via-food-tan to-food-brown',
             'badge' => 'border-white/20 bg-white/15 text-white',
             'progress' => 'bg-white',
-            'soft' => 'border-amber-100 bg-amber-50 text-amber-700',
+            'soft' => 'border-gold-100 bg-gold-50 text-food-brown',
         ],
 
         default => [
-            'gradient' => 'from-orange-600 via-orange-500 to-red-600',
+            'gradient' => 'from-brand-500 via-brand-600 to-brand-800',
             'badge' => 'border-white/20 bg-white/15 text-white',
             'progress' => 'bg-white',
-            'soft' => 'border-orange-100 bg-orange-50 text-orange-700',
+            'soft' => 'border-warm-200 bg-brand-50 text-brand-600',
         ],
     };
 @endphp
 
 <div class="space-y-5 pb-8 sm:space-y-6">
     {{-- Welcome Header --}}
-    <header class="relative overflow-hidden rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm sm:p-6 lg:rounded-[1.75rem]">
-        <div class="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-orange-100/70 blur-3xl"></div>
+    <header class="relative overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-6 lg:rounded-[1.75rem]">
+        <div class="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-brand-100/70 blur-3xl"></div>
 
         <div class="relative flex items-center justify-between gap-4">
             <div class="flex min-w-0 items-center gap-3 sm:gap-4">
-                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-lg font-black text-white shadow-lg shadow-orange-600/20 sm:h-14 sm:w-14 sm:text-xl">
+                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-lg font-black text-white shadow-lg shadow-brand-500/20 sm:h-14 sm:w-14 sm:text-xl">
                     {{ $userInitial }}
                 </div>
 
                 <div class="min-w-0">
-                    <p class="text-[9px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+                    <p class="text-[9px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                         Welcome back
                     </p>
 
-                    <h1 class="mt-1 truncate text-xl font-black tracking-tight text-slate-950 sm:text-2xl lg:text-3xl">
+                    <h1 class="mt-1 truncate text-xl font-black tracking-tight text-warm-950 sm:text-2xl lg:text-3xl">
                         Hi, {{ $firstName }}
                     </h1>
 
-                    <p class="mt-1 hidden text-sm font-semibold text-slate-500 sm:block">
+                    <p class="mt-1 hidden text-sm font-semibold text-warm-500 sm:block">
                         Track your delivery or start another order.
                     </p>
                 </div>
@@ -165,7 +165,7 @@ $user = auth()->user();
             <div class="hidden shrink-0 items-center gap-3 lg:flex">
                 <a
                     href="{{ route('customer.orders') }}"
-                    class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-orange-200 bg-white px-5 py-3 text-sm font-black text-orange-700 transition hover:bg-orange-50"
+                    class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-5 py-3 text-sm font-black text-brand-600 transition hover:bg-brand-50"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -184,7 +184,7 @@ $user = auth()->user();
 
                 <a
                     href="{{ route('menu') }}"
-                    class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:-translate-y-0.5 hover:bg-orange-700"
+                    class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:-translate-y-0.5 hover:bg-brand-600"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +205,7 @@ $user = auth()->user();
             {{-- Mobile Menu Shortcut --}}
             <a
                 href="{{ route('menu') }}"
-                class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-orange-50 text-orange-600 transition active:scale-95 lg:hidden"
+                class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-500 transition active:scale-95 lg:hidden"
                 aria-label="Browse menu"
             >
                 <svg
@@ -229,7 +229,7 @@ $user = auth()->user();
         <div class="min-w-0 space-y-5">
             {{-- Latest / Active Order --}}
             @if ($latestOrder)
-                <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
+                <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
                     {{-- Status Area --}}
                     <div class="relative overflow-hidden bg-gradient-to-br {{ $statusTheme['gradient'] }} p-5 text-white sm:p-6 lg:p-7">
                         <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/20 blur-3xl"></div>
@@ -261,7 +261,7 @@ $user = auth()->user();
 
                                     <a
                                         href="{{ route('customer.orders.show', $latestOrder) }}"
-                                        class="mt-1 block break-all text-xl font-black tracking-tight transition hover:text-orange-50 sm:text-2xl"
+                                        class="mt-1 block break-all text-xl font-black tracking-tight transition hover:text-brand-50 sm:text-2xl"
                                     >
                                         {{ $latestOrder->order_number }}
                                     </a>
@@ -282,7 +282,7 @@ $user = auth()->user();
                                         </p>
 
                                         <p class="mt-1 truncate text-sm font-black">
-                                            Rs. {{ number_format((float) ($latestOrder->total ?? 0), 0) }}
+                                            ((float) ($latestOrder->total ?? 0))
                                         </p>
                                     </div>
 
@@ -336,7 +336,7 @@ $user = auth()->user();
                         <div class="grid grid-cols-[1fr_auto] gap-3">
                             <a
                                 href="{{ route('customer.orders.show', $latestOrder) }}"
-                                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition active:scale-[0.98] hover:bg-orange-700 sm:rounded-2xl"
+                                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600 sm:rounded-2xl"
                             >
                                 {{ $isActiveOrder ? 'Track My Order' : 'View Order Details' }}
 
@@ -358,7 +358,7 @@ $user = auth()->user();
 
                             <a
                                 href="{{ route('customer.orders') }}"
-                                class="grid h-12 w-12 place-items-center rounded-xl border border-orange-200 bg-orange-50 text-orange-700 transition active:scale-95 hover:bg-orange-100 sm:rounded-2xl"
+                                class="grid h-12 w-12 place-items-center rounded-xl border border-brand-200 bg-brand-50 text-brand-600 transition active:scale-95 hover:bg-brand-100 sm:rounded-2xl"
                                 aria-label="View all orders"
                             >
                                 <svg
@@ -378,9 +378,9 @@ $user = auth()->user();
                 </section>
             @else
                 {{-- First Order Empty State --}}
-                <section class="rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-7 lg:p-8">
+                <section class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm sm:p-7 lg:p-8">
                     <div class="grid gap-6 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
-                        <div class="grid h-16 w-16 place-items-center rounded-2xl bg-orange-50 text-orange-600 sm:h-20 sm:w-20">
+                        <div class="grid h-16 w-16 place-items-center rounded-2xl bg-brand-50 text-brand-500 sm:h-20 sm:w-20">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -395,21 +395,21 @@ $user = auth()->user();
                         </div>
 
                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                                 Start Your First Order
                             </p>
 
-                            <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">
+                            <h2 class="mt-2 text-2xl font-black tracking-tight text-warm-950">
                                 What would you like to eat?
                             </h2>
 
-                            <p class="mt-2 text-sm font-semibold leading-6 text-slate-600">
+                            <p class="mt-2 text-sm font-semibold leading-6 text-warm-600">
                                 Browse fresh meals, add your favourites, and pay when your food arrives.
                             </p>
 
                             <a
                                 href="{{ route('menu') }}"
-                                class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition active:scale-[0.98] hover:bg-orange-700 sm:w-auto sm:rounded-2xl"
+                                class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600 sm:w-auto sm:rounded-2xl"
                             >
                                 Browse Menu
 
@@ -435,12 +435,12 @@ $user = auth()->user();
 
             {{-- Cart Continuation --}}
             @if ($cartCount > 0)
-                <section class="relative overflow-hidden rounded-[1.5rem] border border-orange-200 bg-gradient-to-r from-orange-50 to-red-50 p-4 shadow-sm sm:p-5">
-                    <div class="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-orange-200/60 blur-3xl"></div>
+                <section class="relative overflow-hidden rounded-[1.5rem] border border-brand-200 bg-gradient-to-r from-brand-50 to-brand-100 p-4 shadow-sm sm:p-5">
+                    <div class="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-brand-200/60 blur-3xl"></div>
 
                     <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex min-w-0 items-center gap-3">
-                            <span class="relative grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white text-orange-600 shadow-sm">
+                            <span class="relative grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white text-brand-500 shadow-sm">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
@@ -454,21 +454,21 @@ $user = auth()->user();
                                     <circle cx="17" cy="20" r="1" />
                                 </svg>
 
-                                <span class="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-orange-600 px-1 text-[9px] font-black text-white">
+                                <span class="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-brand-500 px-1 text-[9px] font-black text-white">
                                     {{ $cartCount > 99 ? '99+' : $cartCount }}
                                 </span>
                             </span>
 
                             <div class="min-w-0">
-                                <p class="text-[9px] font-black uppercase tracking-[0.16em] text-orange-600">
+                                <p class="text-[9px] font-black uppercase tracking-[0.16em] text-brand-500">
                                     Cart Saved
                                 </p>
 
-                                <h2 class="mt-1 text-base font-black text-slate-950 sm:text-lg">
+                                <h2 class="mt-1 text-base font-black text-warm-950 sm:text-lg">
                                     Continue your unfinished order
                                 </h2>
 
-                                <p class="mt-1 text-xs font-semibold text-slate-600">
+                                <p class="mt-1 text-xs font-semibold text-warm-600">
                                     {{ $cartCount }}
                                     {{ $cartCount === 1 ? 'item is' : 'items are' }}
                                     waiting in your cart.
@@ -478,7 +478,7 @@ $user = auth()->user();
 
                         <a
                             href="{{ route('cart.index') }}"
-                            class="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition active:scale-[0.98] hover:bg-orange-700 sm:w-auto"
+                            class="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600 sm:w-auto"
                         >
                             Review Cart
 
@@ -505,14 +505,14 @@ $user = auth()->user();
         {{-- Sidebar --}}
         <aside class="space-y-5 lg:sticky lg:top-24">
             {{-- Quick Actions --}}
-            <section class="rounded-[1.75rem] border border-orange-100 bg-white p-4 shadow-sm sm:p-5">
+            <section class="rounded-[1.75rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-5">
                 <div class="flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                             Quick Actions
                         </p>
 
-                        <h2 class="mt-1 text-lg font-black text-slate-950">
+                        <h2 class="mt-1 text-lg font-black text-warm-950">
                             What do you need?
                         </h2>
                     </div>
@@ -522,9 +522,9 @@ $user = auth()->user();
                     {{-- Menu --}}
                     <a
                         href="{{ route('menu') }}"
-                        class="group flex min-h-[118px] flex-col justify-between rounded-[1.25rem] border border-orange-100 bg-orange-50 p-4 transition active:scale-[0.98] hover:border-orange-200 hover:bg-orange-100"
+                        class="group flex min-h-[118px] flex-col justify-between rounded-[1.25rem] border border-warm-200 bg-brand-50 p-4 transition active:scale-[0.98] hover:border-brand-200 hover:bg-brand-100"
                     >
-                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-white text-orange-600 shadow-sm transition group-hover:bg-orange-600 group-hover:text-white">
+                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-white text-brand-500 shadow-sm transition group-hover:bg-brand-600 group-hover:text-white">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -539,11 +539,11 @@ $user = auth()->user();
                         </span>
 
                         <span>
-                            <span class="block text-sm font-black text-slate-950">
+                            <span class="block text-sm font-black text-warm-950">
                                 Browse Menu
                             </span>
 
-                            <span class="mt-1 block text-[10px] font-semibold leading-4 text-slate-500">
+                            <span class="mt-1 block text-[10px] font-semibold leading-4 text-warm-500">
                                 Find your next meal
                             </span>
                         </span>
@@ -569,11 +569,11 @@ $user = auth()->user();
                         </span>
 
                         <span>
-                            <span class="block text-sm font-black text-slate-950">
+                            <span class="block text-sm font-black text-warm-950">
                                 My Orders
                             </span>
 
-                            <span class="mt-1 block text-[10px] font-semibold leading-4 text-slate-500">
+                            <span class="mt-1 block text-[10px] font-semibold leading-4 text-warm-500">
                                 Track order history
                             </span>
                         </span>
@@ -582,15 +582,15 @@ $user = auth()->user();
                     {{-- Cart --}}
                     <a
                         href="{{ route('cart.index') }}"
-                        class="group relative flex min-h-[118px] flex-col justify-between rounded-[1.25rem] border border-emerald-100 bg-emerald-50 p-4 transition active:scale-[0.98] hover:border-emerald-200 hover:bg-emerald-100"
+                        class="group relative flex min-h-[118px] flex-col justify-between rounded-[1.25rem] border border-leaf-100 bg-leaf-50 p-4 transition active:scale-[0.98] hover:border-leaf-100 hover:bg-leaf-100"
                     >
                         @if ($cartCount > 0)
-                            <span class="absolute right-3 top-3 grid h-6 min-w-6 place-items-center rounded-full bg-emerald-600 px-1 text-[9px] font-black text-white shadow-sm">
+                            <span class="absolute right-3 top-3 grid h-6 min-w-6 place-items-center rounded-full bg-leaf-700 px-1 text-[9px] font-black text-white shadow-sm">
                                 {{ $cartCount > 99 ? '99+' : $cartCount }}
                             </span>
                         @endif
 
-                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-white text-emerald-600 shadow-sm transition group-hover:bg-emerald-600 group-hover:text-white">
+                        <span class="grid h-10 w-10 place-items-center rounded-xl bg-white text-leaf-700 shadow-sm transition group-hover:bg-leaf-700 group-hover:text-white">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -606,11 +606,11 @@ $user = auth()->user();
                         </span>
 
                         <span>
-                            <span class="block text-sm font-black text-slate-950">
+                            <span class="block text-sm font-black text-warm-950">
                                 My Cart
                             </span>
 
-                            <span class="mt-1 block text-[10px] font-semibold leading-4 text-slate-500">
+                            <span class="mt-1 block text-[10px] font-semibold leading-4 text-warm-500">
                                 Review selected items
                             </span>
                         </span>
@@ -635,11 +635,11 @@ $user = auth()->user();
                         </span>
 
                         <span>
-                            <span class="block text-sm font-black text-slate-950">
+                            <span class="block text-sm font-black text-warm-950">
                                 Get Support
                             </span>
 
-                            <span class="mt-1 block text-[10px] font-semibold leading-4 text-slate-500">
+                            <span class="mt-1 block text-[10px] font-semibold leading-4 text-warm-500">
                                 Contact the restaurant
                             </span>
                         </span>
@@ -648,30 +648,30 @@ $user = auth()->user();
             </section>
 
             {{-- Account Activity --}}
-            <section class="rounded-[1.75rem] border border-orange-100 bg-white p-4 shadow-sm sm:p-5">
+            <section class="rounded-[1.75rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-5">
                 <div class="flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                             Account Activity
                         </p>
 
-                        <h2 class="mt-1 text-lg font-black text-slate-950">
+                        <h2 class="mt-1 text-lg font-black text-warm-950">
                             Your overview
                         </h2>
                     </div>
 
                     <a
                         href="{{ route('customer.orders') }}"
-                        class="text-xs font-black text-orange-700 hover:text-orange-800"
+                        class="text-xs font-black text-brand-600 hover:text-brand-800"
                     >
                         History
                     </a>
                 </div>
 
-                <div class="mt-4 divide-y divide-slate-100">
+                <div class="mt-4 divide-y divide-warm-100">
                     <div class="flex items-center justify-between gap-4 py-3 first:pt-0">
                         <div class="flex items-center gap-3">
-                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 text-orange-600">
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
@@ -685,17 +685,17 @@ $user = auth()->user();
                             </span>
 
                             <div>
-                                <p class="text-sm font-black text-slate-950">
+                                <p class="text-sm font-black text-warm-950">
                                     Total orders
                                 </p>
 
-                                <p class="mt-0.5 text-xs font-semibold text-slate-500">
+                                <p class="mt-0.5 text-xs font-semibold text-warm-500">
                                     All completed and active orders
                                 </p>
                             </div>
                         </div>
 
-                        <p class="text-xl font-black text-slate-950">
+                        <p class="text-xl font-black text-warm-950">
                             {{ $totalOrders }}
                         </p>
                     </div>
@@ -717,11 +717,11 @@ $user = auth()->user();
                             </span>
 
                             <div class="min-w-0">
-                                <p class="text-sm font-black text-slate-950">
+                                <p class="text-sm font-black text-warm-950">
                                     Latest status
                                 </p>
 
-                                <p class="mt-0.5 truncate text-xs font-semibold text-slate-500">
+                                <p class="mt-0.5 truncate text-xs font-semibold text-warm-500">
                                     {{ $latestOrder ? $statusLabel : 'No order placed' }}
                                 </p>
                             </div>
@@ -730,7 +730,7 @@ $user = auth()->user();
                         @if ($latestOrder)
                             <span class="h-2.5 w-2.5 shrink-0 rounded-full {{ $statusTheme['soft'] }}"></span>
                         @else
-                            <span class="text-sm font-black text-slate-400">
+                            <span class="text-sm font-black text-warm-500">
                                 —
                             </span>
                         @endif
@@ -738,7 +738,7 @@ $user = auth()->user();
 
                     <div class="flex items-center justify-between gap-4 py-3 last:pb-0">
                         <div class="flex items-center gap-3">
-                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-leaf-50 text-leaf-700">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
@@ -754,17 +754,17 @@ $user = auth()->user();
                             </span>
 
                             <div>
-                                <p class="text-sm font-black text-slate-950">
+                                <p class="text-sm font-black text-warm-950">
                                     Cart items
                                 </p>
 
-                                <p class="mt-0.5 text-xs font-semibold text-slate-500">
+                                <p class="mt-0.5 text-xs font-semibold text-warm-500">
                                     Items waiting for checkout
                                 </p>
                             </div>
                         </div>
 
-                        <p class="text-xl font-black text-slate-950">
+                        <p class="text-xl font-black text-warm-950">
                             {{ $cartCount }}
                         </p>
                     </div>

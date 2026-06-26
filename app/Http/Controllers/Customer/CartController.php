@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\MenuItem;
 use App\Models\Restaurant;
+use App\Services\RestaurantAvailabilityService;
 use App\Services\SmartMenuSuggestionService;
 use App\Support\Cart;
 use Illuminate\Http\RedirectResponse;
@@ -14,13 +15,14 @@ use Illuminate\View\View;
 
 class CartController extends Controller
 {
-    public function index(): View
+    public function index(RestaurantAvailabilityService $availability): View
     {
-        $restaurant = Restaurant::where('is_active', true)->first();
+        $restaurant = Restaurant::current();
 
         return view('customer.cart', [
             'cart' => Cart::summary($restaurant),
             'restaurant' => $restaurant,
+            'availabilityStatus' => $availability->status($restaurant),
             'suggestions' => app(SmartMenuSuggestionService::class)->forCart(Cart::items()),
         ]);
     }

@@ -9,12 +9,17 @@ use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\MenuController;
+use App\Http\Controllers\Public\SeoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::get('/menu/{menuItem:slug}', [MenuController::class, 'show'])->name('menu.show');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+
+Route::get('/restaurant/{restaurantSlug}', [SeoController::class, 'redirectRestaurant']);
+Route::get('/restaurant/{restaurantSlug}/menu', [SeoController::class, 'redirectRestaurantMenu']);
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');

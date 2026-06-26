@@ -12,84 +12,184 @@ $steps = [
 'accepted' => 'Accepted',
 'preparing' => 'Preparing',
 'ready' => 'Ready',
-'assigned_to_rider' => 'Assigned',
+'assigned_to_rider' => 'Rider Assigned',
 'out_for_delivery' => 'Out for Delivery',
 'delivered' => 'Delivered',
 ];
 
 $stepDescriptions = [
-    'pending' => 'Waiting for confirmation',
-    'accepted' => 'Order accepted',
-    'preparing' => 'Food is being prepared',
-    'ready' => 'Ready for rider pickup',
-    'assigned_to_rider' => 'Rider has been assigned',
-    'out_for_delivery' => 'Order is on the way',
-    'delivered' => 'Successfully delivered',
+    'pending' => 'Waiting for restaurant confirmation',
+    'accepted' => 'The restaurant has accepted the order',
+    'preparing' => 'Your food is being freshly prepared',
+    'ready' => 'The order is ready for rider pickup',
+    'assigned_to_rider' => 'A delivery rider has been assigned',
+    'out_for_delivery' => 'Your order is currently on the way',
+    'delivered' => 'The order has been successfully delivered',
 ];
 
 $keys = array_keys($steps);
+$totalSteps = count($steps);
+
 $isCancelled = $status === 'cancelled';
+$isDelivered = $status === 'delivered';
 
 $currentIndex = array_search($status, $keys, true);
 $currentIndex = $currentIndex === false ? 0 : $currentIndex;
 
 $currentLabel = $isCancelled
-    ? 'Cancelled'
-    : ($steps[$status] ?? ucfirst(str_replace('_', ' ', $status)));
+    ? 'Order Cancelled'
+    : (
+        $steps[$status]
+        ?? \Illuminate\Support\Str::headline($status)
+    );
 
-$progressPercentage = $isCancelled
-    ? 0
-    : ($currentIndex / max(count($steps) - 1, 1)) * 100;
+$currentDescription = $isCancelled
+    ? 'This order will not continue through the delivery process.'
+    : (
+        $stepDescriptions[$status]
+        ?? 'The latest order status is shown below.'
+    );
+
+$progressPercentage = match (true) {
+    $isCancelled => 0,
+    $isDelivered => 100,
+    default => round(
+        ($currentIndex / max($totalSteps - 1, 1)) * 100
+    ),
+};
+
+$completedSteps = match (true) {
+    $isCancelled => 0,
+    $isDelivered => $totalSteps,
+    default => $currentIndex,
+};
+
+$nextStepKey = ! $isCancelled
+    && ! $isDelivered
+    && isset($keys[$currentIndex + 1])
+        ? $keys[$currentIndex + 1]
+        : null;
+
+$nextStepLabel = $nextStepKey
+    ? $steps[$nextStepKey]
+    : null;
 
 @endphp
 
 <div
     {{ $attributes->class([
         'min-w-0',
-        'rounded-[2rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-7' => $standalone,
+        'rounded-[1.75rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-6 lg:rounded-[2rem]' => $standalone,
     ]) }}
 >
     @if ($showHeader)
-        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-            <div>
-                <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
+        <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div class="flex min-w-0 items-start gap-3 sm:gap-4">
+                <span
+                    @class([
+                        'grid h-11 w-11 shrink-0 place-items-center rounded-xl sm:h-12 sm:w-12 sm:rounded-2xl',
+                        'bg-red-50 text-red-600' => $isCancelled,
+                        'bg-leaf-50 text-leaf-700' => $isDelivered,
+                        'bg-brand-50 text-brand-500' => ! $isCancelled && ! $isDelivered,
+                    ])
+                >
+                    @if ($isCancelled)
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            class="h-5 w-5"
+                        >
+                            <circle cx="12" cy="12" r="9" />
+                            <path
+                                stroke-linecap="round"
+                                d="m9 9 6 6M15 9l-6 6"
+                            />
+                        </svg>
+                    @elseif ($isDelivered)
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            class="h-5 w-5"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="m5 12 4 4L19 6"
+                            />
+                        </svg>
+                    @else
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            class="h-5 w-5"
+                        >
+                            <path d="M3 7h11v10H3z" />
+                            <path d="M14 10h4l3 3v4h-7z" />
+                            <circle cx="7" cy="18" r="2" />
+                            <circle cx="18" cy="18" r="2" />
+                        </svg>
+                    @endif
+                </span>
+
+            <div class="min-w-0">
+                <p
+                    @class([
+                        'text-[10px] font-black uppercase tracking-[0.18em] sm:text-xs',
+                        'text-red-600' => $isCancelled,
+                        'text-leaf-700' => $isDelivered,
+                        'text-brand-500' => ! $isCancelled && ! $isDelivered,
+                    ])
+                >
                     Order Journey
                 </p>
 
-            <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                {{ $title }}
-            </h2>
+                <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
+                    {{ $title }}
+                </h2>
 
-            <p class="mt-2 text-sm font-semibold leading-6 text-slate-500">
-                {{ $description ?: 'Follow the order from confirmation through final delivery.' }}
-            </p>
+                <p class="mt-1 max-w-2xl text-xs font-semibold leading-5 text-warm-500 sm:text-sm sm:leading-6">
+                    {{ $description ?: 'Track each stage from restaurant confirmation to final delivery.' }}
+                </p>
+            </div>
         </div>
 
         <span
             @class([
-                'inline-flex w-fit items-center gap-2 rounded-full border px-4 py-2 text-xs font-black',
+                'inline-flex w-fit shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-[10px] font-black sm:px-4 sm:text-xs',
                 'border-red-100 bg-red-50 text-red-700' => $isCancelled,
-                'border-orange-100 bg-orange-50 text-orange-700' => ! $isCancelled,
+                'border-leaf-100 bg-leaf-50 text-leaf-700' => $isDelivered,
+                'border-warm-200 bg-brand-50 text-brand-600' => ! $isCancelled && ! $isDelivered,
             ])
         >
             <span
                 @class([
-                    'h-2.5 w-2.5 rounded-full',
+                    'h-2 w-2 rounded-full',
                     'bg-red-500' => $isCancelled,
-                    'animate-pulse bg-orange-500' => ! $isCancelled && $status !== 'delivered',
-                    'bg-emerald-500' => $status === 'delivered',
+                    'bg-leaf-500' => $isDelivered,
+                    'animate-pulse bg-brand-500' => ! $isCancelled && ! $isDelivered,
                 ])
             ></span>
 
             {{ $currentLabel }}
         </span>
-    </div>
+    </header>
 @endif
 
 @if ($isCancelled)
-    <div class="{{ $showHeader ? 'mt-6' : '' }} rounded-[1.5rem] border border-red-100 bg-red-50 p-5">
-        <div class="flex items-start gap-4">
-            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-red-600 shadow-sm">
+    <section
+        class="{{ $showHeader ? 'mt-5' : '' }} overflow-hidden rounded-[1.5rem] border border-red-100 bg-gradient-to-br from-red-50 to-white"
+    >
+        <div class="flex items-start gap-4 p-4 sm:p-5">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-red-600 shadow-sm">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -99,62 +199,213 @@ $progressPercentage = $isCancelled
                     class="h-5 w-5"
                 >
                     <circle cx="12" cy="12" r="9" />
-                    <path stroke-linecap="round" d="m9 9 6 6M15 9l-6 6" />
+                    <path
+                        stroke-linecap="round"
+                        d="m9 9 6 6M15 9l-6 6"
+                    />
                 </svg>
-            </div>
+            </span>
 
-            <div>
-                <p class="font-black text-red-800">
-                    Order cancelled
+            <div class="min-w-0">
+                <p class="font-black text-red-900">
+                    Delivery journey stopped
                 </p>
 
                 <p class="mt-1 text-sm font-semibold leading-6 text-red-700">
-                    This order will not continue through the delivery process.
+                    {{ $currentDescription }}
                 </p>
             </div>
         </div>
-    </div>
+
+        <div class="border-t border-red-100 bg-white/70 px-4 py-3 sm:px-5">
+            <p class="text-xs font-semibold leading-5 text-warm-500">
+                Contact the restaurant or customer support when more information about this cancellation is required.
+            </p>
+        </div>
+    </section>
 @else
-    {{-- Overall Progress --}}
-    <div class="{{ $showHeader ? 'mt-7' : '' }} rounded-2xl border border-orange-100 bg-orange-50/70 p-4">
-        <div class="flex items-center justify-between gap-4">
-            <p class="text-xs font-black uppercase tracking-[0.16em] text-orange-700">
-                Overall Progress
-            </p>
+    {{-- Current Stage and Progress --}}
+    <section class="{{ $showHeader ? 'mt-5' : '' }} grid gap-3 lg:grid-cols-[minmax(0,1fr)_250px]">
+        <div
+            @class([
+                'relative overflow-hidden rounded-[1.5rem] p-5 text-white shadow-lg sm:p-6',
+                'bg-gradient-to-br from-leaf-700 via-leaf-500 to-teal-600 shadow-leaf-700/15' => $isDelivered,
+                'bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 shadow-brand-500/20' => ! $isDelivered,
+            ])
+        >
+            <div class="pointer-events-none absolute -right-14 -top-16 h-44 w-44 rounded-full bg-white/20 blur-3xl"></div>
 
-            <p class="text-sm font-black text-orange-700">
-                {{ round($progressPercentage) }}%
-            </p>
+            <div class="relative">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-[9px] font-black uppercase tracking-[0.16em] text-white/70 sm:text-[10px]">
+                            {{ $isDelivered ? 'Journey Complete' : 'Current Stage' }}
+                        </p>
+
+                        <h3 class="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+                            {{ $currentLabel }}
+                        </h3>
+                    </div>
+
+                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/15 backdrop-blur">
+                        @if ($isDelivered)
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                class="h-5 w-5"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m5 12 4 4L19 6"
+                                />
+                            </svg>
+                        @else
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                class="h-5 w-5"
+                            >
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M12 7v5l3 2" />
+                            </svg>
+                        @endif
+                    </span>
+                </div>
+
+                <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-white/85">
+                    {{ $currentDescription }}
+                </p>
+
+                <div class="mt-5 flex flex-wrap items-center gap-2">
+                    <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-black backdrop-blur">
+                        Step {{ $currentIndex + 1 }} of {{ $totalSteps }}
+                    </span>
+
+                    @if ($nextStepLabel)
+                        <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-black backdrop-blur">
+                            Next: {{ $nextStepLabel }}
+                        </span>
+                    @elseif ($isDelivered)
+                        <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-black backdrop-blur">
+                            Successfully completed
+                        </span>
+                    @endif
+                </div>
+            </div>
         </div>
 
-        <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-white shadow-inner">
+        <div class="rounded-[1.5rem] border border-warm-200 bg-brand-50/70 p-4 sm:p-5">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-[9px] font-black uppercase tracking-[0.14em] text-brand-500">
+                        Overall Progress
+                    </p>
+
+                    <p class="mt-1 text-3xl font-black tracking-tight text-warm-950">
+                        {{ $progressPercentage }}%
+                    </p>
+                </div>
+
+                <span
+                    @class([
+                        'grid h-10 w-10 place-items-center rounded-xl',
+                        'bg-leaf-100 text-leaf-700' => $isDelivered,
+                        'bg-white text-brand-500 shadow-sm' => ! $isDelivered,
+                    ])
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        class="h-5 w-5"
+                    >
+                        <path d="M4 19V9M10 19V5M16 19v-7M22 19V2" />
+                    </svg>
+                </span>
+            </div>
+
             <div
-                class="h-full rounded-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-500"
-                style="width: {{ $progressPercentage }}%"
-            ></div>
-        </div>
-    </div>
+                class="mt-4 h-2.5 overflow-hidden rounded-full bg-white shadow-inner"
+                role="progressbar"
+                aria-label="Order delivery progress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ $progressPercentage }}"
+            >
+                <div
+                    @class([
+                        'h-full rounded-full transition-all duration-500',
+                        'bg-gradient-to-r from-leaf-500 to-teal-500' => $isDelivered,
+                        'bg-gradient-to-r from-brand-500 to-brand-600' => ! $isDelivered,
+                    ])
+                    style="width: {{ $progressPercentage }}%"
+                ></div>
+            </div>
 
-    {{-- Mobile Vertical Timeline --}}
-    <div class="mt-6 space-y-0 md:hidden">
+            <div class="mt-4 flex items-center justify-between gap-3 text-xs">
+                <span class="font-semibold text-warm-500">
+                    Completed stages
+                </span>
+
+                <span class="font-black text-warm-950">
+                    {{ $completedSteps }} / {{ $totalSteps }}
+                </span>
+            </div>
+        </div>
+    </section>
+
+    {{-- Responsive Unified Timeline --}}
+    <ol
+        class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-7"
+        aria-label="Delivery journey stages"
+    >
         @foreach ($steps as $key => $label)
             @php
                 $index = array_search($key, $keys, true);
-                $isComplete = $index < $currentIndex;
-                $isCurrent = $index === $currentIndex;
-                $isUpcoming = $index > $currentIndex;
-                $isLast = $index === count($steps) - 1;
+
+                $isComplete = $isDelivered
+                    ? $index <= $currentIndex
+                    : $index < $currentIndex;
+
+                $isCurrent = ! $isDelivered
+                    && $index === $currentIndex;
+
+                $isUpcoming = ! $isComplete && ! $isCurrent;
             @endphp
 
-            <div class="relative flex gap-4">
-                {{-- Timeline Indicator --}}
-                <div class="flex w-11 shrink-0 flex-col items-center">
+            <li
+                @if ($isCurrent)
+                    aria-current="step"
+                @endif
+                @class([
+                    'relative overflow-hidden rounded-2xl border p-4 transition',
+                    'border-leaf-100 bg-leaf-50' => $isComplete,
+                    'border-brand-200 bg-brand-50 shadow-md shadow-brand-500/5' => $isCurrent,
+                    'border-warm-100 bg-warm-50/80' => $isUpcoming,
+                ])
+            >
+                @if ($isCurrent)
+                    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-500 to-brand-600"></div>
+                @elseif ($isComplete)
+                    <div class="absolute inset-x-0 top-0 h-1 bg-leaf-500"></div>
+                @endif
+
+                <div class="flex items-start justify-between gap-3">
                     <span
                         @class([
-                            'relative z-10 grid h-11 w-11 place-items-center rounded-full border-2 text-xs font-black transition',
-                            'border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' => $isComplete,
-                            'border-orange-600 bg-orange-600 text-white shadow-lg shadow-orange-600/25' => $isCurrent,
-                            'border-slate-200 bg-white text-slate-400' => $isUpcoming,
+                            'relative grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-black',
+                            'bg-leaf-500 text-white shadow-sm' => $isComplete,
+                            'bg-brand-500 text-white shadow-lg shadow-brand-500/20' => $isCurrent,
+                            'border border-warm-200 bg-white text-warm-500' => $isUpcoming,
                         ])
                     >
                         @if ($isComplete)
@@ -164,162 +415,66 @@ $progressPercentage = $isCancelled
                                 fill="none"
                                 stroke="currentColor"
                                 stroke-width="3"
-                                class="h-5 w-5"
+                                class="h-4 w-4"
                             >
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6" />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m5 12 4 4L19 6"
+                                />
                             </svg>
                         @else
                             {{ $index + 1 }}
                         @endif
 
                         @if ($isCurrent)
-                            <span class="absolute inset-0 -z-10 animate-ping rounded-full bg-orange-400 opacity-30"></span>
+                            <span class="absolute inset-0 -z-10 animate-ping rounded-xl bg-brand-500 opacity-25"></span>
                         @endif
                     </span>
 
-                    @unless ($isLast)
-                        <span
-                            @class([
-                                'min-h-10 w-0.5 flex-1',
-                                'bg-emerald-400' => $index < $currentIndex,
-                                'bg-slate-200' => $index >= $currentIndex,
-                            ])
-                        ></span>
-                    @endunless
+                    @if ($isCurrent)
+                        <span class="rounded-full bg-brand-500 px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-white">
+                            Current
+                        </span>
+                    @elseif ($isComplete)
+                        <span class="rounded-full bg-leaf-100 px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-leaf-700">
+                            Done
+                        </span>
+                    @else
+                        <span class="rounded-full bg-white px-2 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
+                            Upcoming
+                        </span>
+                    @endif
                 </div>
 
-                {{-- Step Content --}}
-                <div class="{{ $isLast ? 'pb-0' : 'pb-6' }} min-w-0 flex-1 pt-1">
-                    <div
-                        @class([
-                            'rounded-2xl border p-4 transition',
-                            'border-emerald-100 bg-emerald-50' => $isComplete,
-                            'border-orange-200 bg-orange-50 shadow-sm' => $isCurrent,
-                            'border-slate-100 bg-slate-50' => $isUpcoming,
-                        ])
-                    >
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0">
-                                <p
-                                    @class([
-                                        'text-sm font-black',
-                                        'text-emerald-800' => $isComplete,
-                                        'text-orange-900' => $isCurrent,
-                                        'text-slate-500' => $isUpcoming,
-                                    ])
-                                >
-                                    {{ $label }}
-                                </p>
+                <h3
+                    @class([
+                        'mt-4 text-sm font-black',
+                        'text-leaf-900' => $isComplete,
+                        'text-brand-900' => $isCurrent,
+                        'text-warm-600' => $isUpcoming,
+                    ])
+                >
+                    {{ $label }}
+                </h3>
 
-                                <p
-                                    @class([
-                                        'mt-1 text-xs font-semibold leading-5',
-                                        'text-emerald-700' => $isComplete,
-                                        'text-orange-700' => $isCurrent,
-                                        'text-slate-400' => $isUpcoming,
-                                    ])
-                                >
-                                    {{ $stepDescriptions[$key] }}
-                                </p>
-                            </div>
-
-                            @if ($isCurrent)
-                                <span class="shrink-0 rounded-full bg-orange-600 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-white">
-                                    Current
-                                </span>
-                            @elseif ($isComplete)
-                                <span class="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-700">
-                                    Done
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <p
+                    @class([
+                        'mt-1 text-[10px] font-semibold leading-4',
+                        'text-leaf-700' => $isComplete,
+                        'text-brand-600' => $isCurrent,
+                        'text-warm-500' => $isUpcoming,
+                    ])
+                >
+                    {{ $stepDescriptions[$key] }}
+                </p>
+            </li>
         @endforeach
-    </div>
+    </ol>
 
-    {{-- Desktop Horizontal Timeline --}}
-    <div class="mt-7 hidden overflow-x-auto pb-3 md:block">
-        <div class="min-w-[900px] px-2 py-3">
-            <div class="relative">
-                {{-- Base Connector --}}
-                <div class="absolute left-[7%] right-[7%] top-6 h-1 rounded-full bg-slate-200"></div>
-
-                {{-- Completed Connector --}}
-                <div
-                    class="absolute left-[7%] top-6 h-1 rounded-full bg-gradient-to-r from-emerald-500 to-orange-500 transition-all duration-500"
-                    style="width: {{ $progressPercentage * 0.86 }}%"
-                ></div>
-
-                <div class="relative grid grid-cols-7 gap-3">
-                    @foreach ($steps as $key => $label)
-                        @php
-                            $index = array_search($key, $keys, true);
-                            $isComplete = $index < $currentIndex;
-                            $isCurrent = $index === $currentIndex;
-                            $isUpcoming = $index > $currentIndex;
-                        @endphp
-
-                        <div class="flex min-w-0 flex-col items-center text-center">
-                            <span
-                                @class([
-                                    'relative z-10 grid h-12 w-12 place-items-center rounded-full border-2 text-sm font-black transition',
-                                    'border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' => $isComplete,
-                                    'border-orange-600 bg-orange-600 text-white shadow-lg shadow-orange-600/25' => $isCurrent,
-                                    'border-slate-200 bg-white text-slate-400' => $isUpcoming,
-                                ])
-                            >
-                                @if ($isComplete)
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="3"
-                                        class="h-5 w-5"
-                                    >
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6" />
-                                    </svg>
-                                @else
-                                    {{ $index + 1 }}
-                                @endif
-
-                                @if ($isCurrent)
-                                    <span class="absolute inset-0 -z-10 animate-ping rounded-full bg-orange-400 opacity-30"></span>
-                                @endif
-                            </span>
-
-                            <p
-                                @class([
-                                    'mt-4 text-xs font-black',
-                                    'text-emerald-700' => $isComplete,
-                                    'text-orange-700' => $isCurrent,
-                                    'text-slate-500' => $isUpcoming,
-                                ])
-                            >
-                                {{ $label }}
-                            </p>
-
-                            <p class="mt-1 max-w-28 text-[10px] font-semibold leading-4 text-slate-400">
-                                {{ $stepDescriptions[$key] }}
-                            </p>
-
-                            @if ($isCurrent)
-                                <span class="mt-2 rounded-full bg-orange-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-orange-700">
-                                    Current
-                                </span>
-                            @elseif ($isComplete)
-                                <span class="mt-2 rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-700">
-                                    Completed
-                                </span>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </div>
+    <p class="mt-4 text-center text-[10px] font-semibold leading-4 text-warm-500">
+        Progress updates automatically whenever the restaurant or rider changes the order status.
+    </p>
 @endif
 
 </div>

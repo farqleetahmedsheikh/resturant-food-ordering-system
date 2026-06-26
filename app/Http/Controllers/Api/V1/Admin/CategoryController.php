@@ -102,7 +102,7 @@ class CategoryController extends Controller
         $slug = $validated['slug'] ?? null;
 
         return [
-            'restaurant_id' => $validated['restaurant_id'] ?? Restaurant::query()->where('is_active', true)->value('id'),
+            'restaurant_id' => $validated['restaurant_id'] ?? Restaurant::current()?->id,
             'name' => $validated['name'],
             'slug' => $slug ?: $this->uniqueSlug(Category::class, Str::slug($validated['name']), $category?->id),
             'description' => $validated['description'] ?? null,

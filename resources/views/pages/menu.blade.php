@@ -1,18 +1,11 @@
 @component('layouts.public', ['title' => 'Menu'])
 @php
-$restaurantName = $restaurant?->name ?? 'FreshBite Restaurant';
-$isOpen = (bool) ($restaurant?->is_open ?? true);
+$restaurantName = $restaurant?->name ?? 'Arcade Kebab House Restaurant';
+$isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? true);
 $cartCount = \App\Support\Cart::count();
 
-    $deliveryFee = number_format(
-        $restaurant?->delivery_fee ?? 0,
-        0
-    );
-
-    $minimumOrder = number_format(
-        $restaurant?->minimum_order_amount ?? 0,
-        0
-    );
+    $deliveryFee = \App\Support\Money::format($restaurant?->delivery_fee ?? 0);
+    $minimumOrder = \App\Support\Money::format($restaurant?->minimum_order_amount ?? 0);
 
     $selectedCategoryName = $selectedCategory?->name ?? 'All Items';
     $visibleItemCount = $menuItems->count();
@@ -21,14 +14,14 @@ $cartCount = \App\Support\Cart::count();
 <main class="min-h-screen bg-[var(--color-surface-warm)] pb-28 lg:pb-0">
     {{-- Compact Mobile-First Menu Header --}}
     <section class="relative overflow-hidden">
-        <div class="pointer-events-none absolute -left-24 -top-20 h-64 w-64 rounded-full bg-orange-200/50 blur-3xl"></div>
-        <div class="pointer-events-none absolute -right-28 bottom-0 h-72 w-72 rounded-full bg-red-200/40 blur-3xl"></div>
+        <div class="pointer-events-none absolute -left-24 -top-20 h-64 w-64 rounded-full bg-brand-200/50 blur-3xl"></div>
+        <div class="pointer-events-none absolute -right-28 bottom-0 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl"></div>
 
         <div class="relative mx-auto max-w-7xl px-4 pb-6 pt-5 sm:px-6 sm:pb-9 sm:pt-8 lg:px-8 lg:pb-12 lg:pt-12">
             {{-- Restaurant Identity --}}
             <div class="flex items-center justify-between gap-4">
                 <div class="flex min-w-0 items-center gap-3">
-                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-orange-600 text-sm font-black text-white shadow-lg shadow-orange-600/20 sm:h-14 sm:w-14">
+                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-500 text-sm font-black text-white shadow-lg shadow-brand-500/20 sm:h-14 sm:w-14">
                         @if ($restaurant?->logo_url)
                             <img
                                 src="{{ $restaurant->logo_url }}"
@@ -41,7 +34,7 @@ $cartCount = \App\Support\Cart::count();
                     </div>
 
                     <div class="min-w-0">
-                        <p class="truncate text-sm font-black text-slate-950 sm:text-base">
+                        <p class="truncate text-sm font-black text-warm-950 sm:text-base">
                             {{ $restaurantName }}
                         </p>
 
@@ -49,22 +42,22 @@ $cartCount = \App\Support\Cart::count();
                             <span
                                 @class([
                                     'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em]',
-                                    'bg-emerald-50 text-emerald-700' => $isOpen,
-                                    'bg-amber-50 text-amber-700' => ! $isOpen,
+                                    'bg-leaf-50 text-leaf-700' => $isOpen,
+                                    'bg-gold-50 text-gold-700' => ! $isOpen,
                                 ])
                             >
                                 <span
                                     @class([
                                         'h-1.5 w-1.5 rounded-full',
-                                        'animate-pulse bg-emerald-500' => $isOpen,
-                                        'bg-amber-500' => ! $isOpen,
+                                        'animate-pulse bg-leaf-500' => $isOpen,
+                                        'bg-gold-500' => ! $isOpen,
                                     ])
                                 ></span>
 
                                 {{ $isOpen ? 'Open now' : 'Closed' }}
                             </span>
 
-                            <span class="text-[10px] font-semibold text-slate-500 sm:text-xs">
+                            <span class="text-[10px] font-semibold text-warm-500 sm:text-xs">
                                 Cash on delivery
                             </span>
                         </div>
@@ -73,7 +66,7 @@ $cartCount = \App\Support\Cart::count();
 
                 <a
                     href="{{ route('cart.index') }}"
-                    class="relative grid h-11 w-11 shrink-0 place-items-center rounded-full border border-orange-100 bg-white text-orange-600 shadow-sm transition active:scale-95 lg:hidden"
+                    class="relative grid h-11 w-11 shrink-0 place-items-center rounded-full border border-warm-200 bg-white text-brand-500 shadow-sm transition active:scale-95 lg:hidden"
                     aria-label="Open cart"
                 >
                     <svg
@@ -100,16 +93,16 @@ $cartCount = \App\Support\Cart::count();
             {{-- Menu Heading --}}
             <div class="mt-6 lg:grid lg:grid-cols-[1fr_auto] lg:items-end lg:gap-8">
                 <div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.22em] text-orange-600 sm:text-xs">
+                    <p class="text-[10px] font-black uppercase tracking-[0.22em] text-brand-500 sm:text-xs">
                         Explore Our Menu
                     </p>
 
-                    <h1 class="mt-2 max-w-3xl text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                    <h1 class="mt-2 max-w-3xl text-3xl font-black leading-tight tracking-tight text-warm-950 sm:text-5xl lg:text-6xl">
                         What are you
-                        <span class="text-orange-600">craving today?</span>
+                        <span class="text-brand-500">craving today?</span>
                     </h1>
 
-                    <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-slate-600 sm:mt-5 sm:text-base sm:leading-8">
+                    <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-warm-600 sm:mt-5 sm:text-base sm:leading-8">
                         Browse fresh meals, customize your favourites, and order with cash on delivery.
                     </p>
                 </div>
@@ -117,7 +110,7 @@ $cartCount = \App\Support\Cart::count();
                 {{-- Desktop Cart --}}
                 <a
                     href="{{ route('cart.index') }}"
-                    class="mt-6 hidden min-h-12 items-center justify-center gap-3 rounded-2xl border border-orange-200 bg-white px-5 py-3 text-sm font-black text-orange-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-orange-50 lg:inline-flex"
+                    class="mt-6 hidden min-h-12 items-center justify-center gap-3 rounded-2xl border border-brand-200 bg-white px-5 py-3 text-sm font-black text-brand-600 shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-50 lg:inline-flex"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -135,7 +128,7 @@ $cartCount = \App\Support\Cart::count();
                     Cart
 
                     @if ($cartCount > 0)
-                        <span class="grid h-6 min-w-6 place-items-center rounded-full bg-orange-600 px-1.5 text-[10px] font-black text-white">
+                        <span class="grid h-6 min-w-6 place-items-center rounded-full bg-brand-500 px-1.5 text-[10px] font-black text-white">
                             {{ $cartCount }}
                         </span>
                     @endif
@@ -144,9 +137,9 @@ $cartCount = \App\Support\Cart::count();
 
             {{-- Essential Service Information --}}
             <div class="mt-5 grid grid-cols-3 gap-2 sm:mt-7 sm:max-w-2xl sm:gap-3">
-                <div class="rounded-xl border border-orange-100 bg-white px-3 py-3 shadow-sm sm:rounded-2xl sm:px-4 sm:py-4">
+                <div class="rounded-xl border border-warm-200 bg-white px-3 py-3 shadow-sm sm:rounded-2xl sm:px-4 sm:py-4">
                     <div class="flex items-center gap-2">
-                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-orange-50 text-orange-600 sm:h-9 sm:w-9 sm:rounded-xl">
+                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500 sm:h-9 sm:w-9 sm:rounded-xl">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -161,20 +154,20 @@ $cartCount = \App\Support\Cart::count();
                         </span>
 
                         <div class="min-w-0">
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400 sm:text-[10px]">
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500 sm:text-[10px]">
                                 Delivery
                             </p>
 
-                            <p class="mt-0.5 truncate text-xs font-black text-slate-950 sm:text-sm">
-                                Rs. {{ $deliveryFee }}
+                            <p class="mt-0.5 truncate text-xs font-black text-warm-950 sm:text-sm">
+                                {{ $deliveryFee }}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div class="rounded-xl border border-emerald-100 bg-white px-3 py-3 shadow-sm sm:rounded-2xl sm:px-4 sm:py-4">
+                <div class="rounded-xl border border-leaf-100 bg-white px-3 py-3 shadow-sm sm:rounded-2xl sm:px-4 sm:py-4">
                     <div class="flex items-center gap-2">
-                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-600 sm:h-9 sm:w-9 sm:rounded-xl">
+                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-leaf-50 text-leaf-700 sm:h-9 sm:w-9 sm:rounded-xl">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -189,20 +182,20 @@ $cartCount = \App\Support\Cart::count();
                         </span>
 
                         <div class="min-w-0">
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400 sm:text-[10px]">
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500 sm:text-[10px]">
                                 Payment
                             </p>
 
-                            <p class="mt-0.5 text-xs font-black text-emerald-700 sm:text-sm">
+                            <p class="mt-0.5 text-xs font-black text-leaf-700 sm:text-sm">
                                 COD
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div class="rounded-xl border border-amber-100 bg-white px-3 py-3 shadow-sm sm:rounded-2xl sm:px-4 sm:py-4">
+                <div class="rounded-xl border border-gold-100 bg-white px-3 py-3 shadow-sm sm:rounded-2xl sm:px-4 sm:py-4">
                     <div class="flex items-center gap-2">
-                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-600 sm:h-9 sm:w-9 sm:rounded-xl">
+                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gold-50 text-gold-500 sm:h-9 sm:w-9 sm:rounded-xl">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -216,12 +209,12 @@ $cartCount = \App\Support\Cart::count();
                         </span>
 
                         <div class="min-w-0">
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400 sm:text-[10px]">
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500 sm:text-[10px]">
                                 Minimum
                             </p>
 
-                            <p class="mt-0.5 truncate text-xs font-black text-slate-950 sm:text-sm">
-                                Rs. {{ $minimumOrder }}
+                            <p class="mt-0.5 truncate text-xs font-black text-warm-950 sm:text-sm">
+                                {{ $minimumOrder }}
                             </p>
                         </div>
                     </div>
@@ -229,9 +222,9 @@ $cartCount = \App\Support\Cart::count();
             </div>
 
             @if (! $isOpen)
-                <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                <div class="mt-4 rounded-2xl border border-gold-100 bg-gold-50 p-4">
                     <div class="flex items-start gap-3">
-                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-amber-600 shadow-sm">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-gold-500 shadow-sm">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -246,12 +239,12 @@ $cartCount = \App\Support\Cart::count();
                         </span>
 
                         <div>
-                            <p class="text-sm font-black text-amber-900">
+                            <p class="text-sm font-black text-gold-700">
                                 Restaurant currently closed
                             </p>
 
-                            <p class="mt-1 text-xs font-semibold leading-5 text-amber-800 sm:text-sm">
-                                You can explore the menu, but items cannot be added until the restaurant opens.
+                            <p class="mt-1 text-xs font-semibold leading-5 text-gold-700 sm:text-sm">
+                                You can still add items to cart now and checkout later when the restaurant opens.
                             </p>
                         </div>
                     </div>
@@ -261,17 +254,17 @@ $cartCount = \App\Support\Cart::count();
     </section>
 
     {{-- Category Navigation --}}
-    <section class="border-y border-orange-100 bg-white">
+    <section class="border-y border-warm-200 bg-white">
         <div class="mx-auto max-w-7xl py-3">
             <div class="mb-2 flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-warm-500">
                     Browse Categories
                 </p>
 
                 @if ($selectedCategory)
                     <a
                         href="{{ route('menu') }}"
-                        class="text-[10px] font-black text-orange-700 hover:text-orange-800"
+                        class="text-[10px] font-black text-brand-600 hover:text-brand-800"
                     >
                         Clear filter
                     </a>
@@ -287,8 +280,8 @@ $cartCount = \App\Support\Cart::count();
                     @if (! request('category')) aria-current="page" @endif
                     @class([
                         'inline-flex min-h-11 shrink-0 snap-start items-center justify-center rounded-xl px-4 py-2.5 text-xs font-black transition active:scale-[0.97] sm:rounded-2xl sm:px-5 sm:text-sm',
-                        'bg-orange-600 text-white shadow-lg shadow-orange-600/20' => ! request('category'),
-                        'bg-slate-50 text-slate-700 hover:bg-orange-50 hover:text-orange-700' => request('category'),
+                        'bg-brand-500 text-white shadow-lg shadow-brand-500/20' => ! request('category'),
+                        'bg-warm-50 text-warm-600 hover:bg-brand-50 hover:text-brand-600' => request('category'),
                     ])
                 >
                     All Items
@@ -304,8 +297,8 @@ $cartCount = \App\Support\Cart::count();
                         @if ($isSelectedCategory) aria-current="page" @endif
                         @class([
                             'inline-flex min-h-11 shrink-0 snap-start items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-black transition active:scale-[0.97] sm:rounded-2xl sm:px-5 sm:text-sm',
-                            'bg-orange-600 text-white shadow-lg shadow-orange-600/20' => $isSelectedCategory,
-                            'bg-slate-50 text-slate-700 hover:bg-orange-50 hover:text-orange-700' => ! $isSelectedCategory,
+                            'bg-brand-500 text-white shadow-lg shadow-brand-500/20' => $isSelectedCategory,
+                            'bg-warm-50 text-warm-600 hover:bg-brand-50 hover:text-brand-600' => ! $isSelectedCategory,
                         ])
                     >
                         <span>{{ $category->name }}</span>
@@ -314,7 +307,7 @@ $cartCount = \App\Support\Cart::count();
                             @class([
                                 'rounded-full px-2 py-0.5 text-[9px] font-black',
                                 'bg-white/20 text-white' => $isSelectedCategory,
-                                'bg-white text-slate-400' => ! $isSelectedCategory,
+                                'bg-white text-warm-500' => ! $isSelectedCategory,
                             ])
                         >
                             {{ $category->available_items_count }}
@@ -331,20 +324,20 @@ $cartCount = \App\Support\Cart::count();
             <div class="mx-auto max-w-7xl">
                 <div class="flex items-end justify-between gap-4 px-4 sm:px-6 lg:px-8">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 sm:text-xs">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 sm:text-xs">
                             Featured Items
                         </p>
 
-                        <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                        <h2 class="mt-2 text-2xl font-black tracking-tight text-warm-950 sm:text-3xl">
                             Popular picks today
                         </h2>
 
-                        <p class="mt-2 hidden max-w-2xl text-sm leading-6 text-slate-600 sm:block">
+                        <p class="mt-2 hidden max-w-2xl text-sm leading-6 text-warm-600 sm:block">
                             Customer favourites selected for faster ordering.
                         </p>
                     </div>
 
-                    <span class="shrink-0 rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-black text-orange-700 sm:px-4 sm:py-2 sm:text-xs">
+                    <span class="shrink-0 rounded-full bg-brand-50 px-3 py-1.5 text-[10px] font-black text-brand-600 sm:px-4 sm:py-2 sm:text-xs">
                         {{ $featuredItems->count() }} featured
                     </span>
                 </div>
@@ -358,12 +351,12 @@ $cartCount = \App\Support\Cart::count();
                                 || ($item->active_addons_count ?? 0) > 0;
                         @endphp
 
-                        <article class="group flex min-w-[72vw] max-w-[270px] snap-start flex-col overflow-hidden rounded-[1.5rem] border border-orange-100 bg-white shadow-sm sm:min-w-[270px] lg:min-w-0 lg:max-w-none lg:transition lg:hover:-translate-y-1 lg:hover:shadow-xl">
+                        <article class="group flex min-w-[72vw] max-w-[270px] snap-start flex-col overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm sm:min-w-[270px] lg:min-w-0 lg:max-w-none lg:transition lg:hover:-translate-y-1 lg:hover:shadow-xl">
                             <a
                                 href="{{ route('menu.show', $item) }}"
                                 class="block"
                             >
-                                <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-orange-100 via-amber-50 to-red-100">
+                                <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream">
                                     @if ($item->image_url)
                                         <img
                                             src="{{ $item->image_url }}"
@@ -373,43 +366,43 @@ $cartCount = \App\Support\Cart::count();
                                         >
                                     @else
                                         <div class="grid h-full place-items-center">
-                                            <span class="grid h-16 w-16 place-items-center rounded-full bg-white/90 text-3xl font-black text-orange-600 shadow-lg">
+                                            <span class="grid h-16 w-16 place-items-center rounded-full bg-white/90 text-3xl font-black text-brand-500 shadow-lg">
                                                 {{ mb_substr($item->name, 0, 1) }}
                                             </span>
                                         </div>
                                     @endif
 
-                                    <span class="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-orange-600 shadow-sm">
+                                    <span class="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-brand-500 shadow-sm">
                                         Featured
                                     </span>
                                 </div>
                             </a>
 
                             <div class="flex flex-1 flex-col p-4">
-                                <p class="text-[9px] font-black uppercase tracking-[0.14em] text-orange-600">
-                                    {{ $item->category?->name ?? 'FreshBite' }}
+                                <p class="text-[9px] font-black uppercase tracking-[0.14em] text-brand-500">
+                                    {{ $item->category?->name ?? 'Arcade Kebab House' }}
                                 </p>
 
                                 <a
                                     href="{{ route('menu.show', $item) }}"
-                                    class="mt-1 line-clamp-2 text-base font-black leading-5 text-slate-950 hover:text-orange-700"
+                                    class="mt-1 line-clamp-2 text-base font-black leading-5 text-warm-950 hover:text-brand-600"
                                 >
                                     {{ $item->name }}
                                 </a>
 
                                 <div class="mt-auto flex items-end justify-between gap-3 pt-4">
-                                    <p class="text-lg font-black text-slate-950">
-                                        Rs. {{ number_format($item->price, 0) }}
+                                    <p class="text-lg font-black text-warm-950">
+                                        ($item->price)
                                     </p>
 
                                     @if ($featuredCustomizable)
                                         <a
                                             href="{{ route('menu.show', $item) }}"
-                                            class="inline-flex min-h-10 items-center justify-center rounded-xl bg-orange-600 px-3.5 py-2 text-[10px] font-black text-white shadow-sm transition active:scale-[0.97] hover:bg-orange-700"
+                                            class="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-500 px-3.5 py-2 text-[10px] font-black text-white shadow-sm transition active:scale-[0.97] hover:bg-brand-600"
                                         >
                                             Customize
                                         </a>
-                                    @elseif (($item->is_available ?? true) && $isOpen)
+                                    @elseif (($item->is_available ?? true))
                                         <form
                                             action="{{ route('cart.add', $item) }}"
                                             method="POST"
@@ -421,7 +414,7 @@ $cartCount = \App\Support\Cart::count();
                                             <button
                                                 type="submit"
                                                 x-bind:disabled="loading"
-                                                class="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-orange-600 px-3.5 py-2 text-[10px] font-black text-white shadow-sm transition active:scale-[0.97] hover:bg-orange-700 disabled:opacity-70"
+                                                class="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-brand-500 px-3.5 py-2 text-[10px] font-black text-white shadow-sm transition active:scale-[0.97] hover:bg-brand-600 disabled:opacity-70"
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -444,7 +437,7 @@ $cartCount = \App\Support\Cart::count();
                     @endforeach
                 </div>
 
-                <p class="mt-1 px-4 text-[10px] font-semibold text-slate-400 sm:hidden">
+                <p class="mt-1 px-4 text-[10px] font-semibold text-warm-500 sm:hidden">
                     Swipe to explore featured dishes
                 </p>
             </div>
@@ -457,16 +450,16 @@ $cartCount = \App\Support\Cart::count();
             {{-- Results Heading --}}
             <div class="mb-5 flex items-end justify-between gap-4 sm:mb-8">
                 <div class="min-w-0">
-                    <p class="truncate text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 sm:text-xs">
+                    <p class="truncate text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 sm:text-xs">
                         {{ $selectedCategoryName }}
                     </p>
 
-                    <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:mt-2 sm:text-3xl">
+                    <h2 class="mt-1 text-2xl font-black tracking-tight text-warm-950 sm:mt-2 sm:text-3xl">
                         Browse menu
                     </h2>
                 </div>
 
-                <span class="shrink-0 rounded-full bg-white px-3 py-1.5 text-[10px] font-black text-slate-600 shadow-sm sm:px-4 sm:py-2 sm:text-xs">
+                <span class="shrink-0 rounded-full bg-white px-3 py-1.5 text-[10px] font-black text-warm-600 shadow-sm sm:px-4 sm:py-2 sm:text-xs">
                     {{ $visibleItemCount }}
                     {{ $visibleItemCount === 1 ? 'item' : 'items' }}
                 </span>
@@ -495,13 +488,13 @@ $cartCount = \App\Support\Cart::count();
                             : null;
                     @endphp
 
-                    <article class="group flex min-w-0 flex-col overflow-hidden rounded-[1.25rem] border border-orange-100 bg-white shadow-sm sm:rounded-[1.75rem] lg:transition lg:hover:-translate-y-1 lg:hover:shadow-2xl lg:hover:shadow-orange-900/10">
+                    <article class="group flex min-w-0 flex-col overflow-hidden rounded-[1.25rem] border border-warm-200 bg-white shadow-sm sm:rounded-[1.75rem] lg:transition lg:hover:-translate-y-1 lg:hover:shadow-2xl lg:hover:shadow-brand-900/10">
                         {{-- Product Image --}}
                         <a
                             href="{{ route('menu.show', $item) }}"
                             class="block"
                         >
-                            <div class="relative aspect-square overflow-hidden bg-gradient-to-br from-orange-100 via-amber-50 to-red-100 sm:aspect-[4/3]">
+                            <div class="relative aspect-square overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream sm:aspect-[4/3]">
                                 @if ($item->image_url)
                                     <img
                                         src="{{ $item->image_url }}"
@@ -511,20 +504,20 @@ $cartCount = \App\Support\Cart::count();
                                     >
                                 @else
                                     <div class="absolute inset-0">
-                                        <div class="absolute left-4 top-4 h-16 w-16 rounded-full bg-orange-300/30 blur-2xl"></div>
-                                        <div class="absolute bottom-4 right-4 h-20 w-20 rounded-full bg-red-300/30 blur-2xl"></div>
+                                        <div class="absolute left-4 top-4 h-16 w-16 rounded-full bg-brand-200/30 blur-2xl"></div>
+                                        <div class="absolute bottom-4 right-4 h-20 w-20 rounded-full bg-brand-300/30 blur-2xl"></div>
                                     </div>
 
                                     <div class="relative grid h-full place-items-center">
-                                        <span class="grid h-14 w-14 place-items-center rounded-full bg-white/90 text-2xl font-black text-orange-600 shadow-lg sm:h-20 sm:w-20 sm:text-4xl">
+                                        <span class="grid h-14 w-14 place-items-center rounded-full bg-white/90 text-2xl font-black text-brand-500 shadow-lg sm:h-20 sm:w-20 sm:text-4xl">
                                             {{ mb_substr($item->name, 0, 1) }}
                                         </span>
                                     </div>
                                 @endif
 
                                 {{-- Category --}}
-                                <span class="absolute left-2 top-2 max-w-[75%] truncate rounded-full bg-white/95 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-orange-600 shadow-sm sm:left-4 sm:top-4 sm:px-3 sm:text-xs">
-                                    {{ $item->category?->name ?? 'FreshBite' }}
+                                <span class="absolute left-2 top-2 max-w-[75%] truncate rounded-full bg-white/95 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.08em] text-brand-500 shadow-sm sm:left-4 sm:top-4 sm:px-3 sm:text-xs">
+                                    {{ $item->category?->name ?? 'Arcade Kebab House' }}
                                 </span>
 
                                 {{-- Discount or Popular --}}
@@ -533,14 +526,14 @@ $cartCount = \App\Support\Cart::count();
                                         -{{ $itemDiscount }}%
                                     </span>
                                 @elseif ($item->is_featured)
-                                    <span class="absolute right-2 top-2 rounded-full bg-orange-600 px-2 py-1 text-[8px] font-black text-white shadow-sm sm:right-4 sm:top-4 sm:px-3 sm:text-xs">
+                                    <span class="absolute right-2 top-2 rounded-full bg-brand-500 px-2 py-1 text-[8px] font-black text-white shadow-sm sm:right-4 sm:top-4 sm:px-3 sm:text-xs">
                                         Popular
                                     </span>
                                 @endif
 
                                 @if (! $itemIsAvailable)
-                                    <div class="absolute inset-0 grid place-items-center bg-slate-950/55 p-3 backdrop-blur-[1px]">
-                                        <span class="rounded-full bg-white px-3 py-1.5 text-center text-[9px] font-black text-slate-900 shadow-lg sm:px-4 sm:py-2 sm:text-sm">
+                                    <div class="absolute inset-0 grid place-items-center bg-warm-950/55 p-3 backdrop-blur-[1px]">
+                                        <span class="rounded-full bg-white px-3 py-1.5 text-center text-[9px] font-black text-warm-900 shadow-lg sm:px-4 sm:py-2 sm:text-sm">
                                             Unavailable
                                         </span>
                                     </div>
@@ -552,12 +545,12 @@ $cartCount = \App\Support\Cart::count();
                         <div class="flex flex-1 flex-col p-3 sm:p-5 lg:p-6">
                             <a
                                 href="{{ route('menu.show', $item) }}"
-                                class="line-clamp-2 text-sm font-black leading-5 tracking-tight text-slate-950 transition hover:text-orange-700 sm:text-xl sm:leading-7"
+                                class="line-clamp-2 text-sm font-black leading-5 tracking-tight text-warm-950 transition hover:text-brand-600 sm:text-xl sm:leading-7"
                             >
                                 {{ $item->name }}
                             </a>
 
-                            <p class="mt-2 hidden line-clamp-2 text-sm leading-6 text-slate-600 sm:block">
+                            <p class="mt-2 hidden line-clamp-2 text-sm leading-6 text-warm-600 sm:block">
                                 {{ $item->description ?: 'Freshly prepared with quality ingredients.' }}
                             </p>
 
@@ -565,7 +558,7 @@ $cartCount = \App\Support\Cart::count();
                             @if ($item->preparation_time || $item->calories)
                                 <div class="mt-2 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
                                     @if ($item->preparation_time)
-                                        <span class="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-1 text-[8px] font-black text-orange-700 sm:px-3 sm:text-xs">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-1 text-[8px] font-black text-brand-600 sm:px-3 sm:text-xs">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 24 24"
@@ -583,7 +576,7 @@ $cartCount = \App\Support\Cart::count();
                                     @endif
 
                                     @if ($item->calories)
-                                        <span class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600 sm:inline-flex">
+                                        <span class="hidden rounded-full bg-warm-100 px-3 py-1 text-xs font-black text-warm-600 sm:inline-flex">
                                             {{ $item->calories }} cal
                                         </span>
                                     @endif
@@ -593,24 +586,24 @@ $cartCount = \App\Support\Cart::count();
                             {{-- Price --}}
                             <div class="mt-auto pt-3 sm:pt-5">
                                 <div class="flex min-w-0 items-end gap-2">
-                                    <p class="truncate text-base font-black text-slate-950 sm:text-xl">
-                                        Rs. {{ number_format($item->price, 0) }}
+                                    <p class="truncate text-base font-black text-warm-950 sm:text-xl">
+                                        ($item->price)
                                     </p>
 
                                     @if ($itemHasDiscount)
-                                        <p class="hidden pb-0.5 text-xs font-bold text-slate-400 line-through sm:block">
-                                            Rs. {{ number_format($item->compare_at_price, 0) }}
+                                        <p class="hidden pb-0.5 text-xs font-bold text-warm-500 line-through sm:block">
+                                            ($item->compare_at_price)
                                         </p>
                                     @endif
                                 </div>
 
                                 {{-- Product Action --}}
                                 <div class="mt-3">
-                                    @if ($itemIsAvailable && $isOpen)
+                                    @if ($itemIsAvailable)
                                         @if ($itemCustomizable)
                                             <a
                                                 href="{{ route('menu.show', $item) }}"
-                                                class="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-2 py-2 text-[10px] font-black text-white shadow-md shadow-orange-600/15 transition active:scale-[0.97] hover:bg-orange-700 sm:min-h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
+                                                class="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-2 py-2 text-[10px] font-black text-white shadow-md shadow-brand-500/15 transition active:scale-[0.97] hover:bg-brand-600 sm:min-h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
                                             >
                                                 Customize
 
@@ -637,7 +630,7 @@ $cartCount = \App\Support\Cart::count();
                                                 <button
                                                     type="submit"
                                                     x-bind:disabled="loading"
-                                                    class="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-orange-600 px-2 py-2 text-[10px] font-black text-white shadow-md shadow-orange-600/15 transition active:scale-[0.97] hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-70 sm:min-h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
+                                                    class="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-2 py-2 text-[10px] font-black text-white shadow-md shadow-brand-500/15 transition active:scale-[0.97] hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70 sm:min-h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
                                                 >
                                                     <svg
                                                         x-show="! loading"
@@ -678,12 +671,8 @@ $cartCount = \App\Support\Cart::count();
                                                 </button>
                                             </form>
                                         @endif
-                                    @elseif (! $isOpen)
-                                        <span class="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-amber-50 px-2 py-2 text-[9px] font-black text-amber-700 sm:min-h-12 sm:rounded-2xl sm:px-4 sm:text-sm">
-                                            Restaurant Closed
-                                        </span>
                                     @else
-                                        <span class="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-slate-100 px-2 py-2 text-[9px] font-black text-slate-500 sm:min-h-12 sm:rounded-2xl sm:px-4 sm:text-sm">
+                                        <span class="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-warm-100 px-2 py-2 text-[9px] font-black text-warm-500 sm:min-h-12 sm:rounded-2xl sm:px-4 sm:text-sm">
                                             Unavailable
                                         </span>
                                     @endif
@@ -692,8 +681,8 @@ $cartCount = \App\Support\Cart::count();
                         </div>
                     </article>
                 @empty
-                    <div class="col-span-2 rounded-[1.75rem] border border-dashed border-orange-200 bg-white p-8 text-center shadow-sm lg:col-span-3 lg:p-12">
-                        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-orange-50 text-orange-600">
+                    <div class="col-span-2 rounded-[1.75rem] border border-dashed border-brand-200 bg-white p-8 text-center shadow-sm lg:col-span-3 lg:p-12">
+                        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-500">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -707,17 +696,17 @@ $cartCount = \App\Support\Cart::count();
                             </svg>
                         </div>
 
-                        <h2 class="mt-5 text-xl font-black text-slate-950 sm:text-2xl">
+                        <h2 class="mt-5 text-xl font-black text-warm-950 sm:text-2xl">
                             No menu items found
                         </h2>
 
-                        <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-slate-600">
+                        <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-warm-600">
                             Try selecting another category to see more available dishes.
                         </p>
 
                         <a
                             href="{{ route('menu') }}"
-                            class="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:bg-orange-700 sm:rounded-2xl"
+                            class="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 sm:rounded-2xl"
                         >
                             View All Items
                         </a>
@@ -727,7 +716,7 @@ $cartCount = \App\Support\Cart::count();
 
             {{-- Safe Pagination Support --}}
             @if (method_exists($menuItems, 'hasPages') && $menuItems->hasPages())
-                <div class="mt-8 rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
+                <div class="mt-8 rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
                     {{ $menuItems->withQueryString()->links() }}
                 </div>
             @endif
@@ -736,14 +725,14 @@ $cartCount = \App\Support\Cart::count();
 
     {{-- Persistent Mobile Cart Bar --}}
     @if ($cartCount > 0)
-        <div class="fixed inset-x-0 bottom-0 z-40 border-t border-orange-100 bg-white/95 px-4 pt-3 shadow-[0_-12px_32px_rgba(15,23,42,0.14)] backdrop-blur lg:hidden">
+        <div class="fixed inset-x-0 bottom-0 z-40 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-[var(--shadow-bottom-nav)] backdrop-blur lg:hidden">
             <div class="mx-auto flex max-w-7xl items-center gap-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                 <div class="min-w-0 shrink-0">
-                    <p class="text-[9px] font-black uppercase tracking-[0.13em] text-slate-400">
+                    <p class="text-[9px] font-black uppercase tracking-[0.13em] text-warm-500">
                         Your Cart
                     </p>
 
-                    <p class="mt-0.5 whitespace-nowrap text-sm font-black text-slate-950">
+                    <p class="mt-0.5 whitespace-nowrap text-sm font-black text-warm-950">
                         {{ $cartCount }}
                         {{ $cartCount === 1 ? 'item' : 'items' }}
                     </p>
@@ -751,7 +740,7 @@ $cartCount = \App\Support\Cart::count();
 
                 <a
                     href="{{ route('cart.index') }}"
-                    class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-xl bg-orange-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/25 transition active:scale-[0.98]"
+                    class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition active:scale-[0.98]"
                 >
                     <span class="flex items-center gap-2">
                         <svg

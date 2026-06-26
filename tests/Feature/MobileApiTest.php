@@ -32,7 +32,7 @@ class MobileApiTest extends TestCase
 
     public function test_customer_can_checkout_with_database_cart_and_idempotency_key(): void
     {
-        $menuItem = $this->createMenuItem(['price' => 1200]);
+        $menuItem = $this->createMenuItem(['price' => 12]);
         $customer = $this->createUser('customer');
 
         Sanctum::actingAs($customer, ['customer']);
@@ -41,7 +41,7 @@ class MobileApiTest extends TestCase
             'quantity' => 2,
         ])->assertOk()
             ->assertJsonPath('data.count', 2)
-            ->assertJsonPath('data.subtotal', 2400);
+            ->assertJsonPath('data.subtotal', 24);
 
         $payload = [
             'customer_name' => $customer->name,
@@ -55,7 +55,7 @@ class MobileApiTest extends TestCase
             ->postJson('/api/v1/customer/checkout', $payload)
             ->assertCreated()
             ->assertJsonPath('data.order_status', 'pending')
-            ->assertJsonPath('data.total', 2599);
+            ->assertJsonPath('data.total', 28.99);
 
         $this->withHeader('Idempotency-Key', 'test-checkout-001')
             ->postJson('/api/v1/customer/checkout', $payload)
@@ -145,15 +145,14 @@ class MobileApiTest extends TestCase
     private function createMenuItem(array $overrides = []): MenuItem
     {
         $restaurant = Restaurant::create([
-            'name' => 'FreshBite Restaurant',
-            'slug' => 'freshbite',
+            'name' => 'Arcade Kebab House',
             'email' => 'hello@example.com',
             'phone' => '03001234567',
             'address' => 'Demo address',
-            'delivery_fee' => 199,
+            'timezone' => 'Australia/Sydney',
+            'delivery_fee' => 4.99,
             'minimum_order_amount' => 0,
             'is_open' => true,
-            'is_active' => true,
         ]);
 
         $category = Category::create([
@@ -170,7 +169,7 @@ class MobileApiTest extends TestCase
             'name' => 'Margherita Pizza',
             'slug' => 'margherita-pizza',
             'description' => 'Classic pizza with cheese and tomato.',
-            'price' => 1000,
+            'price' => 10,
             'is_featured' => true,
             'is_available' => true,
             'sort_order' => 1,
@@ -184,12 +183,10 @@ class MobileApiTest extends TestCase
     {
         $customer = $this->createUser('customer');
         $restaurant = Restaurant::first() ?: Restaurant::create([
-            'name' => 'FreshBite Restaurant',
-            'slug' => 'freshbite',
-            'delivery_fee' => 199,
+            'name' => 'Arcade Kebab House',
+            'delivery_fee' => 4.99,
             'minimum_order_amount' => 0,
             'is_open' => true,
-            'is_active' => true,
         ]);
 
         return Order::create(array_merge([
@@ -200,9 +197,9 @@ class MobileApiTest extends TestCase
             'customer_phone' => '03001234567',
             'customer_email' => $customer->email,
             'delivery_address' => 'Demo delivery address',
-            'subtotal' => 1000,
-            'delivery_fee' => 199,
-            'total' => 1199,
+            'subtotal' => 30,
+            'delivery_fee' => 4.99,
+            'total' => 34.99,
             'payment_method' => 'cod',
             'payment_status' => 'pending',
             'order_status' => 'pending',

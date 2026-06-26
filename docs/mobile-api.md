@@ -1,4 +1,4 @@
-# FreshBite Mobile API
+# Arcade Kebab House Mobile API
 
 Base URL:
 

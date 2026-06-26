@@ -17,27 +17,27 @@
         ? 'Setup Required'
         : ($restaurantOpen ? 'Restaurant Open' : 'Restaurant Closed');
     $restaurantStatusClasses = ! $restaurantConfigured
-        ? 'border-amber-200 bg-amber-50 text-amber-800'
+        ? 'border-gold-100 bg-gold-50 text-gold-700'
         : ($restaurantOpen
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+            ? 'border-leaf-100 bg-leaf-50 text-leaf-900'
             : 'border-red-200 bg-red-50 text-red-800');
     $restaurantStatusDot = ! $restaurantConfigured
-        ? 'bg-amber-500'
-        : ($restaurantOpen ? 'bg-emerald-500' : 'bg-red-500');
+        ? 'bg-gold-500'
+        : ($restaurantOpen ? 'bg-leaf-500' : 'bg-red-500');
 @endphp
 
 <div class="space-y-5 pb-8 sm:space-y-6">
-    <header class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
+    <header class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
         <div class="grid gap-0 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <div class="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950 p-5 text-white sm:p-7 lg:p-8">
-                <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-orange-500/30 blur-3xl"></div>
+            <div class="relative overflow-hidden bg-gradient-to-br from-warm-950 via-warm-900 to-brand-900 p-5 text-white sm:p-7 lg:p-8">
+                <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl"></div>
                 <div class="pointer-events-none absolute -bottom-28 left-10 h-72 w-72 rounded-full bg-red-500/20 blur-3xl"></div>
 
                 <div class="relative">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] backdrop-blur">
-                            <span class="h-2 w-2 rounded-full bg-emerald-400">
-                                <span class="block h-2 w-2 animate-ping rounded-full bg-emerald-300"></span>
+                            <span class="h-2 w-2 rounded-full bg-leaf-500">
+                                <span class="block h-2 w-2 animate-ping rounded-full bg-leaf-500"></span>
                             </span>
 
                             Live Operations
@@ -53,14 +53,14 @@
                         Welcome back, {{ $firstName }}
                     </h1>
 
-                    <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-300 sm:text-base sm:leading-7">
+                    <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-warm-300 sm:text-base sm:leading-7">
                         Handle pending orders first, watch the delivery queue move, and jump into menu or rider controls without scanning repeated cards.
                     </p>
 
                     <div class="mt-6 flex flex-wrap gap-3">
                         <a
                             href="{{ route('admin.orders.index', ['status' => 'pending']) }}"
-                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-orange-950/30 transition active:scale-[0.98] hover:-translate-y-0.5 hover:bg-orange-500"
+                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-brand-950/30 transition active:scale-[0.98] hover:-translate-y-0.5 hover:bg-brand-600"
                         >
                             Pending Queue
 
@@ -81,7 +81,7 @@
                 </div>
             </div>
 
-            <aside class="bg-slate-950 p-5 text-white sm:p-6 xl:border-l xl:border-white/10">
+            <aside class="bg-warm-950 p-5 text-white sm:p-6 xl:border-l xl:border-white/10">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">
@@ -97,7 +97,7 @@
                         </p>
                     </div>
 
-                    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-500/20 text-orange-300">
+                    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-500/20 text-brand-200">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -150,7 +150,7 @@
                     </p>
 
                     <p class="mt-1 text-2xl font-black">
-                        Rs. {{ number_format($totalCodRevenue, 0) }}
+                        @money($totalCodRevenue)
                     </p>
                 </div>
             </aside>
@@ -158,10 +158,10 @@
     </header>
 
     @if (! $restaurantConfigured)
-        <section class="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-4 shadow-sm sm:p-5">
+        <section class="rounded-[1.5rem] border border-gold-100 bg-gold-50 p-4 shadow-sm sm:p-5">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-start gap-3">
-                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-amber-600 shadow-sm">
+                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-gold-500 shadow-sm">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -179,11 +179,11 @@
                     </span>
 
                     <div>
-                        <p class="font-black text-amber-950">
+                        <p class="font-black text-gold-700">
                             Restaurant setup is incomplete
                         </p>
 
-                        <p class="mt-1 text-sm font-semibold leading-6 text-amber-800">
+                        <p class="mt-1 text-sm font-semibold leading-6 text-gold-700">
                             Add restaurant details, delivery fees, minimum order value, and opening information before accepting public orders.
                         </p>
                     </div>
@@ -191,7 +191,7 @@
 
                 <a
                     href="{{ route('admin.settings.restaurant.edit') }}"
-                    class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-amber-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-amber-600/20 transition active:scale-[0.98] hover:bg-amber-700"
+                    class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-gold-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-gold-500/20 transition active:scale-[0.98] hover:bg-gold-700"
                 >
                     Complete Setup
                 </a>
@@ -217,7 +217,7 @@
                         x-show="message"
                         x-transition
                         x-cloak
-                        class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-700"
+                        class="inline-flex items-center rounded-full border border-leaf-100 bg-leaf-50 px-3 py-1.5 text-xs font-black text-leaf-700"
                         x-text="message"
                     ></span>
 
@@ -230,10 +230,10 @@
                     ></span>
                 </div>
 
-                <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.12em] text-warm-500">
                     <span
                         class="h-2 w-2 rounded-full"
-                        x-bind:class="refreshing ? 'animate-pulse bg-orange-500' : 'bg-emerald-500'"
+                        x-bind:class="refreshing ? 'animate-pulse bg-brand-500' : 'bg-leaf-500'"
                     ></span>
 
                     <span x-text="refreshing ? 'Refreshing dashboard' : 'Live dashboard ready'"></span>
@@ -248,13 +248,13 @@
                 x-show="declineModalOpen"
                 x-transition.opacity
                 x-cloak
-                class="fixed inset-0 z-[80] grid place-items-center bg-slate-950/50 p-4 backdrop-blur-sm"
+                class="fixed inset-0 z-[80] grid place-items-center bg-warm-950/50 p-4 backdrop-blur-sm"
                 role="dialog"
                 aria-modal="true"
             >
                 <form
                     x-on:submit.prevent="declineOrder()"
-                    class="w-full max-w-lg overflow-hidden rounded-[1.5rem] bg-white shadow-2xl shadow-slate-950/25"
+                    class="w-full max-w-lg overflow-hidden rounded-[1.5rem] bg-white shadow-2xl shadow-warm-950/25"
                 >
                     <div class="border-b border-red-100 bg-red-50 px-5 py-4 sm:px-6">
                         <div class="flex items-start justify-between gap-4">
@@ -263,11 +263,11 @@
                                     Decline order
                                 </p>
 
-                                <h3 class="mt-1 text-xl font-black text-slate-950">
+                                <h3 class="mt-1 text-xl font-black text-warm-950">
                                     Reason required
                                 </h3>
 
-                                <p class="mt-1 text-xs font-semibold text-slate-500">
+                                <p class="mt-1 text-xs font-semibold text-warm-500">
                                     <span x-text="declineOrderNumber"></span>
                                 </p>
                             </div>
@@ -275,7 +275,7 @@
                             <button
                                 type="button"
                                 x-on:click="closeDeclineModal()"
-                                class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-slate-500 shadow-sm transition hover:text-red-600"
+                                class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-warm-500 shadow-sm transition hover:text-red-600"
                                 aria-label="Close decline modal"
                             >
                                 <svg
@@ -296,7 +296,7 @@
                     </div>
 
                     <div class="space-y-4 px-5 py-5 sm:px-6">
-                        <label for="decline_reason" class="block text-sm font-black text-slate-800">
+                        <label for="decline_reason" class="block text-sm font-black text-warm-900">
                             Why are you declining this order?
                         </label>
 
@@ -307,20 +307,20 @@
                             required
                             minlength="5"
                             maxlength="1000"
-                            class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-red-300 focus:bg-white focus:ring-4 focus:ring-red-100"
+                            class="w-full rounded-2xl border border-warm-200 bg-warm-50 px-4 py-3 text-sm font-semibold text-warm-900 outline-none transition focus:border-red-300 focus:bg-white focus:ring-4 focus:ring-red-100"
                             placeholder="Example: Item unavailable, customer requested cancellation, or delivery address is outside service area."
                         ></textarea>
 
-                        <p class="text-xs font-semibold leading-5 text-slate-500">
+                        <p class="text-xs font-semibold leading-5 text-warm-500">
                             This reason is saved in the order status history for admin review.
                         </p>
                     </div>
 
-                    <div class="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+                    <div class="flex flex-col-reverse gap-2 border-t border-warm-100 bg-warm-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                         <button
                             type="button"
                             x-on:click="closeDeclineModal()"
-                            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-100"
+                            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-600 transition hover:bg-warm-100"
                         >
                             Keep Order
                         </button>
@@ -338,25 +338,25 @@
         </div>
 
         <aside class="space-y-5 xl:sticky xl:top-24">
-            <section class="rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+            <section class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                     Control Center
                 </p>
 
-                <h2 class="mt-1 text-xl font-black text-slate-950">
+                <h2 class="mt-1 text-xl font-black text-warm-950">
                     Quick actions
                 </h2>
 
                 <div class="mt-4 grid grid-cols-2 gap-3">
                     <a
                         href="{{ route('admin.orders.index') }}"
-                        class="rounded-[1.1rem] border border-orange-100 bg-orange-50 p-4 transition active:scale-[0.98] hover:bg-orange-100"
+                        class="rounded-[1.1rem] border border-warm-200 bg-brand-50 p-4 transition active:scale-[0.98] hover:bg-brand-100"
                     >
-                        <span class="block text-sm font-black text-slate-950">
+                        <span class="block text-sm font-black text-warm-950">
                             Orders
                         </span>
 
-                        <span class="mt-1 block text-[10px] font-semibold leading-4 text-slate-500">
+                        <span class="mt-1 block text-[10px] font-semibold leading-4 text-warm-500">
                             Review all
                         </span>
                     </a>
@@ -365,24 +365,24 @@
                         href="{{ route('admin.riders.index') }}"
                         class="rounded-[1.1rem] border border-blue-100 bg-blue-50 p-4 transition active:scale-[0.98] hover:bg-blue-100"
                     >
-                        <span class="block text-sm font-black text-slate-950">
+                        <span class="block text-sm font-black text-warm-950">
                             Riders
                         </span>
 
-                        <span class="mt-1 block text-[10px] font-semibold leading-4 text-slate-500">
+                        <span class="mt-1 block text-[10px] font-semibold leading-4 text-warm-500">
                             {{ $totalRiders }} registered
                         </span>
                     </a>
 
                     <a
                         href="{{ route('admin.menu-items.index') }}"
-                        class="rounded-[1.1rem] border border-emerald-100 bg-emerald-50 p-4 transition active:scale-[0.98] hover:bg-emerald-100"
+                        class="rounded-[1.1rem] border border-leaf-100 bg-leaf-50 p-4 transition active:scale-[0.98] hover:bg-leaf-100"
                     >
-                        <span class="block text-sm font-black text-slate-950">
+                        <span class="block text-sm font-black text-warm-950">
                             Menu
                         </span>
 
-                        <span class="mt-1 block text-[10px] font-semibold leading-4 text-slate-500">
+                        <span class="mt-1 block text-[10px] font-semibold leading-4 text-warm-500">
                             {{ $availableMenuItems }} available
                         </span>
                     </a>
@@ -391,25 +391,25 @@
                         href="{{ route('admin.settings.restaurant.edit') }}"
                         class="rounded-[1.1rem] border border-violet-100 bg-violet-50 p-4 transition active:scale-[0.98] hover:bg-violet-100"
                     >
-                        <span class="block text-sm font-black text-slate-950">
+                        <span class="block text-sm font-black text-warm-950">
                             Settings
                         </span>
 
-                        <span class="mt-1 block text-[10px] font-semibold leading-4 text-slate-500">
+                        <span class="mt-1 block text-[10px] font-semibold leading-4 text-warm-500">
                             Availability
                         </span>
                     </a>
                 </div>
             </section>
 
-            <section class="rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-sm">
+            <section class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                             Restaurant
                         </p>
 
-                        <h2 class="mt-1 text-lg font-black text-slate-950">
+                        <h2 class="mt-1 text-lg font-black text-warm-950">
                             Public availability
                         </h2>
                     </div>
@@ -434,52 +434,52 @@
                 </div>
             </section>
 
-            <section class="rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+            <section class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                     Health Snapshot
                 </p>
 
                 <div class="mt-4 space-y-4">
                     <div>
                         <div class="flex items-center justify-between gap-3">
-                            <p class="text-xs font-black text-slate-700">
+                            <p class="text-xs font-black text-warm-600">
                                 Menu visibility
                             </p>
 
-                            <span class="text-xs font-black text-orange-600">
+                            <span class="text-xs font-black text-brand-500">
                                 {{ $menuCoverage }}%
                             </span>
                         </div>
 
-                        <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                        <div class="mt-2 h-2 overflow-hidden rounded-full bg-warm-100">
                             <div
-                                class="h-full rounded-full bg-orange-500"
+                                class="h-full rounded-full bg-brand-500"
                                 style="width: {{ $menuCoverage }}%"
                             ></div>
                         </div>
 
-                        <p class="mt-2 text-xs font-semibold text-slate-500">
+                        <p class="mt-2 text-xs font-semibold text-warm-500">
                             {{ $activeCategories }} of {{ $totalCategories }} categories visible.
                         </p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="rounded-2xl bg-slate-50 p-4">
-                            <p class="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                        <div class="rounded-2xl bg-warm-50 p-4">
+                            <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                 Items
                             </p>
 
-                            <p class="mt-1 text-xl font-black text-slate-950">
+                            <p class="mt-1 text-xl font-black text-warm-950">
                                 {{ $availableMenuItems }}/{{ $totalMenuItems }}
                             </p>
                         </div>
 
-                        <div class="rounded-2xl bg-slate-50 p-4">
-                            <p class="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                        <div class="rounded-2xl bg-warm-50 p-4">
+                            <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                 Featured
                             </p>
 
-                            <p class="mt-1 text-xl font-black text-slate-950">
+                            <p class="mt-1 text-xl font-black text-warm-950">
                                 {{ $featuredMenuItems }}
                             </p>
                         </div>

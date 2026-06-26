@@ -11,7 +11,7 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $restaurant = Restaurant::where('slug', 'freshbite-restaurant')->first();
+        $restaurant = Restaurant::current();
 
         $categories = [
             'Pizza',
@@ -30,7 +30,7 @@ class CategorySeeder extends Seeder
                 [
                     'restaurant_id' => $restaurant?->id,
                     'name' => $name,
-                    'description' => "FreshBite {$name} prepared fresh for delivery.",
+                    'description' => "Arcade Kebab House {$name} prepared fresh for delivery.",
                     'image' => null,
                     'sort_order' => $index + 1,
                     'is_active' => true,

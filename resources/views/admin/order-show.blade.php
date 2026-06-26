@@ -51,14 +51,14 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
 
     $statusTheme = match (true) {
         $isDelivered => [
-            'gradient' => 'from-emerald-700 via-emerald-600 to-teal-700',
-            'accent' => 'bg-emerald-500',
-            'soft' => 'border-emerald-100 bg-emerald-50',
-            'text' => 'text-emerald-700',
+            'gradient' => 'from-leaf-700 via-leaf-700 to-teal-600',
+            'accent' => 'bg-leaf-500',
+            'soft' => 'border-leaf-100 bg-leaf-50',
+            'text' => 'text-leaf-700',
         ],
 
         $isCancelled || $isFailed => [
-            'gradient' => 'from-red-700 via-red-600 to-rose-700',
+            'gradient' => 'from-red-700 via-red-600 to-red-700',
             'accent' => 'bg-red-500',
             'soft' => 'border-red-100 bg-red-50',
             'text' => 'text-red-700',
@@ -72,17 +72,17 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
         ],
 
         $order->order_status === 'preparing' => [
-            'gradient' => 'from-orange-700 via-orange-600 to-red-700',
-            'accent' => 'bg-orange-500',
-            'soft' => 'border-orange-100 bg-orange-50',
-            'text' => 'text-orange-700',
+            'gradient' => 'from-gold-500 via-food-tan to-food-brown',
+            'accent' => 'bg-food-tan',
+            'soft' => 'border-gold-100 bg-gold-50',
+            'text' => 'text-food-brown',
         ],
 
         default => [
-            'gradient' => 'from-slate-950 via-slate-900 to-orange-950',
-            'accent' => 'bg-orange-500',
-            'soft' => 'border-orange-100 bg-orange-50',
-            'text' => 'text-orange-700',
+            'gradient' => 'from-warm-950 via-warm-900 to-brand-900',
+            'accent' => 'bg-brand-500',
+            'soft' => 'border-warm-200 bg-brand-50',
+            'text' => 'text-brand-600',
         ],
     };
 
@@ -131,7 +131,8 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
     x-data="{
         updatingStatus: false,
         assigningRider: false,
-        unassigningRider: false
+        unassigningRider: false,
+        statusConfirmOpen: false
     }"
     class="space-y-5 pb-28 sm:space-y-6 xl:pb-8"
 >
@@ -139,7 +140,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
     <div class="flex items-center justify-between gap-4 xl:hidden">
         <a
             href="{{ route('admin.orders.index') }}"
-            class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-orange-100 bg-white text-slate-700 shadow-sm transition active:scale-95"
+            class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-warm-200 bg-white text-warm-600 shadow-sm transition active:scale-95"
             aria-label="Back to orders"
         >
             <svg
@@ -159,11 +160,11 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
         </a>
 
         <div class="min-w-0 text-center">
-            <p class="text-sm font-black text-slate-950">
+            <p class="text-sm font-black text-warm-950">
                 Order details
             </p>
 
-            <p class="mt-0.5 truncate text-[10px] font-semibold text-slate-500">
+            <p class="mt-0.5 truncate text-[10px] font-semibold text-warm-500">
                 {{ $order->order_number }}
             </p>
         </div>
@@ -171,7 +172,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
         @if ($customerPhoneHref)
             <a
                 href="tel:{{ $customerPhoneHref }}"
-                class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-orange-600 text-white shadow-lg shadow-orange-600/20 transition active:scale-95"
+                class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-500 text-white shadow-lg shadow-brand-500/20 transition active:scale-95"
                 aria-label="Call customer"
             >
                 <svg
@@ -193,24 +194,24 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
     {{-- Desktop Header --}}
     <header class="hidden items-end justify-between gap-8 xl:flex">
         <div class="min-w-0">
-            <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-brand-500">
                 Order Management
             </p>
 
-            <h1 class="mt-2 break-all text-4xl font-black tracking-tight text-slate-950">
+            <h1 class="mt-2 break-all text-4xl font-black tracking-tight text-warm-950">
                 {{ $order->order_number }}
             </h1>
 
-            <p class="mt-2 text-sm font-semibold text-slate-500">
+            <p class="mt-2 text-sm font-semibold text-warm-500">
                 Placed by {{ $order->customer_name }}
-                <span class="mx-2 text-slate-300">•</span>
+                <span class="mx-2 text-warm-300">•</span>
                 {{ $order->created_at->format('M d, Y · h:i A') }}
             </p>
         </div>
 
         <a
             href="{{ route('admin.orders.index') }}"
-            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl border border-orange-200 bg-white px-5 py-3 text-sm font-black text-orange-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-orange-50"
+            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-5 py-3 text-sm font-black text-brand-600 shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-50"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -232,9 +233,9 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
     </header>
 
     {{-- Order Status Hero --}}
-    <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br {{ $statusTheme['gradient'] }} p-5 text-white shadow-2xl shadow-slate-950/20 sm:p-7 xl:rounded-[2rem] xl:p-8">
+    <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br {{ $statusTheme['gradient'] }} p-5 text-white shadow-2xl shadow-warm-950/20 sm:p-7 xl:rounded-[2rem] xl:p-8">
         <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/15 blur-3xl"></div>
-        <div class="pointer-events-none absolute -bottom-28 left-12 h-72 w-72 rounded-full bg-orange-300/10 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-28 left-12 h-72 w-72 rounded-full bg-brand-200/10 blur-3xl"></div>
 
         <div class="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_480px] xl:items-center">
             <div class="min-w-0">
@@ -265,7 +266,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                     @if ($customerPhoneHref)
                         <a
                             href="tel:{{ $customerPhoneHref }}"
-                            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-slate-950 shadow-lg transition active:scale-[0.98] hover:bg-slate-100 sm:rounded-2xl sm:px-5"
+                            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-warm-950 shadow-lg transition active:scale-[0.98] hover:bg-warm-100 sm:rounded-2xl sm:px-5"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -312,8 +313,8 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         Order Total
                     </p>
 
-                    <p class="mt-1 text-xl font-black text-orange-200 sm:text-2xl">
-                        Rs. {{ number_format($order->total, 0) }}
+                    <p class="mt-1 text-xl font-black text-brand-200 sm:text-2xl">
+                        ($order->total)
                     </p>
                 </div>
 
@@ -351,14 +352,14 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
     </section>
 
     {{-- Fulfilment Progress --}}
-    <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-        <div class="flex items-center justify-between gap-4 border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+    <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+        <div class="flex items-center justify-between gap-4 border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
             <div>
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                     Order Journey
                 </p>
 
-                <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                     Fulfilment progress
                 </h2>
             </div>
@@ -380,10 +381,10 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
         {{-- Main Content --}}
         <main class="min-w-0 space-y-5">
             {{-- Customer and Delivery --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-                <div class="border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+                <div class="border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div class="flex items-center gap-3">
-                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-orange-50 text-orange-600">
+                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -398,11 +399,11 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         </span>
 
                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                                 Customer and Delivery
                             </p>
 
-                            <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                            <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                                 Contact and destination
                             </h2>
                         </div>
@@ -412,8 +413,8 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                 <div class="space-y-4 p-4 sm:p-6">
                     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {{-- Customer --}}
-                        <div class="flex items-center gap-3 rounded-2xl bg-slate-50 p-4">
-                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-sm font-black text-orange-700 shadow-sm">
+                        <div class="flex items-center gap-3 rounded-2xl bg-warm-50 p-4">
+                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-sm font-black text-brand-600 shadow-sm">
                                 {{ mb_strtoupper(
                                     mb_substr(
                                         $order->customer_name ?? 'C',
@@ -424,19 +425,19 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                             </span>
 
                             <div class="min-w-0">
-                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                     Customer
                                 </p>
 
-                                <p class="mt-1 truncate text-sm font-black text-slate-950">
+                                <p class="mt-1 truncate text-sm font-black text-warm-950">
                                     {{ $order->customer_name }}
                                 </p>
                             </div>
                         </div>
 
                         {{-- Phone --}}
-                        <div class="flex items-center gap-3 rounded-2xl bg-slate-50 p-4">
-                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-orange-600 shadow-sm">
+                        <div class="flex items-center gap-3 rounded-2xl bg-warm-50 p-4">
+                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-brand-500 shadow-sm">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
@@ -450,19 +451,19 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                             </span>
 
                             <div class="min-w-0">
-                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                     Phone
                                 </p>
 
                                 @if ($customerPhoneHref)
                                     <a
                                         href="tel:{{ $customerPhoneHref }}"
-                                        class="mt-1 block truncate text-sm font-black text-orange-700"
+                                        class="mt-1 block truncate text-sm font-black text-brand-600"
                                     >
                                         {{ $customerPhone }}
                                     </a>
                                 @else
-                                    <p class="mt-1 text-sm font-black text-slate-400">
+                                    <p class="mt-1 text-sm font-black text-warm-500">
                                         Not provided
                                     </p>
                                 @endif
@@ -470,8 +471,8 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         </div>
 
                         {{-- Email --}}
-                        <div class="flex items-center gap-3 rounded-2xl bg-slate-50 p-4 sm:col-span-2 lg:col-span-1">
-                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-orange-600 shadow-sm">
+                        <div class="flex items-center gap-3 rounded-2xl bg-warm-50 p-4 sm:col-span-2 lg:col-span-1">
+                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-brand-500 shadow-sm">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
@@ -486,19 +487,19 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                             </span>
 
                             <div class="min-w-0">
-                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                     Email
                                 </p>
 
                                 @if ($order->customer_email)
                                     <a
                                         href="mailto:{{ $order->customer_email }}"
-                                        class="mt-1 block truncate text-sm font-black text-orange-700"
+                                        class="mt-1 block truncate text-sm font-black text-brand-600"
                                     >
                                         {{ $order->customer_email }}
                                     </a>
                                 @else
-                                    <p class="mt-1 text-sm font-black text-slate-400">
+                                    <p class="mt-1 text-sm font-black text-warm-500">
                                         Not provided
                                     </p>
                                 @endif
@@ -511,9 +512,9 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         href="{{ $mapsUrl }}"
                         target="_blank"
                         rel="noopener"
-                        class="group flex items-start gap-3 rounded-2xl border border-orange-100 bg-orange-50 p-4 transition hover:bg-orange-100 sm:p-5"
+                        class="group flex items-start gap-3 rounded-2xl border border-warm-200 bg-brand-50 p-4 transition hover:bg-brand-100 sm:p-5"
                     >
-                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-orange-600 shadow-sm">
+                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-brand-500 shadow-sm">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -528,15 +529,15 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         </span>
 
                         <span class="min-w-0 flex-1">
-                            <span class="block text-[9px] font-black uppercase tracking-[0.14em] text-orange-700">
+                            <span class="block text-[9px] font-black uppercase tracking-[0.14em] text-brand-600">
                                 Delivery address
                             </span>
 
-                            <span class="mt-1 block text-sm font-semibold leading-6 text-slate-700">
+                            <span class="mt-1 block text-sm font-semibold leading-6 text-warm-600">
                                 {{ $order->delivery_address }}
                             </span>
 
-                            <span class="mt-2 inline-flex items-center gap-1.5 text-xs font-black text-orange-700">
+                            <span class="mt-2 inline-flex items-center gap-1.5 text-xs font-black text-brand-600">
                                 Open in maps
 
                                 <svg
@@ -558,9 +559,9 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                     </a>
 
                     @if ($order->order_notes)
-                        <div class="rounded-2xl border border-amber-100 bg-amber-50 p-4">
+                        <div class="rounded-2xl border border-gold-100 bg-gold-50 p-4">
                             <div class="flex items-start gap-3">
-                                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-amber-600 shadow-sm">
+                                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-gold-500 shadow-sm">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 24 24"
@@ -574,11 +575,11 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                 </span>
 
                                 <div>
-                                    <p class="text-[9px] font-black uppercase tracking-[0.14em] text-amber-700">
+                                    <p class="text-[9px] font-black uppercase tracking-[0.14em] text-gold-700">
                                         Customer instructions
                                     </p>
 
-                                    <p class="mt-1 text-sm font-semibold leading-6 text-slate-700">
+                                    <p class="mt-1 text-sm font-semibold leading-6 text-warm-600">
                                         {{ $order->order_notes }}
                                     </p>
                                 </div>
@@ -589,29 +590,29 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
             </section>
 
             {{-- Ordered Items --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-                <div class="flex items-center justify-between gap-4 border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between gap-4 border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                             Order Contents
                         </p>
 
-                        <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                        <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                             Ordered items
                         </h2>
                     </div>
 
-                    <span class="rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-black text-orange-700">
+                    <span class="rounded-full bg-brand-50 px-3 py-1.5 text-[10px] font-black text-brand-600">
                         {{ $itemCount }}
                         {{ $itemCount === 1 ? 'item' : 'items' }}
                     </span>
                 </div>
 
-                <div class="divide-y divide-slate-100">
+                <div class="divide-y divide-warm-100">
                     @foreach ($order->items as $item)
                         <article class="p-4 sm:p-5">
                             <div class="flex items-start gap-3 sm:gap-4">
-                                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-orange-50 text-lg font-black text-orange-600 sm:h-14 sm:w-14 sm:rounded-2xl">
+                                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-50 text-lg font-black text-brand-500 sm:h-14 sm:w-14 sm:rounded-2xl">
                                     {{ mb_strtoupper(
                                         mb_substr(
                                             $item->item_name,
@@ -624,23 +625,23 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
-                                            <h3 class="break-words text-sm font-black leading-5 text-slate-950 sm:text-base">
+                                            <h3 class="break-words text-sm font-black leading-5 text-warm-950 sm:text-base">
                                                 {{ $item->item_name }}
                                             </h3>
 
-                                            <p class="mt-1 text-xs font-semibold text-slate-500 sm:text-sm">
+                                            <p class="mt-1 text-xs font-semibold text-warm-500 sm:text-sm">
                                                 {{ $item->quantity }}
-                                                × Rs. {{ number_format($item->price, 0) }}
+                                                × ($item->price)
                                             </p>
                                         </div>
 
                                         <div class="shrink-0 text-right">
-                                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                                 Total
                                             </p>
 
-                                            <p class="mt-1 text-sm font-black text-slate-950 sm:text-base">
-                                                Rs. {{ number_format($item->total, 0) }}
+                                            <p class="mt-1 text-sm font-black text-warm-950 sm:text-base">
+                                                ($item->total)
                                             </p>
                                         </div>
                                     </div>
@@ -656,13 +657,13 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
             </section>
 
             {{-- Delivery Timeline --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-                <div class="border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
-                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+                <div class="border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
+                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                         Delivery History
                     </p>
 
-                    <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                    <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                         Activity timeline
                     </h2>
                 </div>
@@ -679,8 +680,8 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                     <div
                                         @class([
                                             'absolute left-[19px] top-10 h-[calc(100%-24px)] w-0.5',
-                                            'bg-emerald-200' => $eventComplete,
-                                            'bg-slate-200' => ! $eventComplete,
+                                            'bg-leaf-100' => $eventComplete,
+                                            'bg-warm-200' => ! $eventComplete,
                                         ])
                                     ></div>
                                 @endif
@@ -688,8 +689,8 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                 <span
                                     @class([
                                         'relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full border-2',
-                                        'border-emerald-500 bg-emerald-500 text-white' => $eventComplete,
-                                        'border-slate-200 bg-white text-slate-400' => ! $eventComplete,
+                                        'border-leaf-500 bg-leaf-500 text-white' => $eventComplete,
+                                        'border-warm-200 bg-white text-warm-500' => ! $eventComplete,
                                     ])
                                 >
                                     @if ($eventComplete)
@@ -708,7 +709,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                             />
                                         </svg>
                                     @else
-                                        <span class="h-2 w-2 rounded-full bg-slate-300"></span>
+                                        <span class="h-2 w-2 rounded-full bg-warm-300"></span>
                                     @endif
                                 </span>
 
@@ -716,18 +717,18 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                     <p
                                         @class([
                                             'text-sm font-black',
-                                            'text-slate-950' => $eventComplete,
-                                            'text-slate-500' => ! $eventComplete,
+                                            'text-warm-950' => $eventComplete,
+                                            'text-warm-500' => ! $eventComplete,
                                         ])
                                     >
                                         {{ $event['label'] }}
                                     </p>
 
-                                    <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                    <p class="mt-1 text-xs font-semibold leading-5 text-warm-500">
                                         {{ $event['description'] }}
                                     </p>
 
-                                    <p class="mt-1 text-[10px] font-bold text-slate-400">
+                                    <p class="mt-1 text-[10px] font-bold text-warm-500">
                                         {{ $event['time']
                                             ? $event['time']->format('M d, Y · h:i A')
                                             : 'Not completed yet' }}
@@ -755,10 +756,10 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
         {{-- Management Sidebar --}}
         <aside class="order-first space-y-5 xl:order-none xl:sticky xl:top-24">
             {{-- Status Management --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-xl shadow-orange-900/5">
-                <div class="border-b border-orange-100 px-5 py-4">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-xl shadow-brand-900/5">
+                <div class="border-b border-warm-200 px-5 py-4">
                     <div class="flex items-start gap-3">
-                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 text-orange-600">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -772,11 +773,11 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         </span>
 
                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                                 Order Status
                             </p>
 
-                            <h2 class="mt-1 text-xl font-black text-slate-950">
+                            <h2 class="mt-1 text-xl font-black text-warm-950">
                                 Update progress
                             </h2>
                         </div>
@@ -785,18 +786,11 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
 
                 <form
                     id="order-status-form"
+                    x-ref="orderStatusForm"
                     action="{{ route('admin.orders.status', $order) }}"
                     method="POST"
                     class="p-5"
-                    x-on:submit="
-                        if (
-                            ! confirm('Update this order to the selected status?')
-                        ) {
-                            $event.preventDefault();
-                        } else {
-                            updatingStatus = true;
-                        }
-                    "
+                    x-on:submit.prevent="statusConfirmOpen = true"
                 >
                     @csrf
                     @method('PATCH')
@@ -806,14 +800,14 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                             Current status
                         </p>
 
-                        <p class="mt-1 text-sm font-black text-slate-950">
+                        <p class="mt-1 text-sm font-black text-warm-950">
                             {{ $orderStatusLabel }}
                         </p>
                     </div>
 
                     <label
                         for="order_status"
-                        class="mt-4 block text-sm font-black text-slate-800"
+                        class="mt-4 block text-sm font-black text-warm-900"
                     >
                         Change Status
                     </label>
@@ -822,7 +816,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         <select
                             id="order_status"
                             name="order_status"
-                            class="min-h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm font-semibold text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                            class="min-h-12 w-full appearance-none rounded-xl border border-warm-200 bg-warm-50 px-4 py-3 pr-10 text-sm font-semibold text-warm-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
                         >
                             @foreach ($statuses as $value => $label)
                                 <option
@@ -840,7 +834,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
-                            class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                            class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-500"
                         >
                             <path
                                 stroke-linecap="round"
@@ -859,7 +853,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                     <button
                         type="submit"
                         x-bind:disabled="updatingStatus"
-                        class="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+                        class="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-warm-950 px-5 py-3 text-sm font-black text-white shadow-lg transition hover:bg-warm-900 disabled:cursor-not-allowed disabled:opacity-70"
                     >
                         <svg
                             x-show="updatingStatus"
@@ -891,11 +885,61 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         ></span>
                     </button>
                 </form>
+
+                <div
+                    x-show="statusConfirmOpen"
+                    x-cloak
+                    x-transition.opacity
+                    class="fixed inset-0 z-[300] grid place-items-center bg-warm-950/55 p-4 backdrop-blur-sm"
+                    role="dialog"
+                    aria-modal="true"
+                >
+                    <div
+                        x-show="statusConfirmOpen"
+                        x-transition
+                        x-on:click.outside="statusConfirmOpen = false"
+                        class="w-full max-w-md rounded-[1.5rem] border border-warm-200 bg-white p-5 shadow-2xl shadow-warm-950/20"
+                    >
+                        <div class="flex items-start gap-4">
+                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-500">
+                                <x-ui-icon name="receipt" class="h-5 w-5" />
+                            </span>
+
+                            <div>
+                                <h2 class="text-lg font-black text-warm-950">
+                                    Update order status?
+                                </h2>
+
+                                <p class="mt-2 text-sm font-semibold leading-6 text-warm-600">
+                                    The customer and rider dashboards will show the new status after saving.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                x-on:click="statusConfirmOpen = false"
+                                class="inline-flex min-h-11 items-center justify-center rounded-xl border border-warm-200 bg-white px-4 py-2 text-sm font-black text-warm-700 transition hover:bg-warm-50"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                x-on:click="updatingStatus = true; statusConfirmOpen = false; $refs.orderStatusForm.submit()"
+                                class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-500 px-4 py-2 text-sm font-black text-white transition hover:bg-brand-600"
+                            >
+                                Update Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             {{-- Rider Assignment --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-                <div class="border-b border-orange-100 px-5 py-4">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+                <div class="border-b border-warm-200 px-5 py-4">
                     <div class="flex items-start gap-3">
                         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600">
                             <svg
@@ -917,7 +961,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                 Delivery Rider
                             </p>
 
-                            <h2 class="mt-1 text-xl font-black text-slate-950">
+                            <h2 class="mt-1 text-xl font-black text-warm-950">
                                 Rider assignment
                             </h2>
                         </div>
@@ -925,8 +969,8 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                 </div>
 
                 <div class="p-5">
-                    <div class="rounded-2xl bg-slate-50 p-4">
-                        <p class="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                    <div class="rounded-2xl bg-warm-50 p-4">
+                        <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                             Current rider
                         </p>
 
@@ -943,18 +987,18 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                 </span>
 
                                 <div class="min-w-0">
-                                    <p class="truncate text-sm font-black text-slate-950">
+                                    <p class="truncate text-sm font-black text-warm-950">
                                         {{ $order->rider->name }}
                                     </p>
 
-                                    <p class="mt-0.5 truncate text-xs font-semibold text-slate-500">
+                                    <p class="mt-0.5 truncate text-xs font-semibold text-warm-500">
                                         {{ $order->rider->phone ?? $order->rider->email }}
                                     </p>
                                 </div>
                             </div>
                         @else
                             <div class="mt-3 flex items-center gap-3">
-                                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600">
+                                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gold-50 text-gold-500">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 24 24"
@@ -969,11 +1013,11 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                 </span>
 
                                 <div>
-                                    <p class="text-sm font-black text-amber-800">
+                                    <p class="text-sm font-black text-gold-700">
                                         No rider assigned
                                     </p>
 
-                                    <p class="mt-0.5 text-xs font-semibold text-slate-500">
+                                    <p class="mt-0.5 text-xs font-semibold text-warm-500">
                                         Select an active rider below.
                                     </p>
                                 </div>
@@ -992,7 +1036,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
 
                             <label
                                 for="rider_id"
-                                class="block text-sm font-black text-slate-800"
+                                class="block text-sm font-black text-warm-900"
                             >
                                 Active Rider
                             </label>
@@ -1002,7 +1046,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                     id="rider_id"
                                     name="rider_id"
                                     required
-                                    class="min-h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm font-semibold text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                                    class="min-h-12 w-full appearance-none rounded-xl border border-warm-200 bg-warm-50 px-4 py-3 pr-10 text-sm font-semibold text-warm-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
                                 >
                                     <option value="">Choose a rider</option>
 
@@ -1023,7 +1067,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="2"
-                                    class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                                    class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-500"
                                 >
                                     <path
                                         stroke-linecap="round"
@@ -1042,7 +1086,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                             <button
                                 type="submit"
                                 x-bind:disabled="assigningRider"
-                                class="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-70"
+                                class="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
                             >
                                 <span
                                     x-text="assigningRider
@@ -1053,39 +1097,21 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         </form>
 
                         @if ($order->rider_id)
-                            <form
-                                action="{{ route('admin.orders.unassign-rider', $order) }}"
-                                method="POST"
-                                class="mt-3"
-                                x-on:submit="
-                                    if (
-                                        ! confirm('Remove the assigned rider from this order?')
-                                    ) {
-                                        $event.preventDefault();
-                                    } else {
-                                        unassigningRider = true;
-                                    }
-                                "
-                            >
-                                @csrf
-                                @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    x-bind:disabled="unassigningRider"
-                                    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-red-100 bg-red-50 px-5 py-3 text-sm font-black text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-70"
+                            <div class="mt-3">
+                                <x-confirm-submit
+                                    :action="route('admin.orders.unassign-rider', $order)"
+                                    title="Unassign rider?"
+                                    description="This removes the current rider from the order. You can assign a different active rider afterwards."
+                                    confirm-label="Unassign Rider"
+                                    button-class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-red-100 bg-red-50 px-5 py-3 text-sm font-black text-red-600 transition hover:bg-red-100"
                                 >
-                                    <span
-                                        x-text="unassigningRider
-                                            ? 'Removing rider...'
-                                            : 'Unassign Rider'"
-                                    ></span>
-                                </button>
-                            </form>
+                                    Unassign Rider
+                                </x-confirm-submit>
+                            </div>
                         @endif
                     @else
-                        <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <p class="text-xs font-semibold leading-5 text-slate-600">
+                        <div class="mt-4 rounded-xl border border-warm-200 bg-warm-50 p-4">
+                            <p class="text-xs font-semibold leading-5 text-warm-600">
                                 Delivered or cancelled orders cannot be reassigned.
                             </p>
                         </div>
@@ -1094,19 +1120,19 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
             </section>
 
             {{-- Payment Summary --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-                <div class="flex items-center justify-between gap-4 border-b border-orange-100 px-5 py-4">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between gap-4 border-b border-warm-200 px-5 py-4">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                             Payment Summary
                         </p>
 
-                        <h2 class="mt-1 text-xl font-black text-slate-950">
+                        <h2 class="mt-1 text-xl font-black text-warm-950">
                             Order totals
                         </h2>
                     </div>
 
-                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-orange-50 text-orange-600">
+                    <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-500">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -1123,22 +1149,22 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
 
                 <div class="p-5">
                     <div class="grid grid-cols-2 gap-2">
-                        <div class="rounded-xl bg-slate-50 px-3 py-3">
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                        <div class="rounded-xl bg-warm-50 px-3 py-3">
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                 Method
                             </p>
 
-                            <p class="mt-1 text-sm font-black text-slate-950">
+                            <p class="mt-1 text-sm font-black text-warm-950">
                                 {{ $paymentMethod }}
                             </p>
                         </div>
 
-                        <div class="rounded-xl bg-slate-50 px-3 py-3">
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                        <div class="rounded-xl bg-warm-50 px-3 py-3">
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                 Status
                             </p>
 
-                            <p class="mt-1 text-sm font-black text-slate-950">
+                            <p class="mt-1 text-sm font-black text-warm-950">
                                 {{ $paymentStatus }}
                             </p>
                         </div>
@@ -1146,43 +1172,43 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
 
                     <div class="mt-5 space-y-3 text-sm">
                         <div class="flex items-center justify-between gap-4">
-                            <span class="font-semibold text-slate-500">
+                            <span class="font-semibold text-warm-500">
                                 Subtotal
                             </span>
 
-                            <span class="font-black text-slate-950">
-                                Rs. {{ number_format($order->subtotal, 0) }}
+                            <span class="font-black text-warm-950">
+                                ($order->subtotal)
                             </span>
                         </div>
 
                         <div class="flex items-center justify-between gap-4">
-                            <span class="font-semibold text-slate-500">
+                            <span class="font-semibold text-warm-500">
                                 Delivery fee
                             </span>
 
-                            <span class="font-black text-slate-950">
-                                Rs. {{ number_format($order->delivery_fee, 0) }}
+                            <span class="font-black text-warm-950">
+                                ($order->delivery_fee)
                             </span>
                         </div>
 
-                        <div class="border-t border-orange-100 pt-4">
+                        <div class="border-t border-warm-200 pt-4">
                             <div class="flex items-end justify-between gap-4">
-                                <span class="font-black text-slate-950">
+                                <span class="font-black text-warm-950">
                                     Total
                                 </span>
 
-                                <span class="text-2xl font-black text-orange-600">
-                                    Rs. {{ number_format($order->total, 0) }}
+                                <span class="text-2xl font-black text-brand-500">
+                                    ($order->total)
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     @if ($paymentMethod === 'COD')
-                        <div class="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
-                            <p class="text-xs font-semibold leading-5 text-emerald-800">
+                        <div class="mt-4 rounded-xl border border-leaf-100 bg-leaf-50 p-4">
+                            <p class="text-xs font-semibold leading-5 text-leaf-900">
                                 The rider should collect
-                                <strong>Rs. {{ number_format($order->total, 0) }}</strong>
+                                <strong>($order->total)</strong>
                                 from the customer upon delivery.
                             </p>
                         </div>
@@ -1193,11 +1219,11 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
     </div>
 
     {{-- Persistent Mobile Actions --}}
-    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-orange-100 bg-white/95 px-4 pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.14)] backdrop-blur xl:hidden">
+    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-[var(--shadow-bottom-nav)] backdrop-blur xl:hidden">
         <div class="mx-auto flex items-center gap-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             <a
                 href="{{ route('admin.orders.index') }}"
-                class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-orange-200 bg-orange-50 text-orange-700 transition active:scale-95"
+                class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-brand-200 bg-brand-50 text-brand-600 transition active:scale-95"
                 aria-label="Back to orders"
             >
                 <svg
@@ -1239,7 +1265,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                 type="submit"
                 form="order-status-form"
                 x-bind:disabled="updatingStatus"
-                class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/20 transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+                class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-warm-950 px-4 py-3 text-sm font-black text-white shadow-lg shadow-warm-950/20 transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
             >
                 <svg
                     x-show="updatingStatus"

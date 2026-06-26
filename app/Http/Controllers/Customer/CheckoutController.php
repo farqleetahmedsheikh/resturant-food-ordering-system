@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\Restaurant;
+use App\Services\RestaurantAvailabilityService;
 use App\Services\SmartMenuSuggestionService;
 use App\Support\Cart;
+use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,10 +17,11 @@ use Illuminate\View\View;
 
 class CheckoutController extends Controller
 {
-    public function index(): View|RedirectResponse
+    public function index(RestaurantAvailabilityService $availability): View|RedirectResponse
     {
-        $restaurant = Restaurant::where('is_active', true)->first();
+        $restaurant = Restaurant::current();
         $cart = Cart::summary($restaurant);
+        $availabilityStatus = $availability->status($restaurant);
 
         if ($cart['count'] < 1) {
             return redirect()->route('cart.index')->with('status', 'Your cart is empty. Add a meal before checkout.');
@@ -28,28 +31,30 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('status', 'One or more cart items are unavailable. Please update your cart.');
         }
 
-        if (! $restaurant?->is_open) {
-            return redirect()->route('cart.index')->with('status', 'Restaurant is currently closed. Ordering may be unavailable.');
+        if (! $availabilityStatus['is_open']) {
+            return redirect()->route('cart.index')->with('status', $this->restaurantClosedCartMessage());
         }
 
         if ($restaurant && (float) $restaurant->minimum_order_amount > 0 && $cart['subtotal'] < (float) $restaurant->minimum_order_amount) {
             return redirect()
                 ->route('cart.index')
-                ->with('status', 'Minimum order amount is Rs. '.number_format($restaurant->minimum_order_amount, 2).'.');
+                ->with('status', 'Minimum order amount is '.Money::format($restaurant->minimum_order_amount).'.');
         }
 
         return view('customer.checkout', [
             'cart' => $cart,
             'restaurant' => $restaurant,
+            'availabilityStatus' => $availabilityStatus,
             'user' => request()->user(),
             'suggestions' => app(SmartMenuSuggestionService::class)->forCart($cart['items']),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, RestaurantAvailabilityService $availability): RedirectResponse
     {
-        $restaurant = Restaurant::where('is_active', true)->first();
+        $restaurant = Restaurant::current();
         $cart = Cart::summary($restaurant);
+        $availabilityStatus = $availability->status($restaurant);
 
         if ($cart['count'] < 1) {
             return redirect()->route('cart.index')->with('status', 'Your cart is empty. Add a meal before checkout.');
@@ -59,14 +64,14 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('status', 'One or more cart items are unavailable. Please update your cart.');
         }
 
-        if (! $restaurant?->is_open) {
-            return redirect()->route('cart.index')->with('status', 'Restaurant is currently closed. Ordering may be unavailable.');
+        if (! $availabilityStatus['is_open']) {
+            return redirect()->route('cart.index')->with('status', $this->restaurantClosedCartMessage());
         }
 
         if ($restaurant && (float) $restaurant->minimum_order_amount > 0 && $cart['subtotal'] < (float) $restaurant->minimum_order_amount) {
             return redirect()
                 ->route('cart.index')
-                ->with('status', 'Minimum order amount is Rs. '.number_format($restaurant->minimum_order_amount, 2).'.');
+                ->with('status', 'Minimum order amount is '.Money::format($restaurant->minimum_order_amount).'.');
         }
 
         $validated = $request->validate([
@@ -74,6 +79,8 @@ class CheckoutController extends Controller
             'customer_phone' => ['required', 'string', 'max:30'],
             'customer_email' => ['nullable', 'email', 'max:255'],
             'delivery_address' => ['required', 'string', 'max:1000'],
+            'delivery_latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'delivery_longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'order_notes' => ['nullable', 'string', 'max:1000'],
             'payment_method' => ['required', 'in:cod'],
         ]);
@@ -87,6 +94,8 @@ class CheckoutController extends Controller
                 'customer_phone' => $validated['customer_phone'],
                 'customer_email' => $validated['customer_email'] ?? null,
                 'delivery_address' => $validated['delivery_address'],
+                'delivery_latitude' => $validated['delivery_latitude'] ?? null,
+                'delivery_longitude' => $validated['delivery_longitude'] ?? null,
                 'order_notes' => $validated['order_notes'] ?? null,
                 'subtotal' => $cart['subtotal'],
                 'delivery_fee' => $cart['delivery_fee'],
@@ -134,6 +143,11 @@ class CheckoutController extends Controller
         } while (Order::where('order_number', $orderNumber)->exists());
 
         return $orderNumber;
+    }
+
+    private function restaurantClosedCartMessage(): string
+    {
+        return 'Restaurant is closed now. Your items are in cart and you can checkout later when restaurant opens.';
     }
 
     /**

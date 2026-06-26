@@ -1,19 +1,17 @@
 @component('layouts.auth', ['title' => 'New Password'])
 <div class="text-center">
-    <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-sm font-black text-white shadow-lg shadow-orange-600/25">
-        FB
-    </div>
+    <x-brand-mark mark-class="mx-auto h-14 w-14 rounded-2xl" />
 
-    <p class="mt-6 text-xs font-black uppercase tracking-[0.24em] text-orange-600">
+    <p class="mt-6 text-xs font-black uppercase tracking-[0.24em] text-brand-500">
         New Password
     </p>
 
-    <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950">
+    <h1 class="mt-3 text-3xl font-black tracking-tight text-warm-950">
         Create a secure password
     </h1>
 
-    <p class="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-600">
-        Your OTP is verified. Set a new password for your FreshBite account.
+    <p class="mx-auto mt-3 max-w-sm text-sm leading-6 text-warm-600">
+        Your OTP is verified. Set a new password for your Arcade Kebab House account.
     </p>
 </div>
 
@@ -21,7 +19,7 @@
     @csrf
 
     <div>
-        <label for="password" class="block text-sm font-black text-slate-800">
+        <label for="password" class="block text-sm font-black text-warm-900">
             New Password
         </label>
 
@@ -32,7 +30,7 @@
             required
             autocomplete="new-password"
             placeholder="Create new password"
-            class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+            class="mt-2 w-full rounded-2xl border border-warm-200 bg-white px-4 py-3 text-sm font-semibold text-warm-900 shadow-sm outline-none transition placeholder:text-warm-500 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
         >
 
         @error('password')
@@ -43,7 +41,7 @@
     </div>
 
     <div>
-        <label for="password_confirmation" class="block text-sm font-black text-slate-800">
+        <label for="password_confirmation" class="block text-sm font-black text-warm-900">
             Confirm New Password
         </label>
 
@@ -54,13 +52,13 @@
             required
             autocomplete="new-password"
             placeholder="Repeat new password"
-            class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+            class="mt-2 w-full rounded-2xl border border-warm-200 bg-white px-4 py-3 text-sm font-semibold text-warm-900 shadow-sm outline-none transition placeholder:text-warm-500 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
         >
     </div>
 
     <button
         type="submit"
-        class="w-full rounded-2xl bg-orange-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:-translate-y-0.5 hover:bg-orange-700 hover:shadow-xl hover:shadow-orange-600/25"
+        class="w-full rounded-2xl bg-brand-500 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/25"
     >
         Update Password
     </button>

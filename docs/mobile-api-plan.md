@@ -1,10 +1,10 @@
-# FreshBite Mobile API Plan
+# Arcade Kebab House Mobile API Plan
 
 Date: 2026-06-24
 
 ## Proposed Architecture
 
-FreshBite will keep the existing Blade website and role dashboards while adding a versioned JSON API for React Native apps:
+Arcade Kebab House will keep the existing Blade website and role dashboards while adding a versioned JSON API for React Native apps:
 
 ```text
 Blade website + React Native apps

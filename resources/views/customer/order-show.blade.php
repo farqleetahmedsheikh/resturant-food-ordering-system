@@ -76,19 +76,19 @@ $deliveryStatus = $order->delivery?->status;
 
     $statusTheme = match (true) {
         $isCancelled => [
-            'hero' => 'from-red-600 via-red-500 to-rose-600',
+            'hero' => 'from-red-600 via-red-500 to-red-600',
             'soft' => 'border-red-100 bg-red-50',
             'text' => 'text-red-700',
             'dot' => 'bg-red-500',
-            'progress' => 'from-red-500 to-rose-500',
+            'progress' => 'from-red-500 to-red-500',
         ],
 
         $isDelivered => [
-            'hero' => 'from-emerald-600 via-emerald-500 to-teal-600',
-            'soft' => 'border-emerald-100 bg-emerald-50',
-            'text' => 'text-emerald-700',
-            'dot' => 'bg-emerald-500',
-            'progress' => 'from-emerald-500 to-teal-500',
+            'hero' => 'from-leaf-700 via-leaf-500 to-teal-600',
+            'soft' => 'border-leaf-100 bg-leaf-50',
+            'text' => 'text-leaf-700',
+            'dot' => 'bg-leaf-500',
+            'progress' => 'from-leaf-500 to-teal-500',
         ],
 
         in_array($effectiveStatus, ['picked_up', 'out_for_delivery'], true) => [
@@ -96,23 +96,23 @@ $deliveryStatus = $order->delivery?->status;
             'soft' => 'border-blue-100 bg-blue-50',
             'text' => 'text-blue-700',
             'dot' => 'bg-blue-500',
-            'progress' => 'from-blue-500 to-orange-500',
+            'progress' => 'from-blue-500 to-brand-500',
         ],
 
         in_array($effectiveStatus, ['accepted', 'preparing', 'ready'], true) => [
-            'hero' => 'from-amber-500 via-orange-500 to-orange-600',
-            'soft' => 'border-amber-100 bg-amber-50',
-            'text' => 'text-amber-700',
-            'dot' => 'bg-amber-500',
-            'progress' => 'from-amber-500 to-orange-500',
+            'hero' => 'from-gold-500 via-food-tan to-food-brown',
+            'soft' => 'border-gold-100 bg-gold-50',
+            'text' => 'text-food-brown',
+            'dot' => 'bg-food-tan',
+            'progress' => 'from-gold-500 to-food-tan',
         ],
 
         default => [
-            'hero' => 'from-orange-600 via-orange-500 to-red-600',
-            'soft' => 'border-orange-100 bg-orange-50',
-            'text' => 'text-orange-700',
-            'dot' => 'bg-orange-500',
-            'progress' => 'from-orange-500 to-red-500',
+            'hero' => 'from-brand-500 via-brand-600 to-brand-800',
+            'soft' => 'border-warm-200 bg-brand-50',
+            'text' => 'text-brand-600',
+            'dot' => 'bg-brand-500',
+            'progress' => 'from-brand-500 to-brand-600',
         ],
     };
 
@@ -171,7 +171,7 @@ $deliveryStatus = $order->delivery?->status;
     <div class="flex items-center justify-between gap-4 lg:hidden">
         <a
             href="{{ route('customer.orders') }}"
-            class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-orange-100 bg-white text-slate-700 shadow-sm transition active:scale-95"
+            class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-warm-200 bg-white text-warm-600 shadow-sm transition active:scale-95"
             aria-label="Back to orders"
         >
             <svg
@@ -191,11 +191,11 @@ $deliveryStatus = $order->delivery?->status;
         </a>
 
         <div class="min-w-0 text-center">
-            <p class="text-sm font-black text-slate-950">
+            <p class="text-sm font-black text-warm-950">
                 Order details
             </p>
 
-            <p class="mt-0.5 truncate text-[10px] font-semibold text-slate-500">
+            <p class="mt-0.5 truncate text-[10px] font-semibold text-warm-500">
                 {{ $order->order_number }}
             </p>
         </div>
@@ -203,7 +203,7 @@ $deliveryStatus = $order->delivery?->status;
         <button
             type="button"
             x-on:click="copyOrderNumber"
-            class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-orange-100 bg-white text-orange-600 shadow-sm transition active:scale-95"
+            class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-warm-200 bg-white text-brand-500 shadow-sm transition active:scale-95"
             aria-label="Copy order number"
         >
             <svg
@@ -227,7 +227,7 @@ $deliveryStatus = $order->delivery?->status;
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2.5"
-                class="h-5 w-5 text-emerald-600"
+                class="h-5 w-5 text-leaf-700"
             >
                 <path
                     stroke-linecap="round"
@@ -241,19 +241,19 @@ $deliveryStatus = $order->delivery?->status;
     {{-- Desktop Header --}}
     <header class="hidden items-end justify-between gap-8 lg:flex">
         <div>
-            <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-brand-500">
                 Order Details
             </p>
 
             <div class="mt-2 flex items-center gap-3">
-                <h1 class="break-all text-4xl font-black tracking-tight text-slate-950">
+                <h1 class="break-all text-4xl font-black tracking-tight text-warm-950">
                     {{ $order->order_number }}
                 </h1>
 
                 <button
                     type="button"
                     x-on:click="copyOrderNumber"
-                    class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 text-orange-600 transition hover:bg-orange-100"
+                    class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500 transition hover:bg-brand-100"
                     aria-label="Copy order number"
                 >
                     <svg
@@ -277,7 +277,7 @@ $deliveryStatus = $order->delivery?->status;
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2.5"
-                        class="h-4 w-4 text-emerald-600"
+                        class="h-4 w-4 text-leaf-700"
                     >
                         <path
                             stroke-linecap="round"
@@ -288,14 +288,14 @@ $deliveryStatus = $order->delivery?->status;
                 </button>
             </div>
 
-            <p class="mt-2 text-sm font-semibold text-slate-500">
+            <p class="mt-2 text-sm font-semibold text-warm-500">
                 Placed {{ $order->created_at->format('M d, Y · h:i A') }}
             </p>
         </div>
 
         <a
             href="{{ route('customer.orders') }}"
-            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-orange-200 bg-white px-5 py-3 text-sm font-black text-orange-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-orange-50"
+            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-5 py-3 text-sm font-black text-brand-600 shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-50"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -317,7 +317,7 @@ $deliveryStatus = $order->delivery?->status;
     </header>
 
     {{-- Status Hero --}}
-    <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br {{ $statusTheme['hero'] }} p-5 text-white shadow-2xl shadow-orange-900/15 sm:p-7 lg:rounded-[2rem] lg:p-8">
+    <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br {{ $statusTheme['hero'] }} p-5 text-white shadow-2xl shadow-brand-900/15 sm:p-7 lg:rounded-[2rem] lg:p-8">
         <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/20 blur-3xl"></div>
         <div class="pointer-events-none absolute -bottom-24 left-10 h-60 w-60 rounded-full bg-white/10 blur-3xl"></div>
 
@@ -394,7 +394,7 @@ $deliveryStatus = $order->delivery?->status;
                     </p>
 
                     <p class="mt-1 truncate text-sm font-black sm:text-lg">
-                        Rs. {{ number_format($order->total, 0) }}
+                        ($order->total)
                     </p>
                 </div>
             </div>
@@ -403,19 +403,19 @@ $deliveryStatus = $order->delivery?->status;
 
     {{-- Delivery Progress --}}
     @unless ($isCancelled)
-        <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-            <div class="border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+        <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+            <div class="border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                     Delivery Progress
                 </p>
 
-                <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                     Track your order
                 </h2>
             </div>
 
             {{-- Mobile Vertical Progress --}}
-            <div class="divide-y divide-slate-100 lg:hidden">
+            <div class="divide-y divide-warm-100 lg:hidden">
                 @foreach ($progressStages as $index => $stage)
                     @php
                         $stageNumber = $index + 1;
@@ -431,9 +431,9 @@ $deliveryStatus = $order->delivery?->status;
                             <span
                                 @class([
                                     'relative z-10 grid h-10 w-10 place-items-center rounded-full border-2 text-xs font-black',
-                                    'border-emerald-500 bg-emerald-500 text-white' => $stageCompleted,
-                                    'border-orange-500 bg-orange-50 text-orange-700 ring-4 ring-orange-100' => $stageCurrent,
-                                    'border-slate-200 bg-white text-slate-400' => ! $stageCompleted && ! $stageCurrent,
+                                    'border-leaf-500 bg-leaf-500 text-white' => $stageCompleted,
+                                    'border-brand-500 bg-brand-50 text-brand-600 ring-4 ring-brand-100' => $stageCurrent,
+                                    'border-warm-200 bg-white text-warm-500' => ! $stageCompleted && ! $stageCurrent,
                                 ])
                             >
                                 @if ($stageCompleted)
@@ -462,21 +462,21 @@ $deliveryStatus = $order->delivery?->status;
                                 <p
                                     @class([
                                         'text-sm font-black',
-                                        'text-orange-700' => $stageCurrent,
-                                        'text-slate-950' => ! $stageCurrent,
+                                        'text-brand-600' => $stageCurrent,
+                                        'text-warm-950' => ! $stageCurrent,
                                     ])
                                 >
                                     {{ $stage['title'] }}
                                 </p>
 
                                 @if ($stageCurrent)
-                                    <span class="rounded-full bg-orange-50 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.1em] text-orange-700">
+                                    <span class="rounded-full bg-brand-50 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.1em] text-brand-600">
                                         Current
                                     </span>
                                 @endif
                             </div>
 
-                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                            <p class="mt-1 text-xs font-semibold leading-5 text-warm-500">
                                 {{ $stage['description'] }}
                             </p>
                         </div>
@@ -502,8 +502,8 @@ $deliveryStatus = $order->delivery?->status;
                                 <div
                                     @class([
                                         'absolute left-1/2 top-5 h-0.5 w-full',
-                                        'bg-emerald-400' => $stageNumber < $currentStage || $isDelivered,
-                                        'bg-slate-200' => ! ($stageNumber < $currentStage || $isDelivered),
+                                        'bg-leaf-500' => $stageNumber < $currentStage || $isDelivered,
+                                        'bg-warm-200' => ! ($stageNumber < $currentStage || $isDelivered),
                                     ])
                                 ></div>
                             @endif
@@ -511,9 +511,9 @@ $deliveryStatus = $order->delivery?->status;
                             <span
                                 @class([
                                     'relative z-10 mx-auto grid h-10 w-10 place-items-center rounded-full border-2 text-xs font-black',
-                                    'border-emerald-500 bg-emerald-500 text-white' => $stageCompleted,
-                                    'border-orange-500 bg-orange-50 text-orange-700 ring-4 ring-orange-100' => $stageCurrent,
-                                    'border-slate-200 bg-white text-slate-400' => ! $stageCompleted && ! $stageCurrent,
+                                    'border-leaf-500 bg-leaf-500 text-white' => $stageCompleted,
+                                    'border-brand-500 bg-brand-50 text-brand-600 ring-4 ring-brand-100' => $stageCurrent,
+                                    'border-warm-200 bg-white text-warm-500' => ! $stageCompleted && ! $stageCurrent,
                                 ])
                             >
                                 @if ($stageCompleted)
@@ -536,11 +536,11 @@ $deliveryStatus = $order->delivery?->status;
                                 @endif
                             </span>
 
-                            <p class="mt-3 text-sm font-black text-slate-950">
+                            <p class="mt-3 text-sm font-black text-warm-950">
                                 {{ $stage['title'] }}
                             </p>
 
-                            <p class="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                            <p class="mt-1 text-xs font-semibold leading-5 text-warm-500">
                                 {{ $stage['description'] }}
                             </p>
                         </div>
@@ -554,9 +554,9 @@ $deliveryStatus = $order->delivery?->status;
         {{-- Main Column --}}
         <div class="min-w-0 space-y-5">
             {{-- Mobile Rider Card --}}
-            <section class="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm lg:hidden">
+            <section class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm lg:hidden">
                 <div class="flex items-center gap-3">
-                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-orange-50 text-orange-600">
+                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -573,11 +573,11 @@ $deliveryStatus = $order->delivery?->status;
                     </span>
 
                     <div class="min-w-0 flex-1">
-                        <p class="text-[9px] font-black uppercase tracking-[0.14em] text-orange-600">
+                        <p class="text-[9px] font-black uppercase tracking-[0.14em] text-brand-500">
                             Delivery Partner
                         </p>
 
-                        <h2 class="mt-1 text-base font-black text-slate-950">
+                        <h2 class="mt-1 text-base font-black text-warm-950">
                             @if ($order->rider)
                                 {{ $order->rider->name }}
                             @else
@@ -586,11 +586,11 @@ $deliveryStatus = $order->delivery?->status;
                         </h2>
 
                         @if ($order->rider)
-                            <p class="mt-0.5 truncate text-xs font-semibold text-slate-500">
+                            <p class="mt-0.5 truncate text-xs font-semibold text-warm-500">
                                 {{ $order->rider->phone ?? $order->rider->email }}
                             </p>
                         @else
-                            <p class="mt-0.5 text-xs font-semibold leading-5 text-slate-500">
+                            <p class="mt-0.5 text-xs font-semibold leading-5 text-warm-500">
                                 Rider information will appear after assignment.
                             </p>
                         @endif
@@ -599,7 +599,7 @@ $deliveryStatus = $order->delivery?->status;
                     @if ($riderPhoneHref && $isActiveOrder)
                         <a
                             href="tel:{{ $riderPhoneHref }}"
-                            class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-600/20 transition active:scale-95"
+                            class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-500 text-white shadow-lg shadow-brand-500/20 transition active:scale-95"
                             aria-label="Call rider"
                         >
                             <svg
@@ -618,47 +618,47 @@ $deliveryStatus = $order->delivery?->status;
             </section>
 
             {{-- Ordered Items --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-                <div class="flex items-center justify-between gap-4 border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between gap-4 border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                             Your Meal
                         </p>
 
-                        <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                        <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                             Ordered items
                         </h2>
                     </div>
 
-                    <span class="rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-black text-orange-700">
+                    <span class="rounded-full bg-brand-50 px-3 py-1.5 text-[10px] font-black text-brand-600">
                         {{ $itemCount }}
                         {{ $itemCount === 1 ? 'item' : 'items' }}
                     </span>
                 </div>
 
-                <div class="divide-y divide-slate-100">
+                <div class="divide-y divide-warm-100">
                     @foreach ($order->items as $item)
                         <article class="p-4 sm:p-5">
                             <div class="flex items-start gap-3 sm:gap-4">
-                                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-orange-50 text-lg font-black text-orange-600 sm:h-14 sm:w-14 sm:rounded-2xl">
+                                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-50 text-lg font-black text-brand-500 sm:h-14 sm:w-14 sm:rounded-2xl">
                                     {{ mb_substr($item->item_name, 0, 1) }}
                                 </span>
 
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
-                                            <h3 class="break-words text-sm font-black leading-5 text-slate-950 sm:text-base">
+                                            <h3 class="break-words text-sm font-black leading-5 text-warm-950 sm:text-base">
                                                 {{ $item->item_name }}
                                             </h3>
 
-                                            <p class="mt-1 text-xs font-semibold text-slate-500 sm:text-sm">
+                                            <p class="mt-1 text-xs font-semibold text-warm-500 sm:text-sm">
                                                 {{ $item->quantity }}
-                                                × Rs. {{ number_format($item->price, 0) }}
+                                                × ($item->price)
                                             </p>
                                         </div>
 
-                                        <p class="shrink-0 text-sm font-black text-slate-950 sm:text-base">
-                                            Rs. {{ number_format($item->total, 0) }}
+                                        <p class="shrink-0 text-sm font-black text-warm-950 sm:text-base">
+                                            ($item->total)
                                         </p>
                                     </div>
 
@@ -673,8 +673,8 @@ $deliveryStatus = $order->delivery?->status;
             </section>
 
             {{-- Delivery Information --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-                <div class="border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+                <div class="border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div class="flex items-start gap-3">
                         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600">
                             <svg
@@ -695,7 +695,7 @@ $deliveryStatus = $order->delivery?->status;
                                 Delivery Information
                             </p>
 
-                            <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                            <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                                 Delivery address
                             </h2>
                         </div>
@@ -703,17 +703,17 @@ $deliveryStatus = $order->delivery?->status;
                 </div>
 
                 <div class="p-4 sm:p-6">
-                    <p class="break-words text-sm font-semibold leading-6 text-slate-700">
+                    <p class="break-words text-sm font-semibold leading-6 text-warm-600">
                         {{ $order->delivery_address }}
                     </p>
 
                     @if ($order->order_notes)
-                        <div class="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4">
-                            <p class="text-[9px] font-black uppercase tracking-[0.14em] text-amber-700">
+                        <div class="mt-4 rounded-xl border border-gold-100 bg-gold-50 p-4">
+                            <p class="text-[9px] font-black uppercase tracking-[0.14em] text-gold-700">
                                 Delivery instructions
                             </p>
 
-                            <p class="mt-1.5 text-sm font-semibold leading-6 text-slate-700">
+                            <p class="mt-1.5 text-sm font-semibold leading-6 text-warm-600">
                                 {{ $order->order_notes }}
                             </p>
                         </div>
@@ -722,52 +722,52 @@ $deliveryStatus = $order->delivery?->status;
             </section>
 
             {{-- Mobile Payment Summary --}}
-            <section class="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm lg:hidden">
+            <section class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm lg:hidden">
                 <div class="flex items-end justify-between gap-4">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.16em] text-orange-600">
+                        <p class="text-[10px] font-black uppercase tracking-[0.16em] text-brand-500">
                             Payment Summary
                         </p>
 
-                        <h2 class="mt-1 text-lg font-black text-slate-950">
+                        <h2 class="mt-1 text-lg font-black text-warm-950">
                             Order total
                         </h2>
                     </div>
 
-                    <p class="text-2xl font-black text-orange-600">
-                        Rs. {{ number_format($order->total, 0) }}
+                    <p class="text-2xl font-black text-brand-500">
+                        ($order->total)
                     </p>
                 </div>
 
                 <div class="mt-4 grid grid-cols-2 gap-2">
-                    <div class="rounded-xl bg-slate-50 px-3 py-3">
-                        <p class="text-[9px] font-black uppercase tracking-[0.1em] text-slate-400">
+                    <div class="rounded-xl bg-warm-50 px-3 py-3">
+                        <p class="text-[9px] font-black uppercase tracking-[0.1em] text-warm-500">
                             Subtotal
                         </p>
 
-                        <p class="mt-1 text-sm font-black text-slate-950">
-                            Rs. {{ number_format($order->subtotal, 0) }}
+                        <p class="mt-1 text-sm font-black text-warm-950">
+                            ($order->subtotal)
                         </p>
                     </div>
 
-                    <div class="rounded-xl bg-slate-50 px-3 py-3">
-                        <p class="text-[9px] font-black uppercase tracking-[0.1em] text-slate-400">
+                    <div class="rounded-xl bg-warm-50 px-3 py-3">
+                        <p class="text-[9px] font-black uppercase tracking-[0.1em] text-warm-500">
                             Delivery
                         </p>
 
-                        <p class="mt-1 text-sm font-black text-slate-950">
-                            Rs. {{ number_format($order->delivery_fee, 0) }}
+                        <p class="mt-1 text-sm font-black text-warm-950">
+                            ($order->delivery_fee)
                         </p>
                     </div>
                 </div>
 
-                <div class="mt-3 flex items-center justify-between gap-3 rounded-xl bg-emerald-50 px-3 py-3">
+                <div class="mt-3 flex items-center justify-between gap-3 rounded-xl bg-leaf-50 px-3 py-3">
                     <div>
-                        <p class="text-xs font-black text-emerald-900">
+                        <p class="text-xs font-black text-leaf-900">
                             {{ $paymentMethod }}
                         </p>
 
-                        <p class="mt-0.5 text-[10px] font-semibold text-emerald-700">
+                        <p class="mt-0.5 text-[10px] font-semibold text-leaf-700">
                             {{ $paymentStatus }}
                         </p>
                     </div>
@@ -783,12 +783,12 @@ $deliveryStatus = $order->delivery?->status;
         {{-- Desktop Sidebar --}}
         <aside class="hidden space-y-5 lg:sticky lg:top-24 lg:block">
             {{-- Status --}}
-            <section class="rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-sm">
-                <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">
+            <section class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-brand-500">
                     Current Status
                 </p>
 
-                <h2 class="mt-2 text-xl font-black tracking-tight text-slate-950">
+                <h2 class="mt-2 text-xl font-black tracking-tight text-warm-950">
                     Order progress
                 </h2>
 
@@ -803,23 +803,23 @@ $deliveryStatus = $order->delivery?->status;
                     @endif
                 </div>
 
-                <div class="mt-5 space-y-3 border-t border-orange-100 pt-5 text-sm">
+                <div class="mt-5 space-y-3 border-t border-warm-200 pt-5 text-sm">
                     <div class="flex items-center justify-between gap-4">
-                        <span class="font-semibold text-slate-500">
+                        <span class="font-semibold text-warm-500">
                             Payment method
                         </span>
 
-                        <span class="font-black text-slate-950">
+                        <span class="font-black text-warm-950">
                             {{ $paymentMethod }}
                         </span>
                     </div>
 
                     <div class="flex items-center justify-between gap-4">
-                        <span class="font-semibold text-slate-500">
+                        <span class="font-semibold text-warm-500">
                             Payment status
                         </span>
 
-                        <span class="font-black text-slate-950">
+                        <span class="font-black text-warm-950">
                             {{ $paymentStatus }}
                         </span>
                     </div>
@@ -827,9 +827,9 @@ $deliveryStatus = $order->delivery?->status;
             </section>
 
             {{-- Rider --}}
-            <section class="rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-sm">
+            <section class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm">
                 <div class="flex items-center gap-3">
-                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-orange-50 text-orange-600">
+                    <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -846,29 +846,29 @@ $deliveryStatus = $order->delivery?->status;
                     </span>
 
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.14em] text-orange-600">
+                        <p class="text-[10px] font-black uppercase tracking-[0.14em] text-brand-500">
                             Delivery Partner
                         </p>
 
-                        <h2 class="mt-1 text-lg font-black text-slate-950">
+                        <h2 class="mt-1 text-lg font-black text-warm-950">
                             Assigned rider
                         </h2>
                     </div>
                 </div>
 
                 @if ($order->rider)
-                    <div class="mt-4 rounded-2xl bg-slate-50 p-4">
+                    <div class="mt-4 rounded-2xl bg-warm-50 p-4">
                         <div class="flex items-center gap-3">
-                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-sm font-black text-orange-700 shadow-sm">
+                            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-sm font-black text-brand-600 shadow-sm">
                                 {{ mb_substr($order->rider->name, 0, 1) }}
                             </span>
 
                             <div class="min-w-0">
-                                <p class="truncate font-black text-slate-950">
+                                <p class="truncate font-black text-warm-950">
                                     {{ $order->rider->name }}
                                 </p>
 
-                                <p class="mt-1 break-all text-xs font-semibold text-slate-500">
+                                <p class="mt-1 break-all text-xs font-semibold text-warm-500">
                                     {{ $order->rider->phone ?? $order->rider->email }}
                                 </p>
                             </div>
@@ -877,7 +877,7 @@ $deliveryStatus = $order->delivery?->status;
                         @if ($riderPhoneHref && $isActiveOrder)
                             <a
                                 href="tel:{{ $riderPhoneHref }}"
-                                class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:bg-orange-700"
+                                class="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -895,8 +895,8 @@ $deliveryStatus = $order->delivery?->status;
                         @endif
                     </div>
                 @else
-                    <div class="mt-4 rounded-2xl border border-dashed border-orange-200 bg-orange-50 p-4 text-center">
-                        <p class="text-sm font-semibold leading-6 text-slate-600">
+                    <div class="mt-4 rounded-2xl border border-dashed border-brand-200 bg-brand-50 p-4 text-center">
+                        <p class="text-sm font-semibold leading-6 text-warm-600">
                             Rider details will appear here after assignment.
                         </p>
                     </div>
@@ -904,44 +904,44 @@ $deliveryStatus = $order->delivery?->status;
             </section>
 
             {{-- Price Summary --}}
-            <section class="rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-xl shadow-orange-900/5">
-                <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">
+            <section class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-xl shadow-brand-900/5">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-brand-500">
                     Payment Summary
                 </p>
 
-                <h2 class="mt-2 text-xl font-black tracking-tight text-slate-950">
+                <h2 class="mt-2 text-xl font-black tracking-tight text-warm-950">
                     Order total
                 </h2>
 
                 <div class="mt-5 space-y-4 text-sm">
                     <div class="flex justify-between gap-4">
-                        <span class="font-semibold text-slate-500">
+                        <span class="font-semibold text-warm-500">
                             Subtotal
                         </span>
 
-                        <span class="font-black text-slate-950">
-                            Rs. {{ number_format($order->subtotal, 0) }}
+                        <span class="font-black text-warm-950">
+                            ($order->subtotal)
                         </span>
                     </div>
 
                     <div class="flex justify-between gap-4">
-                        <span class="font-semibold text-slate-500">
+                        <span class="font-semibold text-warm-500">
                             Delivery fee
                         </span>
 
-                        <span class="font-black text-slate-950">
-                            Rs. {{ number_format($order->delivery_fee, 0) }}
+                        <span class="font-black text-warm-950">
+                            ($order->delivery_fee)
                         </span>
                     </div>
 
-                    <div class="border-t border-orange-100 pt-4">
+                    <div class="border-t border-warm-200 pt-4">
                         <div class="flex items-end justify-between gap-4">
-                            <span class="font-black text-slate-950">
+                            <span class="font-black text-warm-950">
                                 Total
                             </span>
 
-                            <span class="text-2xl font-black text-orange-600">
-                                Rs. {{ number_format($order->total, 0) }}
+                            <span class="text-2xl font-black text-brand-500">
+                                ($order->total)
                             </span>
                         </div>
                     </div>
@@ -951,11 +951,11 @@ $deliveryStatus = $order->delivery?->status;
     </div>
 
     {{-- Persistent Mobile Actions --}}
-    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-orange-100 bg-white/95 px-4 pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.14)] backdrop-blur lg:hidden">
+    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-[var(--shadow-bottom-nav)] backdrop-blur lg:hidden">
         <div class="mx-auto flex items-center gap-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             <a
                 href="{{ route('customer.orders') }}"
-                class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-orange-200 bg-orange-50 text-orange-700 transition active:scale-95"
+                class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-brand-200 bg-brand-50 text-brand-600 transition active:scale-95"
                 aria-label="View all orders"
             >
                 <svg
@@ -974,7 +974,7 @@ $deliveryStatus = $order->delivery?->status;
             @if ($riderPhoneHref && $isActiveOrder)
                 <a
                     href="tel:{{ $riderPhoneHref }}"
-                    class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/25 transition active:scale-[0.98]"
+                    class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition active:scale-[0.98]"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -992,7 +992,7 @@ $deliveryStatus = $order->delivery?->status;
                 @else
                     <a
                         href="{{ route('customer.orders') }}"
-                        class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/25 transition active:scale-[0.98]"
+                        class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition active:scale-[0.98]"
                     >
                         Back to My Orders
 

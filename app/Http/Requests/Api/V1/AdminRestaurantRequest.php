@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
-use App\Models\Restaurant;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class AdminRestaurantRequest extends FormRequest
 {
@@ -15,23 +13,23 @@ class AdminRestaurantRequest extends FormRequest
 
     public function rules(): array
     {
-        $restaurant = $this->route('restaurant') ?? Restaurant::query()->first();
-
         return [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('restaurants', 'slug')->ignore($restaurant)],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:1000'],
+            'formatted_address' => ['nullable', 'string', 'max:1000'],
             'short_description' => ['nullable', 'string', 'max:1000'],
             'opening_time' => ['nullable', 'date_format:H:i'],
             'closing_time' => ['nullable', 'date_format:H:i'],
+            'timezone' => ['required', 'string', 'in:'.implode(',', array_keys(config('restaurant.timezones', [])))],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'delivery_fee' => ['required', 'numeric', 'min:0'],
             'minimum_order_amount' => ['required', 'numeric', 'min:0'],
-            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'cover_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'logo' => \App\Support\ImageUpload::validationRules(),
+            'cover_image' => \App\Support\ImageUpload::validationRules(),
             'is_open' => ['sometimes', 'boolean'],
-            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

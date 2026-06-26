@@ -41,36 +41,36 @@ class MenuItemOptionSeeder extends Seeder
                     $base = (float) $item->price;
 
                     $item->sizes()->createMany([
-                        ['name' => 'Small', 'price' => round($base * 0.72), 'sort_order' => 1, 'is_active' => true],
+                        ['name' => 'Small', 'price' => round($base * 0.72, 2), 'sort_order' => 1, 'is_active' => true],
                         ['name' => 'Medium', 'price' => $base, 'sort_order' => 2, 'is_active' => true],
-                        ['name' => 'Large', 'price' => round($base * 1.28), 'sort_order' => 3, 'is_active' => true],
-                        ['name' => 'Party Size', 'price' => round($base * 1.85), 'sort_order' => 4, 'is_active' => true],
+                        ['name' => 'Large', 'price' => round($base * 1.28, 2), 'sort_order' => 3, 'is_active' => true],
+                        ['name' => 'Party Size', 'price' => round($base * 1.85, 2), 'sort_order' => 4, 'is_active' => true],
                     ]);
 
                     $item->addons()->createMany([
-                        ['name' => 'Extra Cheese', 'type' => 'extra', 'price' => 199, 'sort_order' => 1, 'is_active' => true],
-                        ['name' => 'Extra Chicken', 'type' => 'topping', 'price' => 249, 'sort_order' => 2, 'is_active' => true],
-                        ['name' => 'Mushrooms', 'type' => 'topping', 'price' => 149, 'sort_order' => 3, 'is_active' => true],
-                        ['name' => 'Olives', 'type' => 'topping', 'price' => 129, 'sort_order' => 4, 'is_active' => true],
-                        ['name' => 'Garlic Mayo Dip', 'type' => 'dip', 'price' => 99, 'sort_order' => 5, 'is_active' => true],
-                        ['name' => 'Ranch Dip', 'type' => 'dip', 'price' => 99, 'sort_order' => 6, 'is_active' => true],
+                        ['name' => 'Extra Cheese', 'type' => 'extra', 'price' => 2.00, 'sort_order' => 1, 'is_active' => true],
+                        ['name' => 'Extra Chicken', 'type' => 'topping', 'price' => 3.00, 'sort_order' => 2, 'is_active' => true],
+                        ['name' => 'Mushrooms', 'type' => 'topping', 'price' => 1.50, 'sort_order' => 3, 'is_active' => true],
+                        ['name' => 'Olives', 'type' => 'topping', 'price' => 1.50, 'sort_order' => 4, 'is_active' => true],
+                        ['name' => 'Garlic Mayo Dip', 'type' => 'dip', 'price' => 1.00, 'sort_order' => 5, 'is_active' => true],
+                        ['name' => 'Ranch Dip', 'type' => 'dip', 'price' => 1.00, 'sort_order' => 6, 'is_active' => true],
                     ]);
                 }
 
                 if (in_array($item->slug, $burgerSlugs, true)) {
                     $item->addons()->createMany([
-                        ['name' => 'Extra Cheese Slice', 'type' => 'extra', 'price' => 99, 'sort_order' => 1, 'is_active' => true],
-                        ['name' => 'Extra Patty', 'type' => 'extra', 'price' => 299, 'sort_order' => 2, 'is_active' => true],
-                        ['name' => 'Jalapenos', 'type' => 'topping', 'price' => 79, 'sort_order' => 3, 'is_active' => true],
-                        ['name' => 'Garlic Mayo Dip', 'type' => 'dip', 'price' => 99, 'sort_order' => 4, 'is_active' => true],
+                        ['name' => 'Extra Cheese Slice', 'type' => 'extra', 'price' => 1.20, 'sort_order' => 1, 'is_active' => true],
+                        ['name' => 'Extra Patty', 'type' => 'extra', 'price' => 4.00, 'sort_order' => 2, 'is_active' => true],
+                        ['name' => 'Jalapenos', 'type' => 'topping', 'price' => 1.00, 'sort_order' => 3, 'is_active' => true],
+                        ['name' => 'Garlic Mayo Dip', 'type' => 'dip', 'price' => 1.00, 'sort_order' => 4, 'is_active' => true],
                     ]);
                 }
 
                 if (in_array($item->slug, $pastaSlugs, true)) {
                     $item->addons()->createMany([
-                        ['name' => 'Extra Chicken', 'type' => 'extra', 'price' => 199, 'sort_order' => 1, 'is_active' => true],
-                        ['name' => 'Parmesan Cheese', 'type' => 'extra', 'price' => 149, 'sort_order' => 2, 'is_active' => true],
-                        ['name' => 'Garlic Bread Dip', 'type' => 'dip', 'price' => 99, 'sort_order' => 3, 'is_active' => true],
+                        ['name' => 'Extra Chicken', 'type' => 'extra', 'price' => 3.00, 'sort_order' => 1, 'is_active' => true],
+                        ['name' => 'Parmesan Cheese', 'type' => 'extra', 'price' => 2.00, 'sort_order' => 2, 'is_active' => true],
+                        ['name' => 'Garlic Bread Dip', 'type' => 'dip', 'price' => 1.00, 'sort_order' => 3, 'is_active' => true],
                     ]);
                 }
             });

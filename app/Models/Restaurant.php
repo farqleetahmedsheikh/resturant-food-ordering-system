@@ -14,19 +14,21 @@ class Restaurant extends Model
 
     protected $fillable = [
         'name',
-        'slug',
         'email',
         'phone',
         'address',
+        'formatted_address',
         'short_description',
         'opening_time',
         'closing_time',
+        'timezone',
+        'latitude',
+        'longitude',
         'delivery_fee',
         'minimum_order_amount',
         'logo',
         'cover_image',
         'is_open',
-        'is_active',
     ];
 
     protected function casts(): array
@@ -34,9 +36,29 @@ class Restaurant extends Model
         return [
             'delivery_fee' => 'decimal:2',
             'minimum_order_amount' => 'decimal:2',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
             'is_open' => 'boolean',
-            'is_active' => 'boolean',
         ];
+    }
+
+    public static function current(): ?self
+    {
+        return self::query()->oldest('id')->first();
+    }
+
+    public function getInitialsAttribute(): string
+    {
+        $words = collect(preg_split('/\s+/', trim((string) $this->name)) ?: [])
+            ->map(fn (string $word): string => trim($word))
+            ->filter(fn (string $word): bool => $word !== '')
+            ->reject(fn (string $word): bool => in_array(mb_strtolower($word), ['the', 'and', '&'], true))
+            ->take(2)
+            ->map(fn (string $word): string => mb_substr($word, 0, 1));
+
+        $initials = $words->implode('');
+
+        return mb_strtoupper($initials ?: 'AK');
     }
 
     public function getLogoUrlAttribute(): ?string

@@ -86,7 +86,7 @@ class AdminDashboardController extends Controller
             'featuredMenuItems' => MenuItem::where('is_featured', true)->count(),
             'totalCustomers' => User::where('role', 'customer')->count(),
             'totalRiders' => User::where('role', 'rider')->count(),
-            'restaurant' => Restaurant::where('is_active', true)->first(),
+            'restaurant' => Restaurant::current(),
             'totalCodRevenue' => Order::where('payment_method', 'cod')
                 ->whereNotIn('order_status', ['cancelled'])
                 ->sum('total'),

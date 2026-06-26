@@ -11,7 +11,7 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'name' => 'FreshBite Admin',
+                'name' => 'Arcade Kebab House Admin',
                 'email' => 'admin@example.com',
                 'phone' => '03000000001',
                 'role' => 'admin',

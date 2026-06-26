@@ -13,7 +13,7 @@ class RestaurantController extends Controller
     public function show(): JsonResponse
     {
         $restaurant = Restaurant::query()
-            ->where('is_active', true)
+            ->oldest('id')
             ->firstOrFail();
 
         return ApiResponse::success(new RestaurantResource($restaurant));

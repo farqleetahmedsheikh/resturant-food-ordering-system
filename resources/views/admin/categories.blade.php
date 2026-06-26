@@ -56,22 +56,22 @@ method_exists($categories, 'items')
     <header class="lg:hidden">
         <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                     Menu Management
                 </p>
 
-                <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-950">
+                <h1 class="mt-1 text-2xl font-black tracking-tight text-warm-950">
                     Categories
                 </h1>
 
-                <p class="mt-1 text-sm font-semibold text-slate-500">
+                <p class="mt-1 text-sm font-semibold text-warm-500">
                     Organize your restaurant menu.
                 </p>
             </div>
 
             <a
                 href="{{ route('admin.categories.create') }}"
-                class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-600 text-white shadow-lg shadow-orange-600/25 transition active:scale-95"
+                class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-500 text-white shadow-lg shadow-brand-500/25 transition active:scale-95"
                 aria-label="Add category"
             >
                 <svg
@@ -94,22 +94,22 @@ method_exists($categories, 'items')
     {{-- Desktop Header --}}
     <header class="hidden items-end justify-between gap-8 lg:flex">
         <div>
-            <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-brand-500">
                 Menu Management
             </p>
 
-            <h1 class="mt-2 text-4xl font-black tracking-tight text-slate-950">
+            <h1 class="mt-2 text-4xl font-black tracking-tight text-warm-950">
                 Categories
             </h1>
 
-            <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-600">
+            <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-warm-600">
                 Organize menu items, control public visibility, manage category images, and define display order.
             </p>
         </div>
 
         <a
             href="{{ route('admin.categories.create') }}"
-            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:-translate-y-0.5 hover:bg-orange-700 hover:shadow-xl"
+            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-xl"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -130,9 +130,9 @@ method_exists($categories, 'items')
     </header>
 
     {{-- Overview --}}
-    <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-orange-600 via-orange-500 to-red-600 p-5 text-white shadow-xl shadow-orange-900/15 sm:p-7 lg:rounded-[2rem] lg:p-8">
+    <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 p-5 text-white shadow-xl shadow-brand-900/15 sm:p-7 lg:rounded-[2rem] lg:p-8">
         <div class="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/20 blur-3xl"></div>
-        <div class="pointer-events-none absolute -bottom-28 left-8 h-64 w-64 rounded-full bg-yellow-200/20 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-28 left-8 h-64 w-64 rounded-full bg-gold-200/20 blur-3xl"></div>
 
         <div class="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
             <div class="min-w-0">
@@ -159,7 +159,7 @@ method_exists($categories, 'items')
                     {{ $categoryCount === 1 ? 'menu category' : 'menu categories' }}
                 </h2>
 
-                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-orange-50">
+                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-brand-50">
                     Well-organized categories help customers discover meals quickly and make menu management easier.
                 </p>
             </div>
@@ -212,8 +212,8 @@ method_exists($categories, 'items')
 
     @if ($visibleCategories->isEmpty())
         {{-- Empty State --}}
-        <section class="rounded-[1.75rem] border border-dashed border-orange-200 bg-white p-7 text-center shadow-sm sm:p-12">
-            <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-orange-50 text-orange-600 sm:h-20 sm:w-20">
+        <section class="rounded-[1.75rem] border border-dashed border-brand-200 bg-white p-7 text-center shadow-sm sm:p-12">
+            <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-500 sm:h-20 sm:w-20">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -229,17 +229,17 @@ method_exists($categories, 'items')
                 </svg>
             </div>
 
-            <h2 class="mt-5 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+            <h2 class="mt-5 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                 Create your first category
             </h2>
 
-            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-slate-600">
+            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-warm-600">
                 Categories group related menu items and make it easier for customers to browse your restaurant menu.
             </p>
 
             <a
                 href="{{ route('admin.categories.create') }}"
-                class="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition active:scale-[0.98] hover:bg-orange-700 sm:w-auto sm:rounded-2xl"
+                class="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600 sm:w-auto sm:rounded-2xl"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -260,18 +260,18 @@ method_exists($categories, 'items')
         </section>
     @else
         {{-- Directory Toolbar --}}
-        <section class="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm sm:p-5">
+        <section class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-5">
             <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600">
+                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
                         Category Directory
                     </p>
 
-                    <h2 class="mt-1 text-lg font-black text-slate-950 sm:text-xl">
+                    <h2 class="mt-1 text-lg font-black text-warm-950 sm:text-xl">
                         Manage menu organization
                     </h2>
 
-                    <p class="mt-1 text-xs font-semibold text-slate-500">
+                    <p class="mt-1 text-xs font-semibold text-warm-500">
                         Search and status filters apply to categories loaded on this page.
                     </p>
                 </div>
@@ -285,7 +285,7 @@ method_exists($categories, 'items')
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
-                            class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                            class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-500"
                         >
                             <circle cx="11" cy="11" r="7" />
                             <path stroke-linecap="round" d="m20 20-3.5-3.5" />
@@ -295,7 +295,7 @@ method_exists($categories, 'items')
                             type="search"
                             x-model.debounce.200ms="search"
                             placeholder="Search name or slug..."
-                            class="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-11 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                            class="min-h-12 w-full rounded-xl border border-warm-200 bg-warm-50 py-3 pl-11 pr-11 text-sm font-semibold text-warm-900 outline-none transition placeholder:text-warm-500 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
                         >
 
                         <button
@@ -303,7 +303,7 @@ method_exists($categories, 'items')
                             x-show="search.length > 0"
                             x-cloak
                             x-on:click="search = ''"
-                            class="absolute right-3 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                            class="absolute right-3 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg text-warm-500 transition hover:bg-warm-200 hover:text-warm-600"
                             aria-label="Clear search"
                         >
                             <svg
@@ -325,7 +325,7 @@ method_exists($categories, 'items')
                     {{-- Status Filter --}}
                     <select
                         x-model="status"
-                        class="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-700 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                        class="min-h-12 w-full rounded-xl border border-warm-200 bg-warm-50 px-4 py-3 text-sm font-black text-warm-600 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
                     >
                         <option value="all">All statuses</option>
                         <option value="active">Active only</option>
@@ -336,7 +336,7 @@ method_exists($categories, 'items')
                     <button
                         type="button"
                         x-on:click="resetFilters"
-                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-black text-orange-700 transition active:scale-[0.98] hover:bg-orange-100"
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-black text-brand-600 transition active:scale-[0.98] hover:bg-brand-100"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -366,10 +366,10 @@ method_exists($categories, 'items')
                         @js($category->is_active ? 'active' : 'inactive')
                     )"
                     x-transition.opacity.duration.200ms
-                    class="group flex min-w-0 flex-col overflow-hidden rounded-[1.5rem] border border-orange-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-900/5 sm:rounded-[1.75rem]"
+                    class="group flex min-w-0 flex-col overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-900/5 sm:rounded-[1.75rem]"
                 >
                     {{-- Image --}}
-                    <div class="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-orange-100 via-amber-50 to-red-100">
+                    <div class="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream">
                         @if ($category->image_url)
                             <img
                                 src="{{ $category->image_url }}"
@@ -379,7 +379,7 @@ method_exists($categories, 'items')
                             >
                         @else
                             <div class="grid h-full place-items-center">
-                                <span class="grid h-20 w-20 place-items-center rounded-full border border-white/70 bg-white/80 text-3xl font-black text-orange-700 shadow-xl backdrop-blur">
+                                <span class="grid h-20 w-20 place-items-center rounded-full border border-white/70 bg-white/80 text-3xl font-black text-brand-600 shadow-xl backdrop-blur">
                                     {{ mb_strtoupper(
                                         mb_substr($category->name, 0, 1)
                                     ) }}
@@ -391,14 +391,14 @@ method_exists($categories, 'items')
                             <span
                                 @class([
                                     'inline-flex items-center gap-2 rounded-full border bg-white/95 px-3 py-1.5 text-[10px] font-black shadow-sm backdrop-blur',
-                                    'border-emerald-100 text-emerald-700' => $category->is_active,
+                                    'border-leaf-100 text-leaf-700' => $category->is_active,
                                     'border-red-100 text-red-700' => ! $category->is_active,
                                 ])
                             >
                                 <span
                                     @class([
                                         'h-2 w-2 rounded-full',
-                                        'bg-emerald-500' => $category->is_active,
+                                        'bg-leaf-500' => $category->is_active,
                                         'bg-red-500' => ! $category->is_active,
                                     ])
                                 ></span>
@@ -406,7 +406,7 @@ method_exists($categories, 'items')
                                 {{ $category->is_active ? 'Active' : 'Inactive' }}
                             </span>
 
-                            <span class="rounded-full bg-slate-950/80 px-3 py-1.5 text-[10px] font-black text-white shadow-sm backdrop-blur">
+                            <span class="rounded-full bg-warm-950/80 px-3 py-1.5 text-[10px] font-black text-white shadow-sm backdrop-blur">
                                 {{ $category->menu_items_count }}
                                 {{ $category->menu_items_count === 1 ? 'item' : 'items' }}
                             </span>
@@ -414,11 +414,11 @@ method_exists($categories, 'items')
 
                         {{-- Sort Indicator --}}
                         <div class="absolute bottom-3 right-3 rounded-xl border border-white/30 bg-white/90 px-3 py-2 shadow-sm backdrop-blur sm:bottom-4 sm:right-4">
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                 Position
                             </p>
 
-                            <p class="mt-0.5 text-sm font-black text-slate-950">
+                            <p class="mt-0.5 text-sm font-black text-warm-950">
                                 #{{ $category->sort_order }}
                             </p>
                         </div>
@@ -427,36 +427,36 @@ method_exists($categories, 'items')
                     {{-- Content --}}
                     <div class="flex flex-1 flex-col p-4 sm:p-5">
                         <div class="min-w-0">
-                            <h3 class="truncate text-xl font-black tracking-tight text-slate-950">
+                            <h3 class="truncate text-xl font-black tracking-tight text-warm-950">
                                 {{ $category->name }}
                             </h3>
 
-                            <p class="mt-2 line-clamp-2 min-h-12 text-sm font-semibold leading-6 text-slate-600">
+                            <p class="mt-2 line-clamp-2 min-h-12 text-sm font-semibold leading-6 text-warm-600">
                                 {{ $category->description ?: 'No description has been added for this category.' }}
                             </p>
                         </div>
 
                         {{-- Metadata --}}
                         <div class="mt-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-                            <div class="min-w-0 rounded-xl bg-slate-50 px-3 py-3">
-                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                            <div class="min-w-0 rounded-xl bg-warm-50 px-3 py-3">
+                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                     URL Slug
                                 </p>
 
                                 <p
-                                    class="mt-1 truncate font-mono text-xs font-bold text-slate-700"
+                                    class="mt-1 truncate font-mono text-xs font-bold text-warm-600"
                                     title="{{ $category->slug }}"
                                 >
                                     {{ $category->slug }}
                                 </p>
                             </div>
 
-                            <div class="rounded-xl bg-orange-50 px-4 py-3 text-center">
-                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-orange-600">
+                            <div class="rounded-xl bg-brand-50 px-4 py-3 text-center">
+                                <p class="text-[9px] font-black uppercase tracking-[0.12em] text-brand-500">
                                     Items
                                 </p>
 
-                                <p class="mt-1 text-base font-black text-orange-950">
+                                <p class="mt-1 text-base font-black text-brand-900">
                                     {{ $category->menu_items_count }}
                                 </p>
                             </div>
@@ -466,7 +466,7 @@ method_exists($categories, 'items')
                         <div
                             @class([
                                 'mt-3 flex items-start gap-2 rounded-xl px-3 py-3',
-                                'bg-emerald-50' => $category->is_active,
+                                'bg-leaf-50' => $category->is_active,
                                 'bg-red-50' => ! $category->is_active,
                             ])
                         >
@@ -478,7 +478,7 @@ method_exists($categories, 'items')
                                 stroke-width="2"
                                 @class([
                                     'mt-0.5 h-4 w-4 shrink-0',
-                                    'text-emerald-600' => $category->is_active,
+                                    'text-leaf-700' => $category->is_active,
                                     'text-red-600' => ! $category->is_active,
                                 ])
                             >
@@ -502,7 +502,7 @@ method_exists($categories, 'items')
                             <p
                                 @class([
                                     'text-xs font-semibold leading-5',
-                                    'text-emerald-800' => $category->is_active,
+                                    'text-leaf-900' => $category->is_active,
                                     'text-red-800' => ! $category->is_active,
                                 ])
                             >
@@ -518,7 +518,7 @@ method_exists($categories, 'items')
                         <div class="mt-auto grid grid-cols-[1fr_auto] gap-2 pt-5">
                             <a
                                 href="{{ route('admin.categories.edit', $category) }}"
-                                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition active:scale-[0.98] hover:bg-orange-700"
+                                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -535,35 +535,16 @@ method_exists($categories, 'items')
                                 Edit Category
                             </a>
 
-                            <form
-                                action="{{ route('admin.categories.destroy', $category) }}"
-                                method="POST"
-                                onsubmit="return confirm('Delete this category? This action may affect related menu items.');"
+                            <x-confirm-submit
+                                :action="route('admin.categories.destroy', $category)"
+                                title="Delete category?"
+                                description="Categories with menu items are protected. Empty categories can be deleted safely."
+                                confirm-label="Delete Category"
+                                button-class="grid h-12 w-12 place-items-center rounded-xl border border-red-100 bg-red-50 text-red-600 transition active:scale-95 hover:border-red-600 hover:bg-red-600 hover:text-white"
+                                aria-label="Delete {{ $category->name }}"
                             >
-                                @csrf
-                                @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    class="grid h-12 w-12 place-items-center rounded-xl border border-red-100 bg-red-50 text-red-600 transition active:scale-95 hover:border-red-600 hover:bg-red-600 hover:text-white"
-                                    aria-label="Delete {{ $category->name }}"
-                                    title="Delete category"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        class="h-4 w-4"
-                                    >
-                                        <path d="M4 7h16" />
-                                        <path d="M10 11v6M14 11v6" />
-                                        <path d="m6 7 1 14h10l1-14" />
-                                        <path d="M9 7V4h6v3" />
-                                    </svg>
-                                </button>
-                            </form>
+                                <x-ui-icon name="trash" class="h-4 w-4" />
+                            </x-confirm-submit>
                         </div>
                     </div>
                 </article>
@@ -572,18 +553,18 @@ method_exists($categories, 'items')
 
         {{-- Pagination --}}
         @if ($hasPages)
-            <div class="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm">
+            <div class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm">
                 {{ $categories->withQueryString()->links() }}
             </div>
         @endif
     @endif
 
     {{-- Mobile Primary Action --}}
-    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-orange-100 bg-white/95 px-4 pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.14)] backdrop-blur lg:hidden">
+    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-[var(--shadow-bottom-nav)] backdrop-blur lg:hidden">
         <div class="mx-auto pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             <a
                 href="{{ route('admin.categories.create') }}"
-                class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/25 transition active:scale-[0.98]"
+                class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition active:scale-[0.98]"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

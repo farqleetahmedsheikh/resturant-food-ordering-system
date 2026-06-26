@@ -78,22 +78,22 @@ $totalOrderCount = method_exists($orders, 'total')
     {{-- Compact Page Header --}}
     <header class="flex items-start justify-between gap-4">
         <div class="min-w-0">
-            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 sm:text-xs">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 sm:text-xs">
                 Order History
             </p>
 
-            <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:mt-2 sm:text-4xl">
+            <h1 class="mt-1 text-2xl font-black tracking-tight text-warm-950 sm:mt-2 sm:text-4xl">
                 My orders
             </h1>
 
-            <p class="mt-2 max-w-xl text-sm font-semibold leading-6 text-slate-600">
+            <p class="mt-2 max-w-xl text-sm font-semibold leading-6 text-warm-600">
                 Track active deliveries and review your previous orders.
             </p>
         </div>
 
         <a
             href="{{ route('menu') }}"
-            class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-600 text-white shadow-lg shadow-orange-600/20 transition active:scale-95 hover:bg-orange-700 sm:h-auto sm:w-auto sm:rounded-2xl sm:px-5 sm:py-3 sm:text-sm sm:font-black"
+            class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg shadow-brand-500/20 transition active:scale-95 hover:bg-brand-600 sm:h-auto sm:w-auto sm:rounded-2xl sm:px-5 sm:py-3 sm:text-sm sm:font-black"
             aria-label="Browse menu"
         >
             <svg
@@ -115,13 +115,13 @@ $totalOrderCount = method_exists($orders, 'total')
     </header>
 
     {{-- Compact Account Summary --}}
-    <section class="relative overflow-hidden rounded-[1.5rem] bg-gradient-to-r from-orange-600 to-red-600 p-4 text-white shadow-xl shadow-orange-900/15 sm:rounded-[2rem] sm:p-7">
+    <section class="relative overflow-hidden rounded-[1.5rem] bg-gradient-to-r from-brand-500 to-brand-800 p-4 text-white shadow-xl shadow-brand-900/15 sm:rounded-[2rem] sm:p-7">
         <div class="pointer-events-none absolute -right-14 -top-16 h-44 w-44 rounded-full bg-white/20 blur-3xl"></div>
 
         <div class="relative flex items-center justify-between gap-5">
             <div>
-                <p class="text-[9px] font-black uppercase tracking-[0.18em] text-orange-100 sm:text-xs">
-                    Your FreshBite Activity
+                <p class="text-[9px] font-black uppercase tracking-[0.18em] text-brand-100 sm:text-xs">
+                    Your Arcade Kebab House Activity
                 </p>
 
                 <p class="mt-1 text-2xl font-black sm:mt-2 sm:text-3xl">
@@ -130,13 +130,13 @@ $totalOrderCount = method_exists($orders, 'total')
                 </p>
 
                 @if ($activeOrders->isNotEmpty())
-                    <p class="mt-1 text-xs font-semibold text-orange-50 sm:text-sm">
+                    <p class="mt-1 text-xs font-semibold text-brand-50 sm:text-sm">
                         {{ $activeOrders->count() }}
                         {{ $activeOrders->count() === 1 ? 'active order requires' : 'active orders require' }}
                         your attention.
                     </p>
                 @else
-                    <p class="mt-1 text-xs font-semibold text-orange-50 sm:text-sm">
+                    <p class="mt-1 text-xs font-semibold text-brand-50 sm:text-sm">
                         No active deliveries right now.
                     </p>
                 @endif
@@ -160,8 +160,8 @@ $totalOrderCount = method_exists($orders, 'total')
 
     @if ($orders->isEmpty())
         {{-- Empty State --}}
-        <section class="rounded-[1.75rem] border border-dashed border-orange-200 bg-white p-7 text-center shadow-sm sm:p-12">
-            <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-orange-50 text-orange-600 sm:h-20 sm:w-20">
+        <section class="rounded-[1.75rem] border border-dashed border-brand-200 bg-white p-7 text-center shadow-sm sm:p-12">
+            <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-500 sm:h-20 sm:w-20">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -175,17 +175,17 @@ $totalOrderCount = method_exists($orders, 'total')
                 </svg>
             </div>
 
-            <h2 class="mt-5 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+            <h2 class="mt-5 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                 Your order history is empty
             </h2>
 
-            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-slate-600">
-                Browse the menu and place your first FreshBite order.
+            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-warm-600">
+                Browse the menu and place your first Arcade Kebab House order.
             </p>
 
             <a
                 href="{{ route('menu') }}"
-                class="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition active:scale-[0.98] hover:bg-orange-700 sm:w-auto sm:rounded-2xl"
+                class="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600 sm:w-auto sm:rounded-2xl"
             >
                 Browse Menu
 
@@ -208,19 +208,19 @@ $totalOrderCount = method_exists($orders, 'total')
                 <div class="mb-3 flex items-end justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="h-2.5 w-2.5 animate-pulse rounded-full bg-orange-500"></span>
+                            <span class="h-2.5 w-2.5 animate-pulse rounded-full bg-brand-500"></span>
 
-                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                                 Active Orders
                             </p>
                         </div>
 
-                        <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                        <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                             Track your delivery
                         </h2>
                     </div>
 
-                    <span class="rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-black text-orange-700">
+                    <span class="rounded-full bg-brand-50 px-3 py-1.5 text-[10px] font-black text-brand-600">
                         {{ $activeOrders->count() }} active
                     </span>
                 </div>
@@ -263,49 +263,49 @@ $totalOrderCount = method_exists($orders, 'total')
                             $accentClasses = match ($effectiveStatus) {
                                 'out_for_delivery' => [
                                     'bar' => 'bg-blue-500',
-                                    'progress' => 'from-blue-500 to-orange-500',
+                                    'progress' => 'from-blue-500 to-brand-500',
                                     'icon' => 'bg-blue-50 text-blue-600',
                                 ],
 
                                 'picked_up', 'assigned', 'assigned_to_rider' => [
                                     'bar' => 'bg-indigo-500',
-                                    'progress' => 'from-indigo-500 to-orange-500',
+                                    'progress' => 'from-indigo-500 to-brand-500',
                                     'icon' => 'bg-indigo-50 text-indigo-600',
                                 ],
 
                                 'ready', 'preparing', 'accepted' => [
-                                    'bar' => 'bg-amber-500',
-                                    'progress' => 'from-amber-500 to-orange-500',
-                                    'icon' => 'bg-amber-50 text-amber-600',
+                                    'bar' => 'bg-gold-500',
+                                    'progress' => 'from-gold-500 to-food-tan',
+                                    'icon' => 'bg-gold-50 text-food-brown',
                                 ],
 
                                 default => [
-                                    'bar' => 'bg-orange-500',
-                                    'progress' => 'from-orange-500 to-red-500',
-                                    'icon' => 'bg-orange-50 text-orange-600',
+                                    'bar' => 'bg-brand-500',
+                                    'progress' => 'from-brand-500 to-brand-600',
+                                    'icon' => 'bg-brand-50 text-brand-500',
                                 ],
                             };
                         @endphp
 
-                        <article class="relative overflow-hidden rounded-[1.5rem] border border-orange-100 bg-white shadow-sm sm:rounded-[1.75rem]">
+                        <article class="relative overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm sm:rounded-[1.75rem]">
                             <div class="absolute inset-y-0 left-0 w-1.5 {{ $accentClasses['bar'] }}"></div>
 
                             <div class="p-4 pl-6 sm:p-6 sm:pl-8">
                                 {{-- Order Heading --}}
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="min-w-0">
-                                        <p class="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400 sm:text-xs">
+                                        <p class="text-[9px] font-black uppercase tracking-[0.16em] text-warm-500 sm:text-xs">
                                             Order Number
                                         </p>
 
                                         <a
                                             href="{{ route('customer.orders.show', $order) }}"
-                                            class="mt-1 block break-all text-lg font-black tracking-tight text-slate-950 transition hover:text-orange-700 sm:text-xl"
+                                            class="mt-1 block break-all text-lg font-black tracking-tight text-warm-950 transition hover:text-brand-600 sm:text-xl"
                                         >
                                             {{ $order->order_number }}
                                         </a>
 
-                                        <p class="mt-1 text-xs font-semibold text-slate-500">
+                                        <p class="mt-1 text-xs font-semibold text-warm-500">
                                             {{ $order->created_at->format('M d, Y · h:i A') }}
                                         </p>
                                     </div>
@@ -323,7 +323,7 @@ $totalOrderCount = method_exists($orders, 'total')
                                 </div>
 
                                 {{-- Current Status --}}
-                                <div class="mt-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5">
+                                <div class="mt-4 flex items-center gap-3 rounded-2xl bg-warm-50 p-3.5">
                                     <div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl {{ $accentClasses['icon'] }}">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -341,11 +341,11 @@ $totalOrderCount = method_exists($orders, 'total')
                                     </div>
 
                                     <div class="min-w-0">
-                                        <p class="text-sm font-black text-slate-950">
+                                        <p class="text-sm font-black text-warm-950">
                                             {{ \Illuminate\Support\Str::headline($effectiveStatus) }}
                                         </p>
 
-                                        <p class="mt-0.5 text-xs font-semibold leading-5 text-slate-500">
+                                        <p class="mt-0.5 text-xs font-semibold leading-5 text-warm-500">
                                             {{ $statusMessage }}
                                         </p>
                                     </div>
@@ -354,16 +354,16 @@ $totalOrderCount = method_exists($orders, 'total')
                                 {{-- Progress --}}
                                 <div class="mt-4">
                                     <div class="flex items-center justify-between gap-4">
-                                        <p class="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
+                                        <p class="text-[9px] font-black uppercase tracking-[0.14em] text-warm-500">
                                             Order progress
                                         </p>
 
-                                        <p class="text-xs font-black text-slate-700">
+                                        <p class="text-xs font-black text-warm-600">
                                             {{ $progress }}%
                                         </p>
                                     </div>
 
-                                    <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
+                                    <div class="mt-2 h-2 overflow-hidden rounded-full bg-warm-100">
                                         <div
                                             class="h-full rounded-full bg-gradient-to-r {{ $accentClasses['progress'] }}"
                                             style="width: {{ $progress }}%"
@@ -373,32 +373,32 @@ $totalOrderCount = method_exists($orders, 'total')
 
                                 {{-- Compact Metadata --}}
                                 <div class="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3 sm:rounded-2xl">
-                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                    <div class="rounded-xl bg-warm-50 px-3 py-3 sm:rounded-2xl">
+                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                             Total
                                         </p>
 
-                                        <p class="mt-1 truncate text-sm font-black text-slate-950 sm:text-base">
-                                            Rs. {{ number_format($order->total, 0) }}
+                                        <p class="mt-1 truncate text-sm font-black text-warm-950 sm:text-base">
+                                            ($order->total)
                                         </p>
                                     </div>
 
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3 sm:rounded-2xl">
-                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                    <div class="rounded-xl bg-warm-50 px-3 py-3 sm:rounded-2xl">
+                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                             Payment
                                         </p>
 
-                                        <p class="mt-1 truncate text-sm font-black text-slate-950 sm:text-base">
+                                        <p class="mt-1 truncate text-sm font-black text-warm-950 sm:text-base">
                                             {{ strtoupper($order->payment_method ?? 'COD') }}
                                         </p>
                                     </div>
 
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3 sm:rounded-2xl">
-                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                    <div class="rounded-xl bg-warm-50 px-3 py-3 sm:rounded-2xl">
+                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                             Date
                                         </p>
 
-                                        <p class="mt-1 truncate text-sm font-black text-slate-950 sm:text-base">
+                                        <p class="mt-1 truncate text-sm font-black text-warm-950 sm:text-base">
                                             {{ $order->created_at->format('M d') }}
                                         </p>
                                     </div>
@@ -406,7 +406,7 @@ $totalOrderCount = method_exists($orders, 'total')
 
                                 <a
                                     href="{{ route('customer.orders.show', $order) }}"
-                                    class="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition active:scale-[0.98] hover:bg-orange-700 sm:rounded-2xl"
+                                    class="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600 sm:rounded-2xl"
                                 >
                                     Track Order
 
@@ -433,16 +433,16 @@ $totalOrderCount = method_exists($orders, 'total')
             <section>
                 <div class="mb-3 flex items-end justify-between gap-4">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400 sm:text-xs">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-warm-500 sm:text-xs">
                             Previous Orders
                         </p>
 
-                        <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                        <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                             Order history
                         </h2>
                     </div>
 
-                    <span class="rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-black text-slate-600">
+                    <span class="rounded-full bg-warm-100 px-3 py-1.5 text-[10px] font-black text-warm-600">
                         {{ $pastOrders->count() }} shown
                     </span>
                 </div>
@@ -457,10 +457,10 @@ $totalOrderCount = method_exists($orders, 'total')
 
                             $pastAccent = $isCancelled
                                 ? 'bg-red-500'
-                                : 'bg-emerald-500';
+                                : 'bg-leaf-500';
                         @endphp
 
-                        <article class="relative overflow-hidden rounded-[1.4rem] border border-slate-200 bg-white shadow-sm">
+                        <article class="relative overflow-hidden rounded-[1.4rem] border border-warm-200 bg-white shadow-sm">
                             <div class="absolute inset-y-0 left-0 w-1 {{ $pastAccent }}"></div>
 
                             <div class="p-4 pl-5 sm:p-5 sm:pl-7">
@@ -468,12 +468,12 @@ $totalOrderCount = method_exists($orders, 'total')
                                     <div class="min-w-0">
                                         <a
                                             href="{{ route('customer.orders.show', $order) }}"
-                                            class="block break-all text-base font-black text-slate-950 transition hover:text-orange-700 sm:text-lg"
+                                            class="block break-all text-base font-black text-warm-950 transition hover:text-brand-600 sm:text-lg"
                                         >
                                             {{ $order->order_number }}
                                         </a>
 
-                                        <p class="mt-1 text-xs font-semibold text-slate-500">
+                                        <p class="mt-1 text-xs font-semibold text-warm-500">
                                             {{ $order->created_at->format('M d, Y · h:i A') }}
                                         </p>
                                     </div>
@@ -481,24 +481,24 @@ $totalOrderCount = method_exists($orders, 'total')
                                     <x-status-badge :status="$order->order_status" />
                                 </div>
 
-                                <div class="mt-4 flex items-center justify-between gap-4 border-t border-slate-100 pt-4">
+                                <div class="mt-4 flex items-center justify-between gap-4 border-t border-warm-100 pt-4">
                                     <div class="flex items-center gap-5">
                                         <div>
-                                            <p class="text-[8px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                            <p class="text-[8px] font-black uppercase tracking-[0.12em] text-warm-500">
                                                 Total
                                             </p>
 
-                                            <p class="mt-1 text-sm font-black text-slate-950">
-                                                Rs. {{ number_format($order->total, 0) }}
+                                            <p class="mt-1 text-sm font-black text-warm-950">
+                                                ($order->total)
                                             </p>
                                         </div>
 
                                         <div>
-                                            <p class="text-[8px] font-black uppercase tracking-[0.12em] text-slate-400">
+                                            <p class="text-[8px] font-black uppercase tracking-[0.12em] text-warm-500">
                                                 Payment
                                             </p>
 
-                                            <p class="mt-1 text-sm font-black text-slate-950">
+                                            <p class="mt-1 text-sm font-black text-warm-950">
                                                 {{ strtoupper($order->payment_method ?? 'COD') }}
                                             </p>
                                         </div>
@@ -506,7 +506,7 @@ $totalOrderCount = method_exists($orders, 'total')
 
                                     <a
                                         href="{{ route('customer.orders.show', $order) }}"
-                                        class="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-black text-orange-700 transition active:scale-[0.97] hover:bg-orange-100"
+                                        class="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50 px-3 py-2 text-xs font-black text-brand-600 transition active:scale-[0.97] hover:bg-brand-100"
                                     >
                                         Details
 
@@ -531,7 +531,7 @@ $totalOrderCount = method_exists($orders, 'total')
 
         {{-- Pagination --}}
         @if ($orders->hasPages())
-            <div class="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm">
+            <div class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm">
                 {{ $orders->withQueryString()->links() }}
             </div>
         @endif

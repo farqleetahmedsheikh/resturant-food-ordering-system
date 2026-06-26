@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Restaurant;
+use App\Support\Money;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +26,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Blade::directive('money', fn (string $expression): string => "<?php echo ".Money::class."::format({$expression}); ?>");
+
+        View::composer('*', function ($view): void {
+            $view->with('brandRestaurant', Restaurant::current());
+        });
+
         $this->configureRateLimiters();
     }
 

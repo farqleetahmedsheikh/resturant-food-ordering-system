@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<title>{{ isset($title) ? $title . ' | FreshBite Admin' : 'FreshBite Admin' }}</title>
+<title>{{ isset($title) ? $title . ' | Arcade Kebab House Admin' : 'Arcade Kebab House Admin' }}</title>
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
+<meta name="robots" content="noindex,nofollow">
+@stack('head')
 
 <style>
     [x-cloak] {
@@ -18,26 +20,24 @@
 
 </head>
 
-<body class="min-h-screen bg-[var(--color-surface-app)] font-sans text-slate-900 antialiased">
+<body class="min-h-screen bg-[var(--color-surface-app)] font-sans text-warm-900 antialiased">
     <div
         class="min-h-screen overflow-x-hidden"
         x-data="{ mobileMenu: false }"
         x-on:keydown.escape.window="mobileMenu = false"
     >
         {{-- Mobile Header --}}
-        <header class="sticky top-0 z-[90] border-b border-orange-100 bg-white/95 shadow-sm backdrop-blur-xl lg:hidden">
+        <header class="sticky top-0 z-[90] border-b border-warm-200 bg-white/95 shadow-sm backdrop-blur-xl lg:hidden">
             <div class="flex items-center justify-between px-4 py-3">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
-                    <span class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-sm font-black text-white shadow-lg shadow-orange-600/20">
-                        FB
-                    </span>
+                    <x-brand-mark mark-class="h-11 w-11 rounded-2xl" />
 
                 <span>
-                    <span class="block text-base font-black tracking-tight text-slate-950">
-                        FreshBite
+                    <span class="block text-base font-black tracking-tight text-warm-950">
+                        Arcade Kebab House
                     </span>
 
-                    <span class="block text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">
+                    <span class="block text-[10px] font-black uppercase tracking-[0.2em] text-brand-500">
                         Admin Panel
                     </span>
                 </span>
@@ -46,7 +46,7 @@
             <button
                 type="button"
                 x-on:click="mobileMenu = ! mobileMenu"
-                class="grid h-11 w-11 place-items-center rounded-2xl border border-orange-200 bg-white text-slate-700 shadow-sm transition hover:bg-orange-50"
+                class="grid h-11 w-11 place-items-center rounded-2xl border border-brand-200 bg-white text-warm-600 shadow-sm transition hover:bg-brand-50"
                 aria-label="Toggle navigation"
             >
                 <svg
@@ -83,7 +83,7 @@
         x-transition.opacity
         x-cloak
         x-on:click.self="mobileMenu = false"
-        class="fixed inset-x-0 bottom-0 top-16 z-[200] max-h-[calc(100dvh-4rem)] overflow-y-auto bg-slate-950/35 p-2 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm lg:hidden sm:p-3"
+        class="fixed inset-x-0 bottom-0 top-16 z-[200] max-h-[calc(100dvh-4rem)] overflow-y-auto bg-warm-950/35 p-2 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-sm lg:hidden sm:p-3"
         >
             <div
                 x-transition:enter="transition ease-out duration-200"
@@ -92,20 +92,20 @@
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="translate-y-0 opacity-100"
                 x-transition:leave-end="-translate-y-3 opacity-0"
-                class="min-h-max rounded-[1.5rem] border border-orange-100 bg-white px-3 py-3 shadow-2xl shadow-slate-950/20 sm:px-4 sm:py-4"
+                class="min-h-max rounded-[1.5rem] border border-warm-200 bg-white px-3 py-3 shadow-2xl shadow-warm-950/20 sm:px-4 sm:py-4"
             >
                 {{-- Mobile Admin Card --}}
-                <div class="mb-4 flex items-center gap-3 rounded-2xl border border-orange-100 bg-[var(--color-surface-warm)] p-4">
-                    <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-orange-600 text-sm font-black text-white">
+                <div class="mb-4 flex items-center gap-3 rounded-2xl border border-warm-200 bg-[var(--color-surface-warm)] p-4">
+                    <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-500 text-sm font-black text-white">
                         {{ mb_substr(auth()->user()->name ?? 'A', 0, 1) }}
                     </div>
 
                     <div class="min-w-0">
-                        <p class="truncate text-sm font-black text-slate-950">
+                        <p class="truncate text-sm font-black text-warm-950">
                             {{ auth()->user()->name ?? 'Administrator' }}
                         </p>
 
-                        <p class="truncate text-xs font-semibold text-slate-500">
+                        <p class="truncate text-xs font-semibold text-warm-500">
                             {{ auth()->user()->email ?? '' }}
                         </p>
                     </div>
@@ -114,7 +114,7 @@
                 <nav class="grid gap-2 text-sm font-bold">
                 <a
                     href="{{ route('admin.dashboard') }}"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.dashboard') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.dashboard') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -127,7 +127,7 @@
 
                 <a
                     href="{{ route('admin.orders.index') }}"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.orders*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.orders*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" />
@@ -138,7 +138,7 @@
 
                 <a
                     href="{{ route('admin.menu-items.index') }}"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.menu-items*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.menu-items*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M4 4h16v16H4z" />
@@ -149,7 +149,7 @@
 
                 <a
                     href="{{ route('admin.categories.index') }}"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.categories*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.categories*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M4 5h6v6H4zM14 5h6v6h-6zM4 15h6v4H4zM14 15h6v4h-6z" />
@@ -159,7 +159,7 @@
 
                 <a
                     href="{{ route('admin.riders.index') }}"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.riders*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.riders*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="6" cy="18" r="2" />
@@ -171,7 +171,7 @@
 
                 <a
                     href="{{ route('admin.settings.restaurant.edit') }}"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3" />
@@ -182,7 +182,7 @@
 
                 <a
                     href="{{ route('account.security') }}"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('account.security') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('account.security') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 3 5 6v5c0 4.5 3 8.5 7 10 4-1.5 7-5.5 7-10V6l-7-3z" />
@@ -191,22 +191,11 @@
                     Security
                 </a>
 
-                <div class="my-2 border-t border-slate-100"></div>
-
-                <a
-                    href="/admin"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-700 transition hover:bg-orange-50 hover:text-orange-700"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 4h16v16H4z" />
-                        <path d="M4 9h16M9 9v11" />
-                    </svg>
-                    Filament Panel
-                </a>
+                <div class="my-2 border-t border-warm-100"></div>
 
                 <a
                     href="{{ route('home') }}"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 text-slate-700 transition hover:bg-orange-50 hover:text-orange-700"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 text-warm-600 transition hover:bg-brand-50 hover:text-brand-600"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="m3 11 9-8 9 8" />
@@ -234,49 +223,47 @@
 
     <div class="min-h-screen lg:pl-[300px]">
         {{-- Desktop Sidebar --}}
-        <aside class="fixed bottom-0 left-0 top-0 z-40 hidden w-[300px] overflow-hidden border-r border-orange-100 bg-white p-5 shadow-sm shadow-orange-900/5 lg:block">
+        <aside class="fixed bottom-0 left-0 top-0 z-40 hidden w-[300px] overflow-hidden border-r border-warm-200 bg-white p-5 shadow-sm shadow-brand-900/5 lg:block">
             <div class="flex h-full flex-col overflow-y-auto pr-1">
                 {{-- Brand --}}
                 <a
                     href="{{ route('admin.dashboard') }}"
-                    class="flex items-center gap-3 rounded-[1.5rem] border border-orange-100 bg-[var(--color-surface-warm)] p-4"
+                    class="flex items-center gap-3 rounded-[1.5rem] border border-warm-200 bg-[var(--color-surface-warm)] p-4"
                 >
-                    <span class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-sm font-black text-white shadow-lg shadow-orange-600/25">
-                        FB
-                    </span>
+                    <x-brand-mark mark-class="h-12 w-12 rounded-2xl" />
 
                     <span>
-                        <span class="block text-lg font-black tracking-tight text-slate-950">
-                            FreshBite
+                        <span class="block text-lg font-black tracking-tight text-warm-950">
+                            Arcade Kebab House
                         </span>
 
-                        <span class="block text-xs font-black uppercase tracking-[0.18em] text-orange-600">
+                        <span class="block text-xs font-black uppercase tracking-[0.18em] text-brand-500">
                             Admin Panel
                         </span>
                     </span>
                 </a>
 
                 {{-- Administrator Card --}}
-                <div class="mt-5 rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm">
+                <div class="mt-5 rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm">
                     <div class="flex items-center gap-3">
-                        <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-sm font-black text-orange-700">
+                        <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-50 text-sm font-black text-brand-600">
                             {{ mb_substr(auth()->user()->name ?? 'A', 0, 1) }}
                         </div>
 
                         <div class="min-w-0">
-                            <p class="truncate text-sm font-black text-slate-950">
+                            <p class="truncate text-sm font-black text-warm-950">
                                 {{ auth()->user()->name ?? 'Administrator' }}
                             </p>
 
-                            <p class="truncate text-xs font-semibold text-slate-500">
+                            <p class="truncate text-xs font-semibold text-warm-500">
                                 {{ auth()->user()->email ?? '' }}
                             </p>
                         </div>
                     </div>
 
-                    <div class="mt-4 flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2">
-                        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                        <span class="text-xs font-black text-emerald-700">
+                    <div class="mt-4 flex items-center gap-2 rounded-xl bg-leaf-50 px-3 py-2">
+                        <span class="h-2 w-2 rounded-full bg-leaf-500"></span>
+                        <span class="text-xs font-black text-leaf-700">
                             Administrator Online
                         </span>
                     </div>
@@ -286,7 +273,7 @@
                 <nav class="mt-6 grid gap-2 text-sm font-bold">
                     <a
                         href="{{ route('admin.dashboard') }}"
-                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.dashboard') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.dashboard') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -299,7 +286,7 @@
 
                     <a
                         href="{{ route('admin.orders.index') }}"
-                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.orders*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.orders*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" />
@@ -310,7 +297,7 @@
 
                     <a
                         href="{{ route('admin.menu-items.index') }}"
-                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.menu-items*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.menu-items*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 4h16v16H4z" />
@@ -321,7 +308,7 @@
 
                     <a
                         href="{{ route('admin.categories.index') }}"
-                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.categories*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.categories*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 5h6v6H4zM14 5h6v6h-6zM4 15h6v4H4zM14 15h6v4h-6z" />
@@ -331,7 +318,7 @@
 
                     <a
                         href="{{ route('admin.riders.index') }}"
-                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.riders*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.riders*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="6" cy="18" r="2" />
@@ -343,7 +330,7 @@
 
                     <a
                         href="{{ route('admin.settings.restaurant.edit') }}"
-                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.*') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3" />
@@ -354,7 +341,7 @@
 
                     <a
                         href="{{ route('account.security') }}"
-                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('account.security') ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20' : 'text-slate-700 hover:bg-orange-50 hover:text-orange-700' }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('account.security') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 3 5 6v5c0 4.5 3 8.5 7 10 4-1.5 7-5.5 7-10V6l-7-3z" />
@@ -366,27 +353,10 @@
 
                 {{-- Bottom Links --}}
                 <div class="mt-auto">
-                    <div class="rounded-[1.5rem] border border-orange-100 bg-gradient-to-br from-orange-50 to-red-50 p-4">
-                        <p class="text-sm font-black text-slate-950">
-                            Advanced management
-                        </p>
-
-                        <p class="mt-1 text-xs font-semibold leading-5 text-slate-600">
-                            Open the Filament panel for advanced database management.
-                        </p>
-
-                        <a
-                            href="/admin"
-                            class="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-slate-800"
-                        >
-                            Open Filament
-                        </a>
-                    </div>
-
                     <div class="mt-4 grid grid-cols-2 gap-2">
                         <a
                             href="{{ route('home') }}"
-                            class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-3 text-xs font-black text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                            class="inline-flex items-center justify-center rounded-2xl border border-warm-200 bg-white px-3 py-3 text-xs font-black text-warm-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600"
                         >
                             Public Site
                         </a>
@@ -409,14 +379,14 @@
         {{-- Main Area --}}
         <main class="min-w-0 pb-24 lg:pb-0">
             {{-- Desktop Topbar --}}
-            <header class="sticky top-0 z-40 hidden border-b border-orange-100 bg-white/90 px-6 py-4 shadow-sm shadow-orange-900/5 backdrop-blur-xl lg:block">
+            <header class="sticky top-0 z-40 hidden border-b border-warm-200 bg-white/90 px-6 py-4 shadow-sm shadow-brand-900/5 backdrop-blur-xl lg:block">
                 <div class="flex items-center justify-between gap-6">
                     <div class="min-w-0">
-                        <p class="text-xs font-black uppercase tracking-[0.22em] text-orange-600">
-                            FreshBite Administration
+                        <p class="text-xs font-black uppercase tracking-[0.22em] text-brand-500">
+                            Arcade Kebab House Administration
                         </p>
 
-                        <h1 class="mt-1 truncate text-xl font-black text-slate-950">
+                        <h1 class="mt-1 truncate text-xl font-black text-warm-950">
                             {{ $title ?? 'Admin Dashboard' }}
                         </h1>
                     </div>
@@ -424,14 +394,14 @@
                     <div class="flex items-center gap-3">
                         <a
                             href="{{ route('home') }}"
-                            class="inline-flex items-center justify-center rounded-2xl border border-orange-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 shadow-sm transition hover:bg-orange-50 hover:text-orange-700"
+                            class="inline-flex items-center justify-center rounded-2xl border border-brand-200 bg-white px-4 py-2.5 text-sm font-black text-warm-600 shadow-sm transition hover:bg-brand-50 hover:text-brand-600"
                         >
                             View Public Site
                         </a>
 
                         <a
                             href="{{ route('admin.orders.index') }}"
-                            class="inline-flex items-center justify-center rounded-2xl bg-orange-600 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:bg-orange-700"
+                            class="inline-flex items-center justify-center rounded-2xl bg-brand-500 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600"
                         >
                             Manage Orders
                         </a>
@@ -441,20 +411,7 @@
 
             {{-- Page Content --}}
             <div class="px-4 py-7 sm:px-6 lg:px-8 lg:py-10">
-                {{-- Flash Messages --}}
-                @if (session('status') || session('success') || session('error'))
-                    <div class="mb-6">
-                        @if (session('error'))
-                            <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-700 shadow-sm">
-                                {{ session('error') }}
-                            </div>
-                        @else
-                            <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-700 shadow-sm">
-                                {{ session('status') ?? session('success') }}
-                            </div>
-                        @endif
-                    </div>
-                @endif
+                <x-toast />
 
                 <div class="mx-auto max-w-[1600px]">
                     {{ $slot }}
@@ -464,11 +421,11 @@
     </div>
 
     {{-- Mobile Admin Quick Actions --}}
-    <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-orange-100 bg-white/95 px-3 py-2 shadow-[var(--shadow-bottom-nav)] backdrop-blur-xl lg:hidden">
+    <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-warm-200 bg-white/95 px-3 py-2 shadow-[var(--shadow-bottom-nav)] backdrop-blur-xl lg:hidden">
         <div class="mx-auto grid max-w-md grid-cols-3 gap-2">
             <a
                 href="{{ route('admin.orders.index') }}"
-                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.orders*') ? 'bg-orange-50 text-orange-700' : 'text-slate-500 hover:bg-orange-50 hover:text-orange-700' }}"
+                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.orders*') ? 'bg-brand-50 text-brand-600' : 'text-warm-500 hover:bg-brand-50 hover:text-brand-600' }}"
             >
                 <x-ui-icon name="receipt" class="h-5 w-5" />
                 Orders
@@ -476,7 +433,7 @@
 
             <a
                 href="{{ route('admin.riders.index') }}"
-                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.riders*') ? 'bg-orange-50 text-orange-700' : 'text-slate-500 hover:bg-orange-50 hover:text-orange-700' }}"
+                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.riders*') ? 'bg-brand-50 text-brand-600' : 'text-warm-500 hover:bg-brand-50 hover:text-brand-600' }}"
             >
                 <x-ui-icon name="scooter" class="h-5 w-5" />
                 Riders
@@ -484,7 +441,7 @@
 
             <a
                 href="{{ route('admin.menu-items.index') }}"
-                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.menu-items*') || request()->routeIs('admin.categories*') ? 'bg-orange-50 text-orange-700' : 'text-slate-500 hover:bg-orange-50 hover:text-orange-700' }}"
+                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.menu-items*') || request()->routeIs('admin.categories*') ? 'bg-brand-50 text-brand-600' : 'text-warm-500 hover:bg-brand-50 hover:text-brand-600' }}"
             >
                 <x-ui-icon name="menu" class="h-5 w-5" />
                 Menu
@@ -492,6 +449,8 @@
         </div>
     </nav>
 </div>
+
+@stack('scripts')
 
 </body>
 </html>

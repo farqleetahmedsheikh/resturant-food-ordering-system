@@ -89,12 +89,10 @@ class AdminLiveDashboardTest extends TestCase
     {
         $customer = $this->createUser('customer');
         $restaurant = Restaurant::create([
-            'name' => 'FreshBite Restaurant',
-            'slug' => 'freshbite',
-            'delivery_fee' => 199,
+            'name' => 'Arcade Kebab House',
+            'delivery_fee' => 4.99,
             'minimum_order_amount' => 0,
             'is_open' => true,
-            'is_active' => true,
         ]);
 
         return Order::create([
@@ -105,9 +103,9 @@ class AdminLiveDashboardTest extends TestCase
             'customer_phone' => '03001234567',
             'customer_email' => $customer->email,
             'delivery_address' => 'Demo delivery address',
-            'subtotal' => 1000,
-            'delivery_fee' => 199,
-            'total' => 1199,
+            'subtotal' => 30,
+            'delivery_fee' => 4.99,
+            'total' => 34.99,
             'payment_method' => 'cod',
             'payment_status' => 'pending',
             'order_status' => 'pending',

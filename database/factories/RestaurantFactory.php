@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Restaurant;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Restaurant>
@@ -22,12 +21,14 @@ class RestaurantFactory extends Factory
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(100, 999),
             'email' => fake()->optional()->companyEmail(),
             'phone' => fake()->optional()->phoneNumber(),
             'address' => fake()->optional()->address(),
+            'timezone' => fake()->randomElement(array_keys(config('restaurant.timezones'))),
+            'delivery_fee' => fake()->randomFloat(2, 0, 9),
+            'minimum_order_amount' => fake()->randomFloat(2, 0, 25),
             'logo' => null,
-            'is_active' => true,
+            'is_open' => true,
         ];
     }
 }

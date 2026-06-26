@@ -7,13 +7,15 @@ use App\Models\Category;
 use App\Models\MenuItem;
 use App\Models\OrderItem;
 use App\Models\Restaurant;
+use App\Services\RestaurantAvailabilityService;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function index(): View
+    public function index(RestaurantAvailabilityService $availability): View
     {
-        $restaurant = Restaurant::where('is_active', true)->first();
+        $restaurant = Restaurant::current();
+        $availabilityStatus = $availability->status($restaurant);
 
         $categories = Category::query()
             ->where('is_active', true)
@@ -46,7 +48,7 @@ class HomeController extends Controller
             $topSellingItems = $featuredItems->take(4)->values();
         }
 
-        return view('pages.home', compact('restaurant', 'categories', 'featuredItems', 'topSellingItems', 'topSellerWindow'));
+        return view('pages.home', compact('restaurant', 'availabilityStatus', 'categories', 'featuredItems', 'topSellingItems', 'topSellerWindow'));
     }
 
     private function topSellingItems(mixed $from = null, int $limit = 4)

@@ -7,7 +7,9 @@ use App\Models\IdempotencyKey;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Cart\DatabaseCartService;
+use App\Services\RestaurantAvailabilityService;
 use App\Services\Security\AuditLogger;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,6 +18,7 @@ class CheckoutService
     public function __construct(
         private DatabaseCartService $cartService,
         private AuditLogger $auditLogger,
+        private RestaurantAvailabilityService $availability,
     ) {}
 
     /**
@@ -42,12 +45,14 @@ class CheckoutService
                 throw new BusinessRuleException('Your cart is empty. Add a meal before checkout.');
             }
 
-            if (! $restaurant?->is_open) {
-                throw new BusinessRuleException('Restaurant is currently closed. Ordering may be unavailable.');
+            $availability = $this->availability->status($restaurant);
+
+            if (! $availability['is_open']) {
+                throw new BusinessRuleException('Restaurant is closed now. Your items are in cart and you can checkout later when restaurant opens.');
             }
 
             if ($summary['minimum_order_amount'] > 0 && $summary['subtotal'] < $summary['minimum_order_amount']) {
-                throw new BusinessRuleException('Minimum order amount is Rs. '.number_format($summary['minimum_order_amount'], 2).'.');
+                throw new BusinessRuleException('Minimum order amount is '.Money::format($summary['minimum_order_amount']).'.');
             }
 
             $order = Order::create([
@@ -58,6 +63,8 @@ class CheckoutService
                 'customer_phone' => $payload['customer_phone'],
                 'customer_email' => $payload['customer_email'] ?? null,
                 'delivery_address' => $payload['delivery_address'],
+                'delivery_latitude' => $payload['delivery_latitude'] ?? null,
+                'delivery_longitude' => $payload['delivery_longitude'] ?? null,
                 'order_notes' => $payload['order_notes'] ?? null,
                 'subtotal' => $summary['subtotal'],
                 'delivery_fee' => $summary['delivery_fee'],

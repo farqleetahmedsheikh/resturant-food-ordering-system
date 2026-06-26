@@ -112,7 +112,7 @@ class MenuItemController extends Controller
         $slug = $validated['slug'] ?? null;
 
         return [
-            'restaurant_id' => $validated['restaurant_id'] ?? Restaurant::query()->where('is_active', true)->value('id'),
+            'restaurant_id' => $validated['restaurant_id'] ?? Restaurant::current()?->id,
             'category_id' => $validated['category_id'] ?? null,
             'name' => $validated['name'],
             'slug' => $slug ?: $this->uniqueSlug(Str::slug($validated['name']), $menuItem?->id),

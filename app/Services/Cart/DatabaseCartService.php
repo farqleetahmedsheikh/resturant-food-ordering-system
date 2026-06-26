@@ -17,7 +17,7 @@ class DatabaseCartService
 
     public function cartFor(User $user): Cart
     {
-        $restaurant = Restaurant::query()->where('is_active', true)->first();
+        $restaurant = Restaurant::current();
 
         if (! $restaurant) {
             throw new BusinessRuleException('Restaurant is not available right now.');
@@ -189,7 +189,7 @@ class DatabaseCartService
             'delivery_fee' => $deliveryFee,
             'minimum_order_amount' => round((float) ($restaurant?->minimum_order_amount ?? 0), 2),
             'total' => round($subtotal + $deliveryFee, 2),
-            'currency' => 'PKR',
+            'currency' => \App\Support\Money::code(),
             'items' => $items,
             'restaurant' => $restaurant,
         ];

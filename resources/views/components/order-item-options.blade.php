@@ -12,10 +12,10 @@ $hasAddonsPrice = (float) ($item->addons_total ?? 0) > 0;
 @if ($item->size_name || $addons->isNotEmpty())
 <div
 {{ $attributes->class([
-'mt-3 overflow-hidden rounded-2xl border border-orange-100 bg-orange-50/70',
+'mt-3 overflow-hidden rounded-2xl border border-warm-200 bg-brand-50/70',
 ]) }}
 > <div class="space-y-3 px-4 py-3">
-@if ($item->size_name) <div class="flex items-start gap-3"> <div class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white text-orange-600 shadow-sm"> <svg
+@if ($item->size_name) <div class="flex items-start gap-3"> <div class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white text-brand-500 shadow-sm"> <svg
                          xmlns="http://www.w3.org/2000/svg"
                          viewBox="0 0 24 24"
                          fill="none"
@@ -25,18 +25,18 @@ $hasAddonsPrice = (float) ($item->addons_total ?? 0) > 0;
                      > <circle cx="12" cy="12" r="8" /> <circle cx="12" cy="12" r="3" /> </svg> </div>
 
                 <div class="min-w-0 flex-1">
-                    <p class="text-[10px] font-black uppercase tracking-[0.16em] text-orange-600">
+                    <p class="text-[10px] font-black uppercase tracking-[0.16em] text-brand-500">
                         Selected Size
                     </p>
 
                     <div class="mt-1 flex flex-wrap items-center gap-2">
-                        <span class="break-words text-xs font-black text-slate-900">
+                        <span class="break-words text-xs font-black text-warm-900">
                             {{ $item->size_name }}
                         </span>
 
                         @if ($hasSizePrice)
-                            <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-orange-700 shadow-sm">
-                                Rs. {{ number_format($item->size_price, 0) }}
+                            <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-brand-600 shadow-sm">
+                                ($item->size_price)
                             </span>
                         @endif
                     </div>
@@ -45,12 +45,12 @@ $hasAddonsPrice = (float) ($item->addons_total ?? 0) > 0;
         @endif
 
         @if ($item->size_name && $addons->isNotEmpty())
-            <div class="border-t border-orange-100"></div>
+            <div class="border-t border-warm-200"></div>
         @endif
 
         @if ($addons->isNotEmpty())
             <div class="flex items-start gap-3">
-                <div class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white text-orange-600 shadow-sm">
+                <div class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white text-brand-500 shadow-sm">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -65,26 +65,26 @@ $hasAddonsPrice = (float) ($item->addons_total ?? 0) > 0;
 
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <p class="text-[10px] font-black uppercase tracking-[0.16em] text-orange-600">
+                        <p class="text-[10px] font-black uppercase tracking-[0.16em] text-brand-500">
                             Selected Extras
                         </p>
 
                         @if ($hasAddonsPrice)
-                            <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-orange-700 shadow-sm">
-                                + Rs. {{ number_format($item->addons_total, 0) }}
+                            <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-brand-600 shadow-sm">
+                                + ($item->addons_total)
                             </span>
                         @endif
                     </div>
 
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         @foreach ($addons as $addon)
-                            <span class="inline-flex max-w-full items-center rounded-full border border-orange-100 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 shadow-sm">
+                            <span class="inline-flex max-w-full items-center rounded-full border border-warm-200 bg-white px-2.5 py-1 text-[11px] font-bold text-warm-600 shadow-sm">
                                 <span class="truncate">
                                     {{ $addon['name'] }}
                                 </span>
 
                                 @if (! empty($addon['price']) && (float) $addon['price'] > 0)
-                                    <span class="ml-1 whitespace-nowrap text-orange-600">
+                                    <span class="ml-1 whitespace-nowrap text-brand-500">
                                         +{{ number_format($addon['price'], 0) }}
                                     </span>
                                 @endif

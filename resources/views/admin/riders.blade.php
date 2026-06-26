@@ -41,8 +41,8 @@ method_exists($riders, 'items')
 
 <div class="space-y-5 pb-6 sm:space-y-6">
     {{-- Hero --}}
-    <header class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950 p-5 text-white shadow-xl shadow-slate-950/20 sm:p-7 lg:rounded-[2rem] lg:p-8">
-        <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-orange-500/30 blur-3xl"></div>
+    <header class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-warm-950 via-warm-900 to-brand-900 p-5 text-white shadow-xl shadow-warm-950/20 sm:p-7 lg:rounded-[2rem] lg:p-8">
+        <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl"></div>
         <div class="pointer-events-none absolute -bottom-28 left-10 h-72 w-72 rounded-full bg-red-500/20 blur-3xl"></div>
 
         <div class="relative grid gap-7 xl:grid-cols-[minmax(0,1fr)_500px] xl:items-center">
@@ -55,7 +55,7 @@ method_exists($riders, 'items')
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
-                            class="h-3.5 w-3.5 text-orange-300"
+                            class="h-3.5 w-3.5 text-brand-200"
                         >
                             <circle cx="6" cy="18" r="2" />
                             <circle cx="18" cy="18" r="2" />
@@ -65,7 +65,7 @@ method_exists($riders, 'items')
                         Delivery Management
                     </span>
 
-                    <span class="rounded-full bg-orange-500 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]">
+                    <span class="rounded-full bg-brand-500 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]">
                         {{ $riderCount }}
                         {{ $riderCount === 1 ? 'rider' : 'riders' }}
                     </span>
@@ -75,14 +75,14 @@ method_exists($riders, 'items')
                     Delivery riders
                 </h1>
 
-                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-300 sm:text-base sm:leading-7">
+                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-warm-300 sm:text-base sm:leading-7">
                     Manage rider accounts, monitor delivery workload, review completion performance, and control assignment availability.
                 </p>
 
                 <div class="mt-6 flex flex-col gap-3 sm:flex-row">
                     <a
                         href="{{ route('admin.riders.create') }}"
-                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-950/30 transition active:scale-[0.98] hover:-translate-y-0.5 hover:bg-orange-500 sm:rounded-2xl"
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-950/30 transition active:scale-[0.98] hover:-translate-y-0.5 hover:bg-brand-600 sm:rounded-2xl"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -131,12 +131,12 @@ method_exists($riders, 'items')
                                 Active Riders
                             </p>
 
-                            <p class="mt-1 text-2xl font-black text-emerald-300">
+                            <p class="mt-1 text-2xl font-black text-leaf-500">
                                 {{ $activeRidersOnPage }}
                             </p>
                         </div>
 
-                        <span class="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+                        <span class="mt-1 h-2.5 w-2.5 rounded-full bg-leaf-500"></span>
                     </div>
 
                     <p class="mt-1 text-[9px] font-semibold text-white/45">
@@ -196,7 +196,7 @@ method_exists($riders, 'items')
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2.5"
-                            class="h-4 w-4 text-emerald-300"
+                            class="h-4 w-4 text-leaf-500"
                         >
                             <path
                                 stroke-linecap="round"
@@ -208,7 +208,7 @@ method_exists($riders, 'items')
 
                     <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-white/15">
                         <div
-                            class="h-full rounded-full bg-emerald-400"
+                            class="h-full rounded-full bg-leaf-500"
                             style="width: {{ $teamCompletionRate }}%"
                         ></div>
                     </div>
@@ -219,8 +219,8 @@ method_exists($riders, 'items')
 
     @if ($visibleRiders->isEmpty())
         {{-- Empty State --}}
-        <section class="rounded-[1.75rem] border border-dashed border-orange-200 bg-white p-7 text-center shadow-sm sm:p-12">
-            <span class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-orange-50 text-orange-600 sm:h-20 sm:w-20">
+        <section class="rounded-[1.75rem] border border-dashed border-brand-200 bg-white p-7 text-center shadow-sm sm:p-12">
+            <span class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-500 sm:h-20 sm:w-20">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -235,17 +235,17 @@ method_exists($riders, 'items')
                 </svg>
             </span>
 
-            <h2 class="mt-5 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+            <h2 class="mt-5 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                 Build your delivery team
             </h2>
 
-            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-slate-600">
+            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-warm-600">
                 Create a rider account so delivery orders can be assigned, tracked, and completed through the rider dashboard.
             </p>
 
             <a
                 href="{{ route('admin.riders.create') }}"
-                class="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:bg-orange-700"
+                class="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -266,18 +266,18 @@ method_exists($riders, 'items')
         </section>
     @else
         {{-- Rider Directory --}}
-        <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-            <div class="flex items-center justify-between gap-4 border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+        <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between gap-4 border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                 <div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                         Rider Directory
                     </p>
 
-                    <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                    <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                         Delivery team
                     </h2>
 
-                    <p class="mt-1 text-xs font-semibold text-slate-500">
+                    <p class="mt-1 text-xs font-semibold text-warm-500">
                         Showing {{ $pageRiderCount }}
                         {{ $pageRiderCount === 1 ? 'rider' : 'riders' }}
                         on this page
@@ -286,7 +286,7 @@ method_exists($riders, 'items')
 
                 <a
                     href="{{ route('admin.riders.create') }}"
-                    class="hidden min-h-10 items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-black text-orange-700 transition hover:bg-orange-100 sm:inline-flex"
+                    class="hidden min-h-10 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2 text-xs font-black text-brand-600 transition hover:bg-brand-100 sm:inline-flex"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -306,7 +306,7 @@ method_exists($riders, 'items')
                 </a>
             </div>
 
-            <div class="divide-y divide-slate-100">
+            <div class="divide-y divide-warm-100">
                 @foreach ($riders as $rider)
                     @php
                         $assignedCount = (int) (
@@ -357,11 +357,11 @@ method_exists($riders, 'items')
                         $initials = $initials ?: 'R';
                     @endphp
 
-                    <article class="group relative p-4 transition hover:bg-orange-50/30 sm:p-5">
+                    <article class="group relative p-4 transition hover:bg-brand-50/30 sm:p-5">
                         <div
                             @class([
                                 'absolute inset-y-0 left-0 w-1',
-                                'bg-emerald-500' => $rider->is_active,
+                                'bg-leaf-500' => $rider->is_active,
                                 'bg-red-500' => ! $rider->is_active,
                             ])
                         ></div>
@@ -371,8 +371,8 @@ method_exists($riders, 'items')
                             <div
                                 @class([
                                     'grid h-16 w-16 place-items-center rounded-[1.25rem] text-lg font-black shadow-sm',
-                                    'bg-gradient-to-br from-orange-100 via-amber-50 to-red-100 text-orange-700' => $rider->is_active,
-                                    'bg-slate-100 text-slate-500' => ! $rider->is_active,
+                                    'bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream text-brand-600' => $rider->is_active,
+                                    'bg-warm-100 text-warm-500' => ! $rider->is_active,
                                 ])
                             >
                                 {{ $initials }}
@@ -384,14 +384,14 @@ method_exists($riders, 'items')
                                     <span
                                         @class([
                                             'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em]',
-                                            'bg-emerald-50 text-emerald-700' => $rider->is_active,
+                                            'bg-leaf-50 text-leaf-700' => $rider->is_active,
                                             'bg-red-50 text-red-700' => ! $rider->is_active,
                                         ])
                                     >
                                         <span
                                             @class([
                                                 'h-1.5 w-1.5 rounded-full',
-                                                'bg-emerald-500' => $rider->is_active,
+                                                'bg-leaf-500' => $rider->is_active,
                                                 'bg-red-500' => ! $rider->is_active,
                                             ])
                                         ></span>
@@ -407,23 +407,23 @@ method_exists($riders, 'items')
                                     @endif
                                 </div>
 
-                                <h3 class="mt-2 truncate text-lg font-black tracking-tight text-slate-950 sm:text-xl">
+                                <h3 class="mt-2 truncate text-lg font-black tracking-tight text-warm-950 sm:text-xl">
                                     {{ $rider->name }}
                                 </h3>
 
-                                <p class="mt-1 truncate text-xs font-semibold text-slate-500">
+                                <p class="mt-1 truncate text-xs font-semibold text-warm-500">
                                     {{ $rider->email }}
                                 </p>
 
                                 @if ($rider->phone)
                                     <a
                                         href="tel:{{ $phoneHref }}"
-                                        class="mt-1 inline-block text-xs font-black text-orange-700 transition hover:text-orange-800"
+                                        class="mt-1 inline-block text-xs font-black text-brand-600 transition hover:text-brand-800"
                                     >
                                         {{ $rider->phone }}
                                     </a>
                                 @else
-                                    <p class="mt-1 text-xs font-semibold text-slate-400">
+                                    <p class="mt-1 text-xs font-semibold text-warm-500">
                                         No phone number added
                                     </p>
                                 @endif
@@ -441,36 +441,36 @@ method_exists($riders, 'items')
                                     </p>
                                 </div>
 
-                                <div class="rounded-xl bg-emerald-50 px-3 py-3 text-center">
-                                    <p class="text-[8px] font-black uppercase tracking-[0.1em] text-emerald-600">
+                                <div class="rounded-xl bg-leaf-50 px-3 py-3 text-center">
+                                    <p class="text-[8px] font-black uppercase tracking-[0.1em] text-leaf-700">
                                         Delivered
                                     </p>
 
-                                    <p class="mt-1 text-lg font-black text-emerald-950">
+                                    <p class="mt-1 text-lg font-black text-leaf-900">
                                         {{ $deliveredCount }}
                                     </p>
                                 </div>
 
-                                <div class="rounded-xl bg-amber-50 px-3 py-3 text-center">
-                                    <p class="text-[8px] font-black uppercase tracking-[0.1em] text-amber-600">
+                                <div class="rounded-xl bg-gold-50 px-3 py-3 text-center">
+                                    <p class="text-[8px] font-black uppercase tracking-[0.1em] text-gold-500">
                                         Open
                                     </p>
 
-                                    <p class="mt-1 text-lg font-black text-amber-950">
+                                    <p class="mt-1 text-lg font-black text-gold-700">
                                         {{ $remainingCount }}
                                     </p>
                                 </div>
                             </div>
 
                             {{-- Performance --}}
-                            <div class="rounded-xl bg-slate-50 px-4 py-3 sm:col-span-2 xl:col-span-1">
+                            <div class="rounded-xl bg-warm-50 px-4 py-3 sm:col-span-2 xl:col-span-1">
                                 <div class="flex items-center justify-between gap-3">
                                     <div>
-                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                             Completion Rate
                                         </p>
 
-                                        <p class="mt-1 text-lg font-black text-slate-950">
+                                        <p class="mt-1 text-lg font-black text-warm-950">
                                             {{ $deliveryRate }}%
                                         </p>
                                     </div>
@@ -478,9 +478,9 @@ method_exists($riders, 'items')
                                     <span
                                         @class([
                                             'grid h-9 w-9 place-items-center rounded-xl',
-                                            'bg-emerald-100 text-emerald-700' => $deliveryRate >= 80,
+                                            'bg-leaf-100 text-leaf-700' => $deliveryRate >= 80,
                                             'bg-blue-100 text-blue-700' => $deliveryRate >= 50 && $deliveryRate < 80,
-                                            'bg-amber-100 text-amber-700' => $deliveryRate < 50,
+                                            'bg-gold-100 text-gold-700' => $deliveryRate < 50,
                                         ])
                                     >
                                         <svg
@@ -500,20 +500,20 @@ method_exists($riders, 'items')
                                     </span>
                                 </div>
 
-                                <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                                <div class="mt-3 h-2 overflow-hidden rounded-full bg-warm-200">
                                     <div
                                         @class([
                                             'h-full rounded-full',
-                                            'bg-emerald-500' => $deliveryRate >= 80,
+                                            'bg-leaf-500' => $deliveryRate >= 80,
                                             'bg-blue-500' => $deliveryRate >= 50 && $deliveryRate < 80,
-                                            'bg-amber-500' => $deliveryRate < 50,
+                                            'bg-gold-500' => $deliveryRate < 50,
                                         ])
                                         style="width: {{ $deliveryRate }}%"
                                     ></div>
                                 </div>
 
                                 @if ($assignedCount === 0)
-                                    <p class="mt-2 text-[9px] font-semibold text-slate-400">
+                                    <p class="mt-2 text-[9px] font-semibold text-warm-500">
                                         No delivery history yet
                                     </p>
                                 @endif
@@ -523,7 +523,7 @@ method_exists($riders, 'items')
                             <div class="grid grid-cols-[auto_auto_1fr_auto] gap-2 sm:col-span-2 xl:col-span-1 xl:flex xl:justify-end">
                                 <a
                                     href="mailto:{{ $rider->email }}"
-                                    class="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 transition active:scale-95 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700"
+                                    class="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-warm-200 bg-white text-warm-600 transition active:scale-95 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600"
                                     aria-label="Email {{ $rider->name }}"
                                     title="{{ $rider->email }}"
                                 >
@@ -562,7 +562,7 @@ method_exists($riders, 'items')
 
                                 <a
                                     href="{{ route('admin.riders.edit', $rider) }}"
-                                    class="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-xs font-black text-white shadow-lg shadow-orange-600/15 transition active:scale-[0.98] hover:bg-orange-700 xl:min-w-[90px]"
+                                    class="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-xs font-black text-white shadow-lg shadow-brand-500/15 transition active:scale-[0.98] hover:bg-brand-600 xl:min-w-[90px]"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -579,35 +579,16 @@ method_exists($riders, 'items')
                                     Edit
                                 </a>
 
-                                <form
-                                    action="{{ route('admin.riders.destroy', $rider) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Delete this rider account? This action cannot be undone.');"
+                                <x-confirm-submit
+                                    :action="route('admin.riders.destroy', $rider)"
+                                    title="Delete rider account?"
+                                    description="This removes the rider account if it has no active assigned orders. This action cannot be undone."
+                                    confirm-label="Delete Rider"
+                                    button-class="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-100 bg-red-50 text-red-600 transition active:scale-95 hover:border-red-600 hover:bg-red-600 hover:text-white"
+                                    aria-label="Delete {{ $rider->name }}"
                                 >
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button
-                                        type="submit"
-                                        class="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-100 bg-red-50 text-red-600 transition active:scale-95 hover:border-red-600 hover:bg-red-600 hover:text-white"
-                                        aria-label="Delete {{ $rider->name }}"
-                                        title="Delete rider"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                            class="h-4 w-4"
-                                        >
-                                            <path d="M4 7h16" />
-                                            <path d="M10 11v6M14 11v6" />
-                                            <path d="m6 7 1 14h10l1-14" />
-                                            <path d="M9 7V4h6v3" />
-                                        </svg>
-                                    </button>
-                                </form>
+                                    <x-ui-icon name="trash" class="h-4 w-4" />
+                                </x-confirm-submit>
                             </div>
                         </div>
                     </article>
@@ -617,17 +598,17 @@ method_exists($riders, 'items')
 
         {{-- Pagination --}}
         @if ($hasPages)
-            <div class="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm">
+            <div class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm">
                 {{ $riders->withQueryString()->links() }}
             </div>
         @endif
     @endif
 
     {{-- Mobile Create Action --}}
-    <div class="sticky bottom-3 z-30 rounded-2xl border border-orange-100 bg-white/95 p-3 shadow-xl shadow-slate-950/10 backdrop-blur sm:hidden">
+    <div class="sticky bottom-3 z-30 rounded-2xl border border-warm-200 bg-white/95 p-3 shadow-xl shadow-warm-950/10 backdrop-blur sm:hidden">
         <a
             href="{{ route('admin.riders.create') }}"
-            class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/25 transition active:scale-[0.98]"
+            class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition active:scale-[0.98]"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

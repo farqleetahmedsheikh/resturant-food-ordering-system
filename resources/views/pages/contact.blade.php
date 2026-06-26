@@ -1,34 +1,40 @@
 @component('layouts.public', ['title' => 'Contact'])
 @php
-$restaurantName = $restaurant?->name ?? 'FreshBite Restaurant';
-$phone = $restaurant?->phone ?? '0300 0000010';
-$email = $restaurant?->email ?? '[hello@freshbite.test](mailto:hello@freshbite.test)';
-$address = $restaurant?->address ?? 'Main Food Street, City Center';
+$restaurantName = $restaurant?->name ?? 'Arcade Kebab House Restaurant';
+$restaurantInitials = $restaurant?->initials ?? 'AK';
+$phone = $restaurant?->phone;
+$email = $restaurant?->email;
+$address = $restaurant?->formatted_address ?? $restaurant?->address;
 
     $timingText = $restaurant?->opening_time && $restaurant?->closing_time
         ? $restaurant->opening_time . ' - ' . $restaurant->closing_time
-        : '12:00 PM - 11:00 PM';
+        : 'Opening hours to be confirmed';
 
-    $isOpen = (bool) ($restaurant?->is_open ?? true);
+    $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? true);
 
-    $phoneHref = preg_replace('/[^0-9+]/', '', $phone);
-    $emailHref = 'mailto:' . $email;
+    $phoneHref = $phone ? preg_replace('/[^0-9+]/', '', $phone) : null;
+    $emailHref = $email ? 'mailto:' . $email : null;
 
-    $mapsUrl = 'https://www.google.com/maps/search/?api=1&query='
-        . rawurlencode($address);
+    $mapsUrl = $address
+        ? 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($address)
+        : null;
+
+    $phoneDisplay = $phone ?: 'Not configured yet';
+    $emailDisplay = $email ?: 'Not configured yet';
+    $addressDisplay = $address ?: 'Not configured yet';
 @endphp
 
 <main class="min-h-screen bg-[var(--color-surface-warm)] pb-24 lg:pb-0">
     {{-- Hero --}}
     <section class="relative overflow-hidden">
-        <div class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-orange-200/50 blur-3xl"></div>
-        <div class="pointer-events-none absolute -right-28 bottom-0 h-80 w-80 rounded-full bg-red-200/40 blur-3xl"></div>
+        <div class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-200/50 blur-3xl"></div>
+        <div class="pointer-events-none absolute -right-28 bottom-0 h-80 w-80 rounded-full bg-brand-200/40 blur-3xl"></div>
 
         <div class="relative mx-auto max-w-7xl px-4 pb-8 pt-5 sm:px-6 sm:pb-12 sm:pt-8 lg:px-8 lg:py-16">
             {{-- Mobile Restaurant Header --}}
             <div class="mb-6 flex items-center justify-between gap-4 lg:hidden">
                 <div class="flex min-w-0 items-center gap-3">
-                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-orange-600 text-sm font-black text-white shadow-lg shadow-orange-600/20">
+                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-500 text-sm font-black text-white shadow-lg shadow-brand-500/20">
                         @if ($restaurant?->logo_url)
                             <img
                                 src="{{ $restaurant->logo_url }}"
@@ -36,12 +42,12 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                                 class="h-full w-full object-cover"
                             >
                         @else
-                            {{ mb_strtoupper(mb_substr($restaurantName, 0, 2)) }}
+                            {{ $restaurantInitials }}
                         @endif
                     </div>
 
                     <div class="min-w-0">
-                        <p class="truncate text-sm font-black text-slate-950">
+                        <p class="truncate text-sm font-black text-warm-950">
                             {{ $restaurantName }}
                         </p>
 
@@ -49,22 +55,22 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                             <span
                                 @class([
                                     'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em]',
-                                    'bg-emerald-50 text-emerald-700' => $isOpen,
-                                    'bg-amber-50 text-amber-700' => ! $isOpen,
+                                    'bg-leaf-50 text-leaf-700' => $isOpen,
+                                    'bg-gold-50 text-gold-700' => ! $isOpen,
                                 ])
                             >
                                 <span
                                     @class([
                                         'h-1.5 w-1.5 rounded-full',
-                                        'animate-pulse bg-emerald-500' => $isOpen,
-                                        'bg-amber-500' => ! $isOpen,
+                                        'animate-pulse bg-leaf-500' => $isOpen,
+                                        'bg-gold-500' => ! $isOpen,
                                     ])
                                 ></span>
 
                                 {{ $isOpen ? 'Open now' : 'Closed' }}
                             </span>
 
-                            <span class="truncate text-[10px] font-semibold text-slate-500">
+                            <span class="truncate text-[10px] font-semibold text-warm-500">
                                 {{ $timingText }}
                             </span>
                         </div>
@@ -73,7 +79,7 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
 
                 <a
                     href="{{ route('menu') }}"
-                    class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-orange-100 bg-white text-orange-600 shadow-sm transition active:scale-95"
+                    class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-warm-200 bg-white text-brand-500 shadow-sm transition active:scale-95"
                     aria-label="Browse menu"
                 >
                     <svg
@@ -94,7 +100,7 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                 {{-- Hero Content --}}
                 <div>
                     <div class="hidden items-center gap-3 lg:inline-flex">
-                        <div class="grid h-12 w-12 place-items-center overflow-hidden rounded-2xl bg-orange-600 text-sm font-black text-white shadow-lg shadow-orange-600/20">
+                        <div class="grid h-12 w-12 place-items-center overflow-hidden rounded-2xl bg-brand-500 text-sm font-black text-white shadow-lg shadow-brand-500/20">
                             @if ($restaurant?->logo_url)
                                 <img
                                     src="{{ $restaurant->logo_url }}"
@@ -102,12 +108,12 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                                     class="h-full w-full object-cover"
                                 >
                             @else
-                                {{ mb_strtoupper(mb_substr($restaurantName, 0, 2)) }}
+                                {{ $restaurantInitials }}
                             @endif
                         </div>
 
                         <div>
-                            <p class="font-black text-slate-950">
+                            <p class="font-black text-warm-950">
                                 {{ $restaurantName }}
                             </p>
 
@@ -115,46 +121,46 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                                 <span
                                     @class([
                                         'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em]',
-                                        'bg-emerald-50 text-emerald-700' => $isOpen,
-                                        'bg-amber-50 text-amber-700' => ! $isOpen,
+                                        'bg-leaf-50 text-leaf-700' => $isOpen,
+                                        'bg-gold-50 text-gold-700' => ! $isOpen,
                                     ])
                                 >
                                     <span
                                         @class([
                                             'h-1.5 w-1.5 rounded-full',
-                                            'animate-pulse bg-emerald-500' => $isOpen,
-                                            'bg-amber-500' => ! $isOpen,
+                                            'animate-pulse bg-leaf-500' => $isOpen,
+                                            'bg-gold-500' => ! $isOpen,
                                         ])
                                     ></span>
 
                                     {{ $isOpen ? 'Open now' : 'Currently closed' }}
                                 </span>
 
-                                <span class="text-xs font-semibold text-slate-500">
+                                <span class="text-xs font-semibold text-warm-500">
                                     {{ $timingText }}
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <p class="text-[10px] font-black uppercase tracking-[0.22em] text-orange-600 lg:mt-8 lg:text-xs">
+                    <p class="text-[10px] font-black uppercase tracking-[0.22em] text-brand-500 lg:mt-8 lg:text-xs">
                         Restaurant Support
                     </p>
 
-                    <h1 class="mt-2 max-w-3xl text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                    <h1 class="mt-2 max-w-3xl text-3xl font-black leading-tight tracking-tight text-warm-950 sm:text-5xl lg:text-6xl">
                         How can we
-                        <span class="text-orange-600">help you today?</span>
+                        <span class="text-brand-500">help you today?</span>
                     </h1>
 
-                    <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-slate-600 sm:mt-5 sm:text-base sm:leading-8">
+                    <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-warm-600 sm:mt-5 sm:text-base sm:leading-8">
                         Contact us for order support, delivery updates, restaurant information, feedback, or general questions.
                     </p>
 
                     {{-- Main Mobile/Desktop Actions --}}
                     <div class="mt-6 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap lg:mt-8">
                         <a
-                            href="tel:{{ $phoneHref }}"
-                            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/25 transition active:scale-[0.98] hover:bg-orange-700 sm:rounded-2xl sm:px-6"
+                            href="{{ $phoneHref ? 'tel:' . $phoneHref : '#' }}"
+                            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition active:scale-[0.98] hover:bg-brand-600 sm:rounded-2xl sm:px-6"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -171,8 +177,8 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         </a>
 
                         <a
-                            href="{{ $emailHref }}"
-                            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-orange-200 bg-white px-4 py-3 text-sm font-black text-orange-700 shadow-sm transition active:scale-[0.98] hover:bg-orange-50 sm:rounded-2xl sm:px-6"
+                            href="{{ $emailHref ?? '#' }}"
+                            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-3 text-sm font-black text-brand-600 shadow-sm transition active:scale-[0.98] hover:bg-brand-50 sm:rounded-2xl sm:px-6"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -190,10 +196,10 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         </a>
 
                         <a
-                            href="{{ $mapsUrl }}"
+                            href="{{ $mapsUrl ?? '#' }}"
                             target="_blank"
                             rel="noopener"
-                            class="col-span-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-black text-orange-700 transition active:scale-[0.98] hover:bg-orange-100 sm:col-auto sm:rounded-2xl sm:px-6"
+                            class="col-span-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-black text-brand-600 transition active:scale-[0.98] hover:bg-brand-100 sm:col-auto sm:rounded-2xl sm:px-6"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -213,19 +219,19 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                 </div>
 
                 {{-- Desktop Support Card --}}
-                <aside class="rounded-[2rem] border border-orange-100 bg-white p-6 shadow-2xl shadow-orange-900/10 sm:p-7">
+                <aside class="rounded-[2rem] border border-warm-200 bg-white p-6 shadow-2xl shadow-brand-900/10 sm:p-7">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
+                            <p class="text-xs font-black uppercase tracking-[0.2em] text-brand-500">
                                 Quick Support
                             </p>
 
-                            <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">
+                            <h2 class="mt-2 text-2xl font-black tracking-tight text-warm-950">
                                 Need help with an order?
                             </h2>
                         </div>
 
-                        <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
+                        <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-500">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -239,13 +245,13 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         </div>
                     </div>
 
-                    <p class="mt-3 text-sm font-semibold leading-6 text-slate-600">
+                    <p class="mt-3 text-sm font-semibold leading-6 text-warm-600">
                         Calling is the fastest option for urgent delivery or active-order questions.
                     </p>
 
                     <a
-                        href="tel:{{ $phoneHref }}"
-                        class="mt-6 flex items-center gap-4 rounded-2xl bg-orange-600 p-4 text-white shadow-lg shadow-orange-600/20 transition hover:bg-orange-700"
+                        href="{{ $phoneHref ? 'tel:' . $phoneHref : '#' }}"
+                        class="mt-6 flex items-center gap-4 rounded-2xl bg-brand-500 p-4 text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600"
                     >
                         <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/15">
                             <svg
@@ -261,12 +267,12 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         </span>
 
                         <span class="min-w-0 flex-1">
-                            <span class="block text-[10px] font-black uppercase tracking-[0.14em] text-orange-100">
+                            <span class="block text-[10px] font-black uppercase tracking-[0.14em] text-brand-100">
                                 Call Restaurant
                             </span>
 
                             <span class="mt-1 block break-words text-lg font-black">
-                                {{ $phone }}
+                                {{ $phoneDisplay }}
                             </span>
                         </span>
 
@@ -284,8 +290,8 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
 
                     <div class="mt-4 grid grid-cols-2 gap-3">
                         <a
-                            href="{{ $emailHref }}"
-                            class="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-orange-200 hover:bg-orange-50"
+                            href="{{ $emailHref ?? '#' }}"
+                            class="rounded-2xl border border-warm-200 bg-warm-50 p-4 transition hover:border-brand-200 hover:bg-brand-50"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -293,26 +299,26 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                                 fill="none"
                                 stroke="currentColor"
                                 stroke-width="2"
-                                class="h-5 w-5 text-orange-600"
+                                class="h-5 w-5 text-brand-500"
                             >
                                 <rect x="3" y="5" width="18" height="14" rx="2" />
                                 <path d="m3 7 9 6 9-6" />
                             </svg>
 
-                            <p class="mt-3 text-sm font-black text-slate-950">
+                            <p class="mt-3 text-sm font-black text-warm-950">
                                 Send Email
                             </p>
 
-                            <p class="mt-1 text-xs font-semibold text-slate-500">
+                            <p class="mt-1 text-xs font-semibold text-warm-500">
                                 General support
                             </p>
                         </a>
 
                         <a
-                            href="{{ $mapsUrl }}"
+                            href="{{ $mapsUrl ?? '#' }}"
                             target="_blank"
                             rel="noopener"
-                            class="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-orange-200 hover:bg-orange-50"
+                            class="rounded-2xl border border-warm-200 bg-warm-50 p-4 transition hover:border-brand-200 hover:bg-brand-50"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -320,17 +326,17 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                                 fill="none"
                                 stroke="currentColor"
                                 stroke-width="2"
-                                class="h-5 w-5 text-orange-600"
+                                class="h-5 w-5 text-brand-500"
                             >
                                 <path d="M12 22s7-6 7-13a7 7 0 1 0-14 0c0 7 7 13 7 13z" />
                                 <circle cx="12" cy="9" r="2.5" />
                             </svg>
 
-                            <p class="mt-3 text-sm font-black text-slate-950">
+                            <p class="mt-3 text-sm font-black text-warm-950">
                                 Directions
                             </p>
 
-                            <p class="mt-1 text-xs font-semibold text-slate-500">
+                            <p class="mt-1 text-xs font-semibold text-warm-500">
                                 Open in Maps
                             </p>
                         </a>
@@ -341,15 +347,15 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
     </section>
 
     {{-- Contact Methods --}}
-    <section class="border-y border-orange-100 bg-white py-8 sm:py-12 lg:py-16">
+    <section class="border-y border-warm-200 bg-white py-8 sm:py-12 lg:py-16">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="mb-6 flex items-end justify-between gap-4 sm:mb-8">
                 <div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 sm:text-xs">
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 sm:text-xs">
                         Contact Options
                     </p>
 
-                    <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                    <h2 class="mt-2 text-2xl font-black tracking-tight text-warm-950 sm:text-3xl">
                         Choose the best way to reach us
                     </h2>
                 </div>
@@ -357,8 +363,8 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                 <span
                     @class([
                         'hidden rounded-full px-4 py-2 text-xs font-black sm:inline-flex',
-                        'bg-emerald-50 text-emerald-700' => $isOpen,
-                        'bg-amber-50 text-amber-700' => ! $isOpen,
+                        'bg-leaf-50 text-leaf-700' => $isOpen,
+                        'bg-gold-50 text-gold-700' => ! $isOpen,
                     ])
                 >
                     {{ $isOpen ? 'Restaurant open' : 'Restaurant closed' }}
@@ -368,10 +374,10 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
             <div class="grid gap-3 md:grid-cols-3 md:gap-5">
                 {{-- Phone --}}
                 <a
-                    href="tel:{{ $phoneHref }}"
-                    class="group flex items-center gap-4 rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm transition active:scale-[0.99] hover:border-orange-200 hover:shadow-xl hover:shadow-orange-900/5 sm:p-5 md:block md:p-6"
+                    href="{{ $phoneHref ? 'tel:' . $phoneHref : '#' }}"
+                    class="group flex items-center gap-4 rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm transition active:scale-[0.99] hover:border-brand-200 hover:shadow-xl hover:shadow-brand-900/5 sm:p-5 md:block md:p-6"
                 >
-                    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600 transition group-hover:bg-orange-600 group-hover:text-white md:h-14 md:w-14">
+                    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-500 transition group-hover:bg-brand-600 group-hover:text-white md:h-14 md:w-14">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -385,15 +391,15 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                     </span>
 
                     <span class="min-w-0 flex-1 md:mt-5 md:block">
-                        <span class="block text-[9px] font-black uppercase tracking-[0.16em] text-orange-600 sm:text-xs">
+                        <span class="block text-[9px] font-black uppercase tracking-[0.16em] text-brand-500 sm:text-xs">
                             Phone Support
                         </span>
 
-                        <span class="mt-1 block break-words text-base font-black text-slate-950 sm:text-lg md:mt-2">
-                            {{ $phone }}
+                        <span class="mt-1 block break-words text-base font-black text-warm-950 sm:text-lg md:mt-2">
+                            {{ $phoneDisplay }}
                         </span>
 
-                        <span class="mt-1 hidden text-sm font-semibold leading-6 text-slate-500 md:block">
+                        <span class="mt-1 hidden text-sm font-semibold leading-6 text-warm-500 md:block">
                             Best for active orders and urgent delivery questions.
                         </span>
                     </span>
@@ -404,7 +410,7 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2"
-                        class="h-5 w-5 shrink-0 text-slate-300 transition group-hover:translate-x-1 group-hover:text-orange-600 md:hidden"
+                        class="h-5 w-5 shrink-0 text-warm-300 transition group-hover:translate-x-1 group-hover:text-brand-500 md:hidden"
                     >
                         <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
                     </svg>
@@ -412,8 +418,8 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
 
                 {{-- Email --}}
                 <a
-                    href="{{ $emailHref }}"
-                    class="group flex items-center gap-4 rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm transition active:scale-[0.99] hover:border-orange-200 hover:shadow-xl hover:shadow-orange-900/5 sm:p-5 md:block md:p-6"
+                    href="{{ $emailHref ?? '#' }}"
+                    class="group flex items-center gap-4 rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm transition active:scale-[0.99] hover:border-brand-200 hover:shadow-xl hover:shadow-brand-900/5 sm:p-5 md:block md:p-6"
                 >
                     <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-blue-50 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white md:h-14 md:w-14">
                         <svg
@@ -434,11 +440,11 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                             Email Support
                         </span>
 
-                        <span class="mt-1 block break-all text-sm font-black text-slate-950 sm:text-base md:mt-2">
-                            {{ $email }}
+                        <span class="mt-1 block break-all text-sm font-black text-warm-950 sm:text-base md:mt-2">
+                            {{ $emailDisplay }}
                         </span>
 
-                        <span class="mt-1 hidden text-sm font-semibold leading-6 text-slate-500 md:block">
+                        <span class="mt-1 hidden text-sm font-semibold leading-6 text-warm-500 md:block">
                             Best for feedback, business inquiries, and non-urgent help.
                         </span>
                     </span>
@@ -449,15 +455,15 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2"
-                        class="h-5 w-5 shrink-0 text-slate-300 transition group-hover:translate-x-1 group-hover:text-blue-600 md:hidden"
+                        class="h-5 w-5 shrink-0 text-warm-300 transition group-hover:translate-x-1 group-hover:text-blue-600 md:hidden"
                     >
                         <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
                     </svg>
                 </a>
 
                 {{-- Hours --}}
-                <div class="flex items-center gap-4 rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm sm:p-5 md:block md:p-6">
-                    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 md:h-14 md:w-14">
+                <div class="flex items-center gap-4 rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-5 md:block md:p-6">
+                    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-leaf-50 text-leaf-700 md:h-14 md:w-14">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -472,15 +478,15 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                     </span>
 
                     <span class="min-w-0 flex-1 md:mt-5 md:block">
-                        <span class="block text-[9px] font-black uppercase tracking-[0.16em] text-emerald-600 sm:text-xs">
+                        <span class="block text-[9px] font-black uppercase tracking-[0.16em] text-leaf-700 sm:text-xs">
                             Operating Hours
                         </span>
 
-                        <span class="mt-1 block text-base font-black text-slate-950 sm:text-lg md:mt-2">
+                        <span class="mt-1 block text-base font-black text-warm-950 sm:text-lg md:mt-2">
                             {{ $timingText }}
                         </span>
 
-                        <span class="mt-1 hidden text-sm font-semibold leading-6 text-slate-500 md:block">
+                        <span class="mt-1 hidden text-sm font-semibold leading-6 text-warm-500 md:block">
                             Restaurant ordering and delivery availability.
                         </span>
                     </span>
@@ -494,22 +500,22 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-stretch lg:gap-8">
                 {{-- Address Card --}}
-                <div class="rounded-[1.75rem] border border-orange-100 bg-white p-5 shadow-sm sm:p-7 lg:p-8">
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 sm:text-xs">
+                <div class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm sm:p-7 lg:p-8">
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 sm:text-xs">
                         Restaurant Location
                     </p>
 
-                    <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                    <h2 class="mt-2 text-2xl font-black tracking-tight text-warm-950 sm:text-3xl">
                         Find {{ $restaurantName }}
                     </h2>
 
-                    <p class="mt-3 text-sm font-semibold leading-6 text-slate-600">
+                    <p class="mt-3 text-sm font-semibold leading-6 text-warm-600">
                         Open the address in your maps application for navigation and directions.
                     </p>
 
-                    <div class="mt-6 rounded-2xl border border-orange-100 bg-orange-50 p-4 sm:p-5">
+                    <div class="mt-6 rounded-2xl border border-warm-200 bg-brand-50 p-4 sm:p-5">
                         <div class="flex items-start gap-3">
-                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-orange-600 shadow-sm">
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-brand-500 shadow-sm">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
@@ -524,22 +530,22 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                             </span>
 
                             <div class="min-w-0">
-                                <p class="text-[9px] font-black uppercase tracking-[0.14em] text-orange-600">
+                                <p class="text-[9px] font-black uppercase tracking-[0.14em] text-brand-500">
                                     Address
                                 </p>
 
-                                <p class="mt-1 break-words text-base font-black leading-7 text-slate-950">
-                                    {{ $address }}
+                                <p class="mt-1 break-words text-base font-black leading-7 text-warm-950">
+                                    {{ $addressDisplay }}
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <a
-                        href="{{ $mapsUrl }}"
+                        href="{{ $mapsUrl ?? '#' }}"
                         target="_blank"
                         rel="noopener"
-                        class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition active:scale-[0.98] hover:bg-orange-700 sm:w-auto sm:rounded-2xl"
+                        class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600 sm:w-auto sm:rounded-2xl"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -559,10 +565,10 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
 
                 {{-- Visual Map Panel --}}
                 <a
-                    href="{{ $mapsUrl }}"
+                    href="{{ $mapsUrl ?? '#' }}"
                     target="_blank"
                     rel="noopener"
-                    class="group relative min-h-[260px] overflow-hidden rounded-[1.75rem] border border-orange-100 bg-gradient-to-br from-orange-100 via-amber-50 to-red-100 shadow-sm sm:min-h-[340px]"
+                    class="group relative min-h-[260px] overflow-hidden rounded-[1.75rem] border border-warm-200 bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream shadow-sm sm:min-h-[340px]"
                     aria-label="Open restaurant location in Google Maps"
                 >
                     <div class="absolute inset-0 opacity-60">
@@ -572,13 +578,13 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         <div class="absolute right-[22%] -top-16 h-[140%] w-6 -rotate-12 bg-white/65"></div>
                     </div>
 
-                    <div class="absolute left-[14%] top-[18%] h-3 w-3 rounded-full bg-orange-300"></div>
+                    <div class="absolute left-[14%] top-[18%] h-3 w-3 rounded-full bg-brand-200"></div>
                     <div class="absolute right-[18%] top-[24%] h-4 w-4 rounded-full bg-red-300"></div>
-                    <div class="absolute bottom-[18%] left-[22%] h-4 w-4 rounded-full bg-amber-300"></div>
+                    <div class="absolute bottom-[18%] left-[22%] h-4 w-4 rounded-full bg-gold-500"></div>
 
                     <div class="absolute inset-0 grid place-items-center p-6">
                         <div class="text-center">
-                            <div class="mx-auto grid h-20 w-20 place-items-center rounded-full bg-orange-600 text-white shadow-2xl shadow-orange-600/30 transition group-hover:-translate-y-1 group-hover:scale-105">
+                            <div class="mx-auto grid h-20 w-20 place-items-center rounded-full bg-brand-500 text-white shadow-2xl shadow-brand-500/30 transition group-hover:-translate-y-1 group-hover:scale-105">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
@@ -593,11 +599,11 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                             </div>
 
                             <div class="mt-5 rounded-2xl bg-white/90 px-5 py-4 shadow-xl backdrop-blur">
-                                <p class="font-black text-slate-950">
+                                <p class="font-black text-warm-950">
                                     {{ $restaurantName }}
                                 </p>
 
-                                <p class="mt-1 text-xs font-semibold text-slate-500">
+                                <p class="mt-1 text-xs font-semibold text-warm-500">
                                     Tap to open directions
                                 </p>
                             </div>
@@ -609,27 +615,27 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
     </section>
 
     {{-- Support Guidance --}}
-    <section class="border-y border-orange-100 bg-white py-9 sm:py-14">
+    <section class="border-y border-warm-200 bg-white py-9 sm:py-14">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="grid gap-6 lg:grid-cols-[0.7fr_1.3fr] lg:items-start lg:gap-12">
                 <div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 sm:text-xs">
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 sm:text-xs">
                         Support Guide
                     </p>
 
-                    <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                    <h2 class="mt-2 text-2xl font-black tracking-tight text-warm-950 sm:text-3xl">
                         The quickest way to get help
                     </h2>
 
-                    <p class="mt-3 text-sm font-semibold leading-6 text-slate-600">
+                    <p class="mt-3 text-sm font-semibold leading-6 text-warm-600">
                         Choose a contact method based on the type and urgency of your request.
                     </p>
                 </div>
 
-                <div class="divide-y divide-slate-100 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm">
+                <div class="divide-y divide-warm-100 overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm">
                     <a
-                        href="tel:{{ $phoneHref }}"
-                        class="group flex items-center gap-4 p-4 transition hover:bg-orange-50 sm:p-5"
+                        href="{{ $phoneHref ? 'tel:' . $phoneHref : '#' }}"
+                        class="group flex items-center gap-4 p-4 transition hover:bg-brand-50 sm:p-5"
                     >
                         <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600">
                             <svg
@@ -645,11 +651,11 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         </span>
 
                         <span class="min-w-0 flex-1">
-                            <span class="block text-sm font-black text-slate-950">
+                            <span class="block text-sm font-black text-warm-950">
                                 Active order or delivery problem
                             </span>
 
-                            <span class="mt-1 block text-xs font-semibold leading-5 text-slate-500">
+                            <span class="mt-1 block text-xs font-semibold leading-5 text-warm-500">
                                 Call the restaurant for the fastest response.
                             </span>
                         </span>
@@ -660,14 +666,14 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
-                            class="h-5 w-5 shrink-0 text-slate-300 transition group-hover:translate-x-1 group-hover:text-orange-600"
+                            class="h-5 w-5 shrink-0 text-warm-300 transition group-hover:translate-x-1 group-hover:text-brand-500"
                         >
                             <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
                         </svg>
                     </a>
 
                     <a
-                        href="{{ $emailHref }}"
+                        href="{{ $emailHref ?? '#' }}"
                         class="group flex items-center gap-4 p-4 transition hover:bg-blue-50 sm:p-5"
                     >
                         <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600">
@@ -685,11 +691,11 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         </span>
 
                         <span class="min-w-0 flex-1">
-                            <span class="block text-sm font-black text-slate-950">
+                            <span class="block text-sm font-black text-warm-950">
                                 Feedback or general question
                             </span>
 
-                            <span class="mt-1 block text-xs font-semibold leading-5 text-slate-500">
+                            <span class="mt-1 block text-xs font-semibold leading-5 text-warm-500">
                                 Email us when an immediate response is not required.
                             </span>
                         </span>
@@ -700,19 +706,19 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
-                            class="h-5 w-5 shrink-0 text-slate-300 transition group-hover:translate-x-1 group-hover:text-blue-600"
+                            class="h-5 w-5 shrink-0 text-warm-300 transition group-hover:translate-x-1 group-hover:text-blue-600"
                         >
                             <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
                         </svg>
                     </a>
 
                     <a
-                        href="{{ $mapsUrl }}"
+                        href="{{ $mapsUrl ?? '#' }}"
                         target="_blank"
                         rel="noopener"
-                        class="group flex items-center gap-4 p-4 transition hover:bg-emerald-50 sm:p-5"
+                        class="group flex items-center gap-4 p-4 transition hover:bg-leaf-50 sm:p-5"
                     >
-                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
+                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-leaf-50 text-leaf-700">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -727,11 +733,11 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                         </span>
 
                         <span class="min-w-0 flex-1">
-                            <span class="block text-sm font-black text-slate-950">
+                            <span class="block text-sm font-black text-warm-950">
                                 Restaurant location
                             </span>
 
-                            <span class="mt-1 block text-xs font-semibold leading-5 text-slate-500">
+                            <span class="mt-1 block text-xs font-semibold leading-5 text-warm-500">
                                 Open the address in Google Maps for directions.
                             </span>
                         </span>
@@ -742,7 +748,7 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                             fill="none"
                             stroke="currentColor"
                             stroke-width="2"
-                            class="h-5 w-5 shrink-0 text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-600"
+                            class="h-5 w-5 shrink-0 text-warm-300 transition group-hover:translate-x-1 group-hover:text-leaf-700"
                         >
                             <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
                         </svg>
@@ -755,12 +761,12 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
     {{-- Final CTA --}}
     <section class="bg-white py-9 sm:py-14 lg:py-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-r from-orange-600 to-red-600 px-5 py-8 text-white shadow-2xl shadow-orange-900/20 sm:px-8 sm:py-10 lg:rounded-[2rem] lg:px-10">
+            <div class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-r from-brand-500 to-brand-800 px-5 py-8 text-white shadow-2xl shadow-brand-900/20 sm:px-8 sm:py-10 lg:rounded-[2rem] lg:px-10">
                 <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/20 blur-3xl"></div>
 
                 <div class="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-100 sm:text-xs">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-100 sm:text-xs">
                             Ready to order?
                         </p>
 
@@ -768,14 +774,14 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
                             Browse the menu and find your next meal.
                         </h2>
 
-                        <p class="mt-2 max-w-xl text-xs font-semibold leading-5 text-orange-50 sm:text-sm sm:leading-6">
+                        <p class="mt-2 max-w-xl text-xs font-semibold leading-5 text-brand-50 sm:text-sm sm:leading-6">
                             Choose your food, add it to your cart, and pay when your order arrives.
                         </p>
                     </div>
 
                     <a
                         href="{{ route('menu') }}"
-                        class="inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-black text-orange-700 shadow-lg transition active:scale-[0.98] hover:bg-orange-50 sm:w-auto sm:rounded-2xl"
+                        class="inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-black text-brand-600 shadow-lg transition active:scale-[0.98] hover:bg-brand-50 sm:w-auto sm:rounded-2xl"
                     >
                         Browse Menu
 
@@ -796,11 +802,11 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
     </section>
 
     {{-- Persistent Mobile Contact Bar --}}
-    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-orange-100 bg-white/95 px-4 pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.14)] backdrop-blur lg:hidden">
+    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-[var(--shadow-bottom-nav)] backdrop-blur lg:hidden">
         <div class="mx-auto flex items-center gap-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             <a
-                href="tel:{{ $phoneHref }}"
-                class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/25 transition active:scale-[0.98]"
+                href="{{ $phoneHref ? 'tel:' . $phoneHref : '#' }}"
+                class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition active:scale-[0.98]"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -817,8 +823,8 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
             </a>
 
             <a
-                href="{{ $emailHref }}"
-                class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-orange-200 bg-orange-50 text-orange-700 transition active:scale-[0.98]"
+                href="{{ $emailHref ?? '#' }}"
+                class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-brand-50 text-brand-600 transition active:scale-[0.98]"
                 aria-label="Email restaurant"
             >
                 <svg
@@ -835,10 +841,10 @@ $address = $restaurant?->address ?? 'Main Food Street, City Center';
             </a>
 
             <a
-                href="{{ $mapsUrl }}"
+                href="{{ $mapsUrl ?? '#' }}"
                 target="_blank"
                 rel="noopener"
-                class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-orange-200 bg-orange-50 text-orange-700 transition active:scale-[0.98]"
+                class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-200 bg-brand-50 text-brand-600 transition active:scale-[0.98]"
                 aria-label="Open restaurant directions"
             >
                 <svg

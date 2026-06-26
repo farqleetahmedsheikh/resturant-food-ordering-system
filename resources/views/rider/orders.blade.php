@@ -135,10 +135,10 @@ $riderName = auth()->user()->name ?? 'Rider';
             $deliveryStatus === 'picked_up' => [
                 'label' => 'Picked Up',
                 'message' => 'The order has been collected and should be delivered next.',
-                'accent' => 'bg-cyan-500',
-                'badge' => 'border-cyan-200 bg-cyan-50 text-cyan-700',
-                'icon' => 'bg-cyan-50 text-cyan-600',
-                'button' => 'bg-cyan-600 hover:bg-cyan-700 shadow-cyan-600/20',
+                'accent' => 'bg-sky-500',
+                'badge' => 'border-sky-200 bg-sky-50 text-sky-700',
+                'icon' => 'bg-sky-50 text-sky-600',
+                'button' => 'bg-sky-600 hover:bg-sky-700 shadow-sky-600/20',
                 'closed' => false,
             ],
 
@@ -169,20 +169,20 @@ $riderName = auth()->user()->name ?? 'Rider';
             $order->order_status === 'preparing' => [
                 'label' => 'Preparing',
                 'message' => 'The restaurant is still preparing this order.',
-                'accent' => 'bg-amber-500',
-                'badge' => 'border-amber-200 bg-amber-50 text-amber-700',
-                'icon' => 'bg-amber-50 text-amber-600',
-                'button' => 'bg-orange-600 hover:bg-orange-700 shadow-orange-600/20',
+                'accent' => 'bg-gold-500',
+                'badge' => 'border-gold-100 bg-gold-50 text-gold-700',
+                'icon' => 'bg-gold-50 text-gold-500',
+                'button' => 'bg-brand-500 hover:bg-brand-600 shadow-brand-500/20',
                 'closed' => false,
             ],
 
             $isDelivered => [
                 'label' => 'Delivered',
                 'message' => 'The order was delivered successfully.',
-                'accent' => 'bg-emerald-500',
-                'badge' => 'border-emerald-200 bg-emerald-50 text-emerald-700',
-                'icon' => 'bg-emerald-50 text-emerald-600',
-                'button' => 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20',
+                'accent' => 'bg-leaf-500',
+                'badge' => 'border-leaf-100 bg-leaf-50 text-leaf-700',
+                'icon' => 'bg-leaf-50 text-leaf-700',
+                'button' => 'bg-leaf-700 hover:bg-leaf-700 shadow-leaf-700/20',
                 'closed' => true,
             ],
 
@@ -192,17 +192,17 @@ $riderName = auth()->user()->name ?? 'Rider';
                 'accent' => 'bg-red-500',
                 'badge' => 'border-red-200 bg-red-50 text-red-700',
                 'icon' => 'bg-red-50 text-red-600',
-                'button' => 'bg-slate-800 hover:bg-slate-900 shadow-slate-800/20',
+                'button' => 'bg-warm-900 hover:bg-warm-900 shadow-warm-900/20',
                 'closed' => true,
             ],
 
             default => [
                 'label' => 'Assigned',
                 'message' => 'Review this assigned delivery.',
-                'accent' => 'bg-orange-500',
-                'badge' => 'border-orange-200 bg-orange-50 text-orange-700',
-                'icon' => 'bg-orange-50 text-orange-600',
-                'button' => 'bg-orange-600 hover:bg-orange-700 shadow-orange-600/20',
+                'accent' => 'bg-brand-500',
+                'badge' => 'border-brand-200 bg-brand-50 text-brand-600',
+                'icon' => 'bg-brand-50 text-brand-500',
+                'button' => 'bg-brand-500 hover:bg-brand-600 shadow-brand-500/20',
                 'closed' => false,
             ],
         };
@@ -214,7 +214,7 @@ $riderName = auth()->user()->name ?? 'Rider';
     <div class="flex items-center justify-between gap-4 lg:hidden">
         <a
             href="{{ route('rider.dashboard') }}"
-            class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-orange-100 bg-white text-slate-700 shadow-sm transition active:scale-95"
+            class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-warm-200 bg-white text-warm-600 shadow-sm transition active:scale-95"
             aria-label="Back to rider dashboard"
         >
             <svg
@@ -234,18 +234,18 @@ $riderName = auth()->user()->name ?? 'Rider';
         </a>
 
         <div class="min-w-0 text-center">
-            <p class="text-sm font-black text-slate-950">
+            <p class="text-sm font-black text-warm-950">
                 Assigned deliveries
             </p>
 
-            <p class="mt-0.5 text-[10px] font-semibold text-slate-500">
+            <p class="mt-0.5 text-[10px] font-semibold text-warm-500">
                 {{ $activeOrdersOnPage }} active on this page
             </p>
         </div>
 
         <a
             href="{{ route('rider.dashboard') }}"
-            class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-orange-50 text-orange-600 transition active:scale-95"
+            class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-500 transition active:scale-95"
             aria-label="Rider dashboard"
         >
             <svg
@@ -265,22 +265,22 @@ $riderName = auth()->user()->name ?? 'Rider';
     {{-- Desktop Header --}}
     <header class="hidden items-end justify-between gap-8 lg:flex">
         <div>
-            <p class="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-brand-500">
                 Rider Deliveries
             </p>
 
-            <h1 class="mt-2 text-4xl font-black tracking-tight text-slate-950">
+            <h1 class="mt-2 text-4xl font-black tracking-tight text-warm-950">
                 Assigned orders
             </h1>
 
-            <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-600">
+            <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-warm-600">
                 Handle active deliveries first, contact customers quickly, and keep every delivery status accurate.
             </p>
         </div>
 
         <a
             href="{{ route('rider.dashboard') }}"
-            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl border border-orange-200 bg-white px-5 py-3 text-sm font-black text-orange-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-orange-50"
+            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-5 py-3 text-sm font-black text-brand-600 shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-50"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -299,20 +299,20 @@ $riderName = auth()->user()->name ?? 'Rider';
     </header>
 
     {{-- Queue Overview --}}
-    <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950 p-5 text-white shadow-xl shadow-slate-950/20 sm:p-7 lg:rounded-[2rem] lg:p-8">
-        <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-orange-500/30 blur-3xl"></div>
+    <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-warm-950 via-warm-900 to-brand-900 p-5 text-white shadow-xl shadow-warm-950/20 sm:p-7 lg:rounded-[2rem] lg:p-8">
+        <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl"></div>
         <div class="pointer-events-none absolute -bottom-28 left-12 h-72 w-72 rounded-full bg-red-500/20 blur-3xl"></div>
 
         <div class="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
             <div class="min-w-0">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] backdrop-blur">
-                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>
+                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-leaf-500"></span>
 
                         {{ $activeOrdersOnPage > 0 ? 'Queue active' : 'Queue clear' }}
                     </span>
 
-                    <span class="rounded-full bg-orange-500 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]">
+                    <span class="rounded-full bg-brand-500 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]">
                         {{ $totalOrders }}
                         {{ $totalOrders === 1 ? 'order' : 'orders' }}
                     </span>
@@ -322,7 +322,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                     Hi, {{ $firstName }}
                 </h2>
 
-                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-300">
+                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-warm-300">
                     @if ($activeOrdersOnPage > 0)
                         You have {{ $activeOrdersOnPage }}
                         {{ $activeOrdersOnPage === 1 ? 'delivery' : 'deliveries' }}
@@ -339,7 +339,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                         Active
                     </p>
 
-                    <p class="mt-1 text-xl font-black text-orange-300 sm:text-2xl">
+                    <p class="mt-1 text-xl font-black text-brand-200 sm:text-2xl">
                         {{ $activeOrdersOnPage }}
                     </p>
 
@@ -353,7 +353,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                         Delivered
                     </p>
 
-                    <p class="mt-1 text-xl font-black text-emerald-300 sm:text-2xl">
+                    <p class="mt-1 text-xl font-black text-leaf-500 sm:text-2xl">
                         {{ $deliveredOrdersOnPage }}
                     </p>
 
@@ -368,7 +368,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                     </p>
 
                     <p class="mt-1 truncate text-sm font-black sm:text-lg">
-                        Rs. {{ number_format($collectableAmountOnPage, 0) }}
+                        @money($collectableAmountOnPage)
                     </p>
 
                     <p class="mt-0.5 hidden text-[9px] font-semibold text-white/50 sm:block">
@@ -381,8 +381,8 @@ $riderName = auth()->user()->name ?? 'Rider';
 
     @if ($visibleOrders->isEmpty())
         {{-- Empty State --}}
-        <section class="rounded-[1.75rem] border border-dashed border-orange-200 bg-white p-7 text-center shadow-sm sm:p-12">
-            <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-orange-50 text-orange-600 sm:h-20 sm:w-20">
+        <section class="rounded-[1.75rem] border border-dashed border-brand-200 bg-white p-7 text-center shadow-sm sm:p-12">
+            <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-500 sm:h-20 sm:w-20">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -398,17 +398,17 @@ $riderName = auth()->user()->name ?? 'Rider';
                 </svg>
             </div>
 
-            <h2 class="mt-5 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+            <h2 class="mt-5 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                 No assigned deliveries
             </h2>
 
-            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-slate-600">
+            <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-warm-600">
                 New delivery assignments will appear here after an administrator assigns an order to your account.
             </p>
 
             <a
                 href="{{ route('rider.dashboard') }}"
-                class="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-orange-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition active:scale-[0.98] hover:bg-orange-700 sm:w-auto sm:rounded-2xl"
+                class="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-500 px-6 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600 sm:w-auto sm:rounded-2xl"
             >
                 Return to Dashboard
             </a>
@@ -434,11 +434,11 @@ $riderName = auth()->user()->name ?? 'Rider';
                     . rawurlencode($nextOrder->delivery_address ?? '');
             @endphp
 
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-                <div class="flex items-start justify-between gap-4 border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+                <div class="flex items-start justify-between gap-4 border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
-                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                                 Next Priority
                             </p>
 
@@ -449,7 +449,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                             </span>
                         </div>
 
-                        <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+                        <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
                             Your next delivery
                         </h2>
                     </div>
@@ -478,19 +478,19 @@ $riderName = auth()->user()->name ?? 'Rider';
 
                                 <a
                                     href="{{ route('rider.orders.show', $nextOrder) }}"
-                                    class="mt-3 block break-all text-xl font-black tracking-tight text-slate-950 transition hover:text-orange-700 sm:mt-0 sm:text-2xl"
+                                    class="mt-3 block break-all text-xl font-black tracking-tight text-warm-950 transition hover:text-brand-600 sm:mt-0 sm:text-2xl"
                                 >
                                     {{ $nextOrder->order_number }}
                                 </a>
 
-                                <p class="mt-1.5 text-sm font-semibold leading-6 text-slate-600">
+                                <p class="mt-1.5 text-sm font-semibold leading-6 text-warm-600">
                                     {{ $nextUi['message'] }}
                                 </p>
 
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
                                     {{-- Customer --}}
-                                    <div class="flex items-center gap-3 rounded-2xl bg-slate-50 p-4">
-                                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-sm font-black text-orange-700 shadow-sm">
+                                    <div class="flex items-center gap-3 rounded-2xl bg-warm-50 p-4">
+                                        <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-sm font-black text-brand-600 shadow-sm">
                                             {{ mb_strtoupper(
                                                 mb_substr(
                                                     $nextOrder->customer_name ?? 'C',
@@ -501,16 +501,16 @@ $riderName = auth()->user()->name ?? 'Rider';
                                         </span>
 
                                         <div class="min-w-0 flex-1">
-                                            <p class="truncate text-sm font-black text-slate-950">
+                                            <p class="truncate text-sm font-black text-warm-950">
                                                 {{ $nextOrder->customer_name }}
                                             </p>
 
                                             @if ($nextOrder->customer_phone)
-                                                <p class="mt-0.5 truncate text-xs font-semibold text-slate-500">
+                                                <p class="mt-0.5 truncate text-xs font-semibold text-warm-500">
                                                     {{ $nextOrder->customer_phone }}
                                                 </p>
                                             @else
-                                                <p class="mt-0.5 text-xs font-semibold text-slate-400">
+                                                <p class="mt-0.5 text-xs font-semibold text-warm-500">
                                                     No phone provided
                                                 </p>
                                             @endif
@@ -519,7 +519,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                                         @if ($nextPhone)
                                             <a
                                                 href="tel:{{ $nextPhone }}"
-                                                class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-100 text-orange-700 transition active:scale-95 hover:bg-orange-600 hover:text-white"
+                                                class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-100 text-brand-600 transition active:scale-95 hover:bg-brand-600 hover:text-white"
                                                 aria-label="Call {{ $nextOrder->customer_name }}"
                                             >
                                                 <svg
@@ -541,9 +541,9 @@ $riderName = auth()->user()->name ?? 'Rider';
                                         href="{{ $nextMapsUrl }}"
                                         target="_blank"
                                         rel="noopener"
-                                        class="group flex items-start gap-3 rounded-2xl bg-orange-50 p-4 transition hover:bg-orange-100"
+                                        class="group flex items-start gap-3 rounded-2xl bg-brand-50 p-4 transition hover:bg-brand-100"
                                     >
-                                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-orange-600 shadow-sm">
+                                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-brand-500 shadow-sm">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 24 24"
@@ -558,11 +558,11 @@ $riderName = auth()->user()->name ?? 'Rider';
                                         </span>
 
                                         <span class="min-w-0 flex-1">
-                                            <span class="block text-[9px] font-black uppercase tracking-[0.12em] text-orange-700">
+                                            <span class="block text-[9px] font-black uppercase tracking-[0.12em] text-brand-600">
                                                 Delivery address
                                             </span>
 
-                                            <span class="mt-1 line-clamp-2 block text-xs font-semibold leading-5 text-slate-700">
+                                            <span class="mt-1 line-clamp-2 block text-xs font-semibold leading-5 text-warm-600">
                                                 {{ $nextOrder->delivery_address }}
                                             </span>
                                         </span>
@@ -573,7 +573,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                                             fill="none"
                                             stroke="currentColor"
                                             stroke-width="2"
-                                            class="mt-2 h-4 w-4 shrink-0 text-orange-400 transition group-hover:translate-x-0.5 group-hover:text-orange-700"
+                                            class="mt-2 h-4 w-4 shrink-0 text-brand-500 transition group-hover:translate-x-0.5 group-hover:text-brand-600"
                                         >
                                             <path
                                                 stroke-linecap="round"
@@ -587,32 +587,32 @@ $riderName = auth()->user()->name ?? 'Rider';
 
                             <div class="xl:w-[280px]">
                                 <div class="grid grid-cols-3 gap-2">
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3">
-                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                    <div class="rounded-xl bg-warm-50 px-3 py-3">
+                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                             Total
                                         </p>
 
-                                        <p class="mt-1 truncate text-sm font-black text-slate-950">
-                                            Rs. {{ number_format($nextOrder->total, 0) }}
+                                        <p class="mt-1 truncate text-sm font-black text-warm-950">
+                                            ($nextOrder->total)
                                         </p>
                                     </div>
 
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3">
-                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                    <div class="rounded-xl bg-warm-50 px-3 py-3">
+                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                             Payment
                                         </p>
 
-                                        <p class="mt-1 truncate text-sm font-black text-slate-950">
+                                        <p class="mt-1 truncate text-sm font-black text-warm-950">
                                             {{ strtoupper($nextOrder->payment_method ?? 'COD') }}
                                         </p>
                                     </div>
 
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3">
-                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">
+                                    <div class="rounded-xl bg-warm-50 px-3 py-3">
+                                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500">
                                             Assigned
                                         </p>
 
-                                        <p class="mt-1 truncate text-sm font-black text-slate-950">
+                                        <p class="mt-1 truncate text-sm font-black text-warm-950">
                                             {{ $nextOrder->assigned_at?->format('h:i A') ?? '—' }}
                                         </p>
                                     </div>
@@ -622,7 +622,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                                     @if ($nextPhone)
                                         <a
                                             href="tel:{{ $nextPhone }}"
-                                            class="grid h-12 w-12 place-items-center rounded-xl border border-orange-200 bg-orange-50 text-orange-700 transition active:scale-95 hover:bg-orange-100"
+                                            class="grid h-12 w-12 place-items-center rounded-xl border border-brand-200 bg-brand-50 text-brand-600 transition active:scale-95 hover:bg-brand-100"
                                             aria-label="Call customer"
                                         >
                                             <svg
@@ -689,25 +689,25 @@ $riderName = auth()->user()->name ?? 'Rider';
 
         {{-- Remaining Active Queue --}}
         @if ($remainingActiveOrders->isNotEmpty())
-            <section class="overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
-                <div class="flex items-center justify-between gap-4 border-b border-orange-100 px-4 py-4 sm:px-6 sm:py-5">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between gap-4 border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                             Active Queue
                         </p>
 
-                        <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950">
+                        <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950">
                             Upcoming deliveries
                         </h2>
                     </div>
 
-                    <span class="rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-black text-orange-700">
+                    <span class="rounded-full bg-brand-50 px-3 py-1.5 text-[10px] font-black text-brand-600">
                         {{ $remainingActiveOrders->count() }}
                         remaining
                     </span>
                 </div>
 
-                <div class="divide-y divide-slate-100">
+                <div class="divide-y divide-warm-100">
                     @foreach ($remainingActiveOrders as $order)
                         @php
                             $orderUi = $getOrderUi($order);
@@ -746,30 +746,30 @@ $riderName = auth()->user()->name ?? 'Rider';
 
                                         <a
                                             href="{{ route('rider.orders.show', $order) }}"
-                                            class="mt-2 block break-all text-base font-black text-slate-950 transition hover:text-orange-700"
+                                            class="mt-2 block break-all text-base font-black text-warm-950 transition hover:text-brand-600"
                                         >
                                             {{ $order->order_number }}
                                         </a>
 
-                                        <div class="mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-slate-500">
+                                        <div class="mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-warm-500">
                                             <span class="truncate">
                                                 {{ $order->customer_name }}
                                             </span>
 
-                                            <span class="text-slate-300">•</span>
+                                            <span class="text-warm-300">•</span>
 
                                             <span>
-                                                Rs. {{ number_format($order->total, 0) }}
+                                                ($order->total)
                                             </span>
 
-                                            <span class="text-slate-300">•</span>
+                                            <span class="text-warm-300">•</span>
 
                                             <span>
                                                 {{ strtoupper($order->payment_method ?? 'COD') }}
                                             </span>
                                         </div>
 
-                                        <p class="mt-2 line-clamp-1 text-xs font-semibold text-slate-500">
+                                        <p class="mt-2 line-clamp-1 text-xs font-semibold text-warm-500">
                                             {{ $order->delivery_address }}
                                         </p>
                                     </div>
@@ -778,7 +778,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                                         @if ($phoneHref)
                                             <a
                                                 href="tel:{{ $phoneHref }}"
-                                                class="grid h-11 w-11 place-items-center rounded-xl bg-orange-50 text-orange-700 transition active:scale-95 hover:bg-orange-100"
+                                                class="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-600 transition active:scale-95 hover:bg-brand-100"
                                                 aria-label="Call {{ $order->customer_name }}"
                                             >
                                                 <svg
@@ -816,7 +816,7 @@ $riderName = auth()->user()->name ?? 'Rider';
 
                                         <a
                                             href="{{ route('rider.orders.show', $order) }}"
-                                            class="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-xs font-black text-white transition active:scale-[0.98] hover:bg-slate-800 lg:min-w-[112px]"
+                                            class="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl bg-warm-900 px-4 text-xs font-black text-white transition active:scale-[0.98] hover:bg-warm-900 lg:min-w-[112px]"
                                         >
                                             Manage
 
@@ -846,18 +846,18 @@ $riderName = auth()->user()->name ?? 'Rider';
 
         {{-- Completed / Closed Orders --}}
         @if ($closedOrders->isNotEmpty())
-            <details class="group overflow-hidden rounded-[1.75rem] border border-orange-100 bg-white shadow-sm">
+            <details class="group overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-orange-600 sm:text-xs">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
                             Recent Activity
                         </p>
 
-                        <h2 class="mt-1 text-xl font-black tracking-tight text-slate-950">
+                        <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950">
                             Completed and closed deliveries
                         </h2>
 
-                        <p class="mt-1 text-xs font-semibold text-slate-500">
+                        <p class="mt-1 text-xs font-semibold text-warm-500">
                             {{ $closedOrders->count() }}
                             {{ $closedOrders->count() === 1 ? 'order' : 'orders' }}
                             on this page
@@ -870,7 +870,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2"
-                        class="h-5 w-5 shrink-0 text-slate-400 transition group-open:rotate-180"
+                        class="h-5 w-5 shrink-0 text-warm-500 transition group-open:rotate-180"
                     >
                         <path
                             stroke-linecap="round"
@@ -880,7 +880,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                     </svg>
                 </summary>
 
-                <div class="divide-y divide-slate-100 border-t border-orange-100">
+                <div class="divide-y divide-warm-100 border-t border-warm-200">
                     @foreach ($closedOrders as $order)
                         @php
                             $orderUi = $getOrderUi($order);
@@ -891,7 +891,7 @@ $riderName = auth()->user()->name ?? 'Rider';
 
                         <a
                             href="{{ route('rider.orders.show', $order) }}"
-                            class="group/item flex items-center gap-3 px-4 py-4 transition hover:bg-slate-50 sm:px-6"
+                            class="group/item flex items-center gap-3 px-4 py-4 transition hover:bg-warm-50 sm:px-6"
                         >
                             <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl {{ $orderUi['icon'] }}">
                                 @if (
@@ -931,13 +931,13 @@ $riderName = auth()->user()->name ?? 'Rider';
                             </span>
 
                             <span class="min-w-0 flex-1">
-                                <span class="block truncate text-sm font-black text-slate-950">
+                                <span class="block truncate text-sm font-black text-warm-950">
                                     {{ $order->order_number }}
                                 </span>
 
-                                <span class="mt-0.5 block truncate text-xs font-semibold text-slate-500">
+                                <span class="mt-0.5 block truncate text-xs font-semibold text-warm-500">
                                     {{ $order->customer_name }}
-                                    · Rs. {{ number_format($order->total, 0) }}
+                                    · ($order->total)
                                 </span>
                             </span>
 
@@ -954,7 +954,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                                 fill="none"
                                 stroke="currentColor"
                                 stroke-width="2"
-                                class="h-4 w-4 shrink-0 text-slate-300 transition group-hover/item:translate-x-0.5 group-hover/item:text-orange-600"
+                                class="h-4 w-4 shrink-0 text-warm-300 transition group-hover/item:translate-x-0.5 group-hover/item:text-brand-500"
                             >
                                 <path
                                     stroke-linecap="round"
@@ -970,18 +970,18 @@ $riderName = auth()->user()->name ?? 'Rider';
 
         {{-- Pagination --}}
         @if ($hasPages)
-            <div class="rounded-[1.5rem] border border-orange-100 bg-white p-4 shadow-sm">
+            <div class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm">
                 {{ $assignedOrders->withQueryString()->links() }}
             </div>
         @endif
     @endif
 
     {{-- Persistent Mobile Action --}}
-    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-orange-100 bg-white/95 px-4 pt-3 shadow-[0_-12px_30px_rgba(15,23,42,0.14)] backdrop-blur lg:hidden">
+    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-[var(--shadow-bottom-nav)] backdrop-blur lg:hidden">
         <div class="mx-auto flex items-center gap-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             <a
                 href="{{ route('rider.dashboard') }}"
-                class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-orange-200 bg-orange-50 text-orange-700 transition active:scale-95"
+                class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-brand-200 bg-brand-50 text-brand-600 transition active:scale-95"
                 aria-label="Rider dashboard"
             >
                 <svg
@@ -1000,7 +1000,7 @@ $riderName = auth()->user()->name ?? 'Rider';
             @if ($nextOrder)
                 <a
                     href="{{ route('rider.orders.show', $nextOrder) }}"
-                    class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-orange-600/25 transition active:scale-[0.98]"
+                    class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition active:scale-[0.98]"
                 >
                     Handle Next Delivery
 
@@ -1022,7 +1022,7 @@ $riderName = auth()->user()->name ?? 'Rider';
             @else
                 <a
                     href="{{ route('rider.dashboard') }}"
-                    class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-900/20 transition active:scale-[0.98]"
+                    class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-xl bg-warm-900 px-4 py-3 text-sm font-black text-white shadow-lg shadow-warm-900/20 transition active:scale-[0.98]"
                 >
                     Return to Dashboard
                 </a>

@@ -39,7 +39,7 @@ class DashboardController extends Controller
                 'total_menu_items' => MenuItem::count(),
                 'available_menu_items' => MenuItem::where('is_available', true)->count(),
                 'featured_items' => MenuItem::where('is_featured', true)->count(),
-                'restaurant_is_open' => (bool) Restaurant::query()->where('is_active', true)->value('is_open'),
+                'restaurant_is_open' => (bool) Restaurant::current()?->is_open,
             ],
             'latest_orders' => OrderResource::collection($latestOrders),
         ]);

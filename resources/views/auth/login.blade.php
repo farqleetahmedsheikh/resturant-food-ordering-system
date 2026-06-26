@@ -1,21 +1,20 @@
-@component('layouts.auth', ['title' => 'Login']) <div class="text-center"> <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-sm font-black text-white shadow-lg shadow-orange-600/25">
-FB </div>
+@component('layouts.auth', ['title' => 'Login']) <div class="text-center"> <x-brand-mark mark-class="mx-auto h-14 w-14 rounded-2xl" />
 
-    <p class="mt-6 text-xs font-black uppercase tracking-[0.24em] text-orange-600">
+    <p class="mt-6 text-xs font-black uppercase tracking-[0.24em] text-brand-500">
         Welcome Back
     </p>
 
-    <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950">
+    <h1 class="mt-3 text-3xl font-black tracking-tight text-warm-950">
         Login to your account
     </h1>
 
-    <p class="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-600">
+    <p class="mx-auto mt-3 max-w-sm text-sm leading-6 text-warm-600">
         Access your customer dashboard, rider panel, or restaurant owner area.
     </p>
 </div>
 
 @if (session('status'))
-    <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-700">
+    <div class="mt-6 rounded-2xl border border-leaf-100 bg-leaf-50 px-5 py-4 text-sm font-bold text-leaf-700">
         {{ session('status') }}
     </div>
 @endif
@@ -30,7 +29,7 @@ FB </div>
     @csrf
 
     <div>
-        <label for="email" class="block text-sm font-black text-slate-800">
+        <label for="email" class="block text-sm font-black text-warm-900">
             Email Address
         </label>
 
@@ -42,7 +41,7 @@ FB </div>
             required
             autofocus
             placeholder="you@example.com"
-            class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+            class="mt-2 w-full rounded-2xl border border-warm-200 bg-white px-4 py-3 text-sm font-semibold text-warm-900 shadow-sm outline-none transition placeholder:text-warm-500 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
         >
 
         @error('email')
@@ -54,11 +53,11 @@ FB </div>
 
     <div>
         <div class="flex items-center justify-between gap-3">
-            <label for="password" class="block text-sm font-black text-slate-800">
+            <label for="password" class="block text-sm font-black text-warm-900">
                 Password
             </label>
 
-            <a href="{{ route('password.request') }}" class="text-xs font-black text-orange-700 transition hover:text-orange-800">
+            <a href="{{ route('password.request') }}" class="text-xs font-black text-brand-600 transition hover:text-brand-800">
                 Forgot?
             </a>
         </div>
@@ -69,7 +68,7 @@ FB </div>
             type="password"
             required
             placeholder="Enter your password"
-            class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+            class="mt-2 w-full rounded-2xl border border-warm-200 bg-white px-4 py-3 text-sm font-semibold text-warm-900 shadow-sm outline-none transition placeholder:text-warm-500 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
         >
 
         @error('password')
@@ -79,27 +78,27 @@ FB </div>
         @enderror
     </div>
 
-    <label class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700">
+    <label class="flex items-center gap-3 rounded-2xl border border-warm-200 bg-warm-50 px-4 py-3 text-sm font-bold text-warm-600">
         <input
             type="checkbox"
             name="remember"
-            class="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+            class="rounded border-warm-300 text-brand-500 focus:ring-brand-500"
         >
         Remember me on this device
     </label>
 
     <button
         type="submit"
-        class="w-full rounded-2xl bg-orange-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-600/20 transition hover:-translate-y-0.5 hover:bg-orange-700 hover:shadow-xl hover:shadow-orange-600/25"
+        class="w-full rounded-2xl bg-brand-500 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/25"
     >
         Login
     </button>
 </form>
 
-<div class="mt-7 rounded-2xl border border-orange-100 bg-orange-50 px-5 py-4 text-center">
-    <p class="text-sm font-semibold text-slate-700">
+<div class="mt-7 rounded-2xl border border-warm-200 bg-brand-50 px-5 py-4 text-center">
+    <p class="text-sm font-semibold text-warm-600">
         Need an account?
-        <a href="{{ route('register') }}" class="font-black text-orange-700 transition hover:text-orange-800">
+        <a href="{{ route('register') }}" class="font-black text-brand-600 transition hover:text-brand-800">
             Create customer account
         </a>
     </p>
