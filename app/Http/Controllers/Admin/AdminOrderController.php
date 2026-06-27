@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\Email\OrderEmailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -50,7 +51,7 @@ class AdminOrderController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Order $order): RedirectResponse
+    public function updateStatus(Request $request, Order $order, OrderEmailService $orderEmailService): RedirectResponse
     {
         $validated = $request->validate([
             'order_status' => ['required', Rule::in(array_keys(Order::STATUSES))],
@@ -84,6 +85,16 @@ class AdminOrderController extends Controller
             if ($validated['order_status'] === 'cancelled') {
                 $order->delivery->update(['status' => 'failed']);
             }
+        }
+
+        $order->refresh()->loadMissing(['items', 'restaurant', 'user', 'rider', 'delivery']);
+
+        if ($validated['order_status'] === 'accepted') {
+            $orderEmailService->sendOrderConfirmed($order);
+        }
+
+        if ($validated['order_status'] === 'delivered') {
+            $orderEmailService->sendOrderDelivered($order);
         }
 
         return back()->with('status', 'Order status updated successfully.');

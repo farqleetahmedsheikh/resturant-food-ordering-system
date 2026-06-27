@@ -509,7 +509,7 @@
                     if (! this.declineModalOpen && ! this.busy) {
                         this.load(true);
                     }
-                }, 10000);
+                }, 90000);
 
                 window.addEventListener('beforeunload', () => {
                     if (this.refreshTimer) {

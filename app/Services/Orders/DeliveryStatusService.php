@@ -6,12 +6,16 @@ use App\Exceptions\BusinessRuleException;
 use App\Models\Delivery;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\Email\OrderEmailService;
 use App\Services\Security\AuditLogger;
 use Illuminate\Support\Facades\DB;
 
 class DeliveryStatusService
 {
-    public function __construct(private AuditLogger $auditLogger) {}
+    public function __construct(
+        private AuditLogger $auditLogger,
+        private OrderEmailService $orderEmailService,
+    ) {}
 
     public function update(Order $order, User $rider, string $status, ?string $notes = null): Order
     {
@@ -31,7 +35,7 @@ class DeliveryStatusService
             throw new BusinessRuleException('Failed delivery reason is required.');
         }
 
-        return DB::transaction(function () use ($order, $rider, $status, $notes): Order {
+        $updatedOrder = DB::transaction(function () use ($order, $rider, $status, $notes): Order {
             $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
             $delivery = $lockedOrder->delivery()->firstOrCreate(
                 ['order_id' => $lockedOrder->id],
@@ -62,6 +66,12 @@ class DeliveryStatusService
 
             return $lockedOrder->fresh(['items', 'user', 'rider', 'delivery', 'statusHistories']);
         });
+
+        if ($status === 'delivered') {
+            $this->orderEmailService->sendOrderDelivered($updatedOrder);
+        }
+
+        return $updatedOrder;
     }
 
     private function markPickedUp(Order $order, Delivery $delivery, User $rider): void

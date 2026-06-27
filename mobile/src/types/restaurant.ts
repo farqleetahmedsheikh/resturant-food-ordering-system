@@ -1,0 +1,21 @@
+export type Restaurant = {
+  id: number;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  formatted_address: string | null;
+  short_description: string | null;
+  opening_time: string | null;
+  closing_time: string | null;
+  timezone: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  delivery_fee: number;
+  minimum_order_amount: number;
+  logo_url: string | null;
+  cover_image_url: string | null;
+  initials: string;
+  is_open: boolean;
+  currency: string;
+};

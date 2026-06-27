@@ -17,7 +17,7 @@
                         </span>
 
                         <span class="rounded-full border border-white bg-white/80 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em] text-warm-500 shadow-sm">
-                            Refreshes every 10s
+                            Refreshes every 90s
                         </span>
                     </div>
 

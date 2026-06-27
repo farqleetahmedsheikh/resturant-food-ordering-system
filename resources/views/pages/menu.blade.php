@@ -9,6 +9,15 @@ $cartCount = \App\Support\Cart::count();
 
     $selectedCategoryName = $selectedCategory?->name ?? 'All Items';
     $visibleItemCount = $menuItems->count();
+    $searchQuery = $search ?? '';
+    $currentSort = $sort ?? 'recommended';
+    $hasActiveFilters = $selectedCategory || $searchQuery !== '' || $currentSort !== 'recommended';
+    $sortLabels = [
+        'recommended' => 'Recommended',
+        'price_asc' => 'Price: low to high',
+        'price_desc' => 'Price: high to low',
+        'name' => 'Name A-Z',
+    ];
 @endphp
 
 <main class="min-h-screen bg-[var(--color-surface-warm)] pb-28 lg:pb-0">
@@ -254,29 +263,100 @@ $cartCount = \App\Support\Cart::count();
     </section>
 
     {{-- Category Navigation --}}
-    <section class="border-y border-warm-200 bg-white">
-        <div class="mx-auto max-w-7xl py-3">
-            <div class="mb-2 flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+    <section class="sticky top-[4.5rem] z-30 border-y border-warm-200 bg-white/95 shadow-sm backdrop-blur">
+        <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+            <form
+                action="{{ route('menu') }}"
+                method="GET"
+                class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px]"
+            >
+                @if ($selectedCategory)
+                    <input type="hidden" name="category" value="{{ $selectedCategory->slug }}">
+                @endif
+
+                <label class="relative block">
+                    <span class="sr-only">Search menu</span>
+
+                    <span class="pointer-events-none absolute inset-y-0 left-0 grid w-11 place-items-center text-warm-500">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            class="h-4 w-4"
+                        >
+                            <circle cx="11" cy="11" r="7" />
+                            <path stroke-linecap="round" d="m20 20-3.5-3.5" />
+                        </svg>
+                    </span>
+
+                    <input
+                        name="q"
+                        value="{{ $searchQuery }}"
+                        placeholder="Search kebabs, drinks, desserts..."
+                        class="h-12 w-full rounded-2xl border border-warm-200 bg-warm-50 pl-11 pr-24 text-sm font-bold text-warm-950 outline-none transition placeholder:text-warm-500 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                    >
+
+                    <button
+                        type="submit"
+                        class="absolute inset-y-1 right-1 inline-flex items-center justify-center rounded-xl bg-brand-500 px-4 text-xs font-black text-white transition hover:bg-brand-600"
+                    >
+                        Search
+                    </button>
+                </label>
+
+                <label class="relative block">
+                    <span class="sr-only">Sort menu items</span>
+
+                    <select
+                        name="sort"
+                        onchange="this.form.submit()"
+                        class="h-12 w-full appearance-none rounded-2xl border border-warm-200 bg-warm-50 px-4 pr-10 text-sm font-black text-warm-950 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                    >
+                        @foreach ($sortLabels as $value => $label)
+                            <option value="{{ $value }}" @selected($currentSort === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <span class="pointer-events-none absolute inset-y-0 right-0 grid w-10 place-items-center text-warm-500">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            class="h-4 w-4"
+                        >
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                        </svg>
+                    </span>
+                </label>
+            </form>
+
+            <div class="mt-3 flex items-center justify-between gap-4">
                 <p class="text-[10px] font-black uppercase tracking-[0.18em] text-warm-500">
                     Browse Categories
                 </p>
 
-                @if ($selectedCategory)
+                @if ($hasActiveFilters)
                     <a
                         href="{{ route('menu') }}"
                         class="text-[10px] font-black text-brand-600 hover:text-brand-800"
                     >
-                        Clear filter
+                        Clear all
                     </a>
                 @endif
             </div>
 
             <nav
-                class="flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-1 sm:px-6 lg:flex-wrap lg:overflow-visible lg:px-8"
+                class="mt-2 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-visible"
                 aria-label="Menu categories"
             >
                 <a
-                    href="{{ route('menu') }}"
+                    href="{{ route('menu', array_filter(['q' => $searchQuery ?: null, 'sort' => $currentSort !== 'recommended' ? $currentSort : null])) }}"
                     @if (! request('category')) aria-current="page" @endif
                     @class([
                         'inline-flex min-h-11 shrink-0 snap-start items-center justify-center rounded-xl px-4 py-2.5 text-xs font-black transition active:scale-[0.97] sm:rounded-2xl sm:px-5 sm:text-sm',
@@ -293,7 +373,7 @@ $cartCount = \App\Support\Cart::count();
                     @endphp
 
                     <a
-                        href="{{ route('menu', ['category' => $category->slug]) }}"
+                        href="{{ route('menu', array_filter(['category' => $category->slug, 'q' => $searchQuery ?: null, 'sort' => $currentSort !== 'recommended' ? $currentSort : null])) }}"
                         @if ($isSelectedCategory) aria-current="page" @endif
                         @class([
                             'inline-flex min-h-11 shrink-0 snap-start items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-black transition active:scale-[0.97] sm:rounded-2xl sm:px-5 sm:text-sm',
@@ -392,7 +472,7 @@ $cartCount = \App\Support\Cart::count();
 
                                 <div class="mt-auto flex items-end justify-between gap-3 pt-4">
                                     <p class="text-lg font-black text-warm-950">
-                                        ($item->price)
+                                        @money($item->price)
                                     </p>
 
                                     @if ($featuredCustomizable)
@@ -448,7 +528,8 @@ $cartCount = \App\Support\Cart::count();
     <section class="py-8 sm:py-12 lg:py-16">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {{-- Results Heading --}}
-            <div class="mb-5 flex items-end justify-between gap-4 sm:mb-8">
+            <div class="mb-5 rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm sm:mb-8 sm:p-5">
+                <div class="flex items-end justify-between gap-4">
                 <div class="min-w-0">
                     <p class="truncate text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 sm:text-xs">
                         {{ $selectedCategoryName }}
@@ -463,10 +544,33 @@ $cartCount = \App\Support\Cart::count();
                     {{ $visibleItemCount }}
                     {{ $visibleItemCount === 1 ? 'item' : 'items' }}
                 </span>
+                </div>
+
+                @if ($hasActiveFilters)
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @if ($selectedCategory)
+                            <span class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1.5 text-[10px] font-black text-brand-600">
+                                Category: {{ $selectedCategory->name }}
+                            </span>
+                        @endif
+
+                        @if ($searchQuery !== '')
+                            <span class="inline-flex items-center gap-2 rounded-full bg-warm-100 px-3 py-1.5 text-[10px] font-black text-warm-700">
+                                Search: "{{ $searchQuery }}"
+                            </span>
+                        @endif
+
+                        @if ($currentSort !== 'recommended')
+                            <span class="inline-flex items-center gap-2 rounded-full bg-gold-50 px-3 py-1.5 text-[10px] font-black text-gold-700">
+                                {{ $sortLabels[$currentSort] ?? 'Sorted' }}
+                            </span>
+                        @endif
+                    </div>
+                @endif
             </div>
 
             {{-- Mobile-First Product Grid --}}
-            <div class="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
                 @forelse ($menuItems as $item)
                     @php
                         $itemIsAvailable = (bool) ($item->is_available ?? true);
@@ -488,13 +592,13 @@ $cartCount = \App\Support\Cart::count();
                             : null;
                     @endphp
 
-                    <article class="group flex min-w-0 flex-col overflow-hidden rounded-[1.25rem] border border-warm-200 bg-white shadow-sm sm:rounded-[1.75rem] lg:transition lg:hover:-translate-y-1 lg:hover:shadow-2xl lg:hover:shadow-brand-900/10">
+                    <article class="group flex min-w-0 flex-col overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm sm:rounded-[1.75rem] lg:transition lg:hover:-translate-y-1 lg:hover:shadow-2xl lg:hover:shadow-brand-900/10">
                         {{-- Product Image --}}
                         <a
                             href="{{ route('menu.show', $item) }}"
                             class="block"
                         >
-                            <div class="relative aspect-square overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream sm:aspect-[4/3]">
+                            <div class="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream sm:aspect-[4/3]">
                                 @if ($item->image_url)
                                     <img
                                         src="{{ $item->image_url }}"
@@ -542,15 +646,15 @@ $cartCount = \App\Support\Cart::count();
                         </a>
 
                         {{-- Product Content --}}
-                        <div class="flex flex-1 flex-col p-3 sm:p-5 lg:p-6">
+                        <div class="flex flex-1 flex-col p-4 sm:p-5 lg:p-6">
                             <a
                                 href="{{ route('menu.show', $item) }}"
-                                class="line-clamp-2 text-sm font-black leading-5 tracking-tight text-warm-950 transition hover:text-brand-600 sm:text-xl sm:leading-7"
+                                class="line-clamp-2 text-lg font-black leading-6 tracking-tight text-warm-950 transition hover:text-brand-600 sm:text-xl sm:leading-7"
                             >
                                 {{ $item->name }}
                             </a>
 
-                            <p class="mt-2 hidden line-clamp-2 text-sm leading-6 text-warm-600 sm:block">
+                            <p class="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-warm-600">
                                 {{ $item->description ?: 'Freshly prepared with quality ingredients.' }}
                             </p>
 
@@ -587,12 +691,12 @@ $cartCount = \App\Support\Cart::count();
                             <div class="mt-auto pt-3 sm:pt-5">
                                 <div class="flex min-w-0 items-end gap-2">
                                     <p class="truncate text-base font-black text-warm-950 sm:text-xl">
-                                        ($item->price)
+                                        @money($item->price)
                                     </p>
 
                                     @if ($itemHasDiscount)
                                         <p class="hidden pb-0.5 text-xs font-bold text-warm-500 line-through sm:block">
-                                            ($item->compare_at_price)
+                                            @money($item->compare_at_price)
                                         </p>
                                     @endif
                                 </div>
@@ -601,6 +705,10 @@ $cartCount = \App\Support\Cart::count();
                                 <div class="mt-3">
                                     @if ($itemIsAvailable)
                                         @if ($itemCustomizable)
+                                            <p class="mb-2 text-[10px] font-bold text-warm-500">
+                                                Choose size, sauces, and extras
+                                            </p>
+
                                             <a
                                                 href="{{ route('menu.show', $item) }}"
                                                 class="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-2 py-2 text-[10px] font-black text-white shadow-md shadow-brand-500/15 transition active:scale-[0.97] hover:bg-brand-600 sm:min-h-12 sm:rounded-2xl sm:px-4 sm:text-sm"

@@ -653,12 +653,12 @@ $deliveryStatus = $order->delivery?->status;
 
                                             <p class="mt-1 text-xs font-semibold text-warm-500 sm:text-sm">
                                                 {{ $item->quantity }}
-                                                × ($item->price)
+                                                × @money($item->price)
                                             </p>
                                         </div>
 
                                         <p class="shrink-0 text-sm font-black text-warm-950 sm:text-base">
-                                            ($item->total)
+                                            @money($item->total)
                                         </p>
                                     </div>
 

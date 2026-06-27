@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Admin\MenuItemController as AdminMenuItemControl
 use App\Http\Controllers\Api\V1\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\V1\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Api\V1\Admin\RiderController as AdminRiderController;
+use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Customer\CartController as CustomerCartController;
 use App\Http\Controllers\Api\V1\Customer\CheckoutController as CustomerCheckoutController;
@@ -18,6 +19,8 @@ use App\Http\Controllers\Api\V1\Public\RestaurantController as PublicRestaurantC
 use App\Http\Controllers\Api\V1\Rider\DeliveryController as RiderDeliveryController;
 use App\Http\Controllers\Api\V1\Rider\ProfileController as RiderProfileController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/health', HealthController::class)->middleware('throttle:api-public');
 
 Route::prefix('v1')->middleware('request.id')->group(function (): void {
     Route::middleware('throttle:api-public')->group(function (): void {

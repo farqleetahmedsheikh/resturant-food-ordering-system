@@ -631,7 +631,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
 
                                             <p class="mt-1 text-xs font-semibold text-warm-500 sm:text-sm">
                                                 {{ $item->quantity }}
-                                                × ($item->price)
+                                                × @money($item->price)
                                             </p>
                                         </div>
 

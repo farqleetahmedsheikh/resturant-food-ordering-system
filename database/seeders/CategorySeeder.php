@@ -14,23 +14,26 @@ class CategorySeeder extends Seeder
         $restaurant = Restaurant::current();
 
         $categories = [
-            'Pizza',
-            'Burgers',
-            'Pasta',
-            'Drinks',
-            'Desserts',
+            ['Kebabs', 'Signature wraps and kebabs grilled fresh with house sauces.'],
+            ['Kebab Plates', 'Loaded rice, salad, chips, and grilled protein plates.'],
+            ['Burgers', 'Chargrilled burgers with Arcade sauces and fresh toppings.'],
+            ['Sides & Dips', 'Chips, wings, breads, dips, and shareable extras.'],
+            ['Drinks', 'Cold drinks and fresh refreshers for every order.'],
+            ['Desserts', 'Sweet finishes for family meals and late-night cravings.'],
         ];
 
-        Category::whereNotIn('slug', collect($categories)->map(fn (string $name) => Str::slug($name))->all())
+        Category::whereNotIn('slug', collect($categories)->map(fn (array $category) => Str::slug($category[0]))->all())
             ->update(['is_active' => false]);
 
-        collect($categories)->each(function (string $name, int $index) use ($restaurant): void {
+        collect($categories)->each(function (array $category, int $index) use ($restaurant): void {
+            [$name, $description] = $category;
+
             Category::updateOrCreate(
                 ['slug' => Str::slug($name)],
                 [
                     'restaurant_id' => $restaurant?->id,
                     'name' => $name,
-                    'description' => "Arcade Kebab House {$name} prepared fresh for delivery.",
+                    'description' => $description,
                     'image' => null,
                     'sort_order' => $index + 1,
                     'is_active' => true,

@@ -7,6 +7,7 @@ use App\Models\IdempotencyKey;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Cart\DatabaseCartService;
+use App\Services\Email\OrderEmailService;
 use App\Services\RestaurantAvailabilityService;
 use App\Services\Security\AuditLogger;
 use App\Support\Money;
@@ -19,6 +20,7 @@ class CheckoutService
         private DatabaseCartService $cartService,
         private AuditLogger $auditLogger,
         private RestaurantAvailabilityService $availability,
+        private OrderEmailService $orderEmailService,
     ) {}
 
     /**
@@ -28,7 +30,9 @@ class CheckoutService
     {
         $requestHash = hash('sha256', json_encode($payload));
 
-        return DB::transaction(function () use ($user, $payload, $idempotencyKey, $requestHash, $request): Order {
+        $isNewOrder = false;
+
+        $order = DB::transaction(function () use ($user, $payload, $idempotencyKey, $requestHash, $request, &$isNewOrder): Order {
             $idempotency = $this->claimIdempotencyKey($user, $idempotencyKey, $requestHash, $request);
 
             if ($idempotency?->order_id) {
@@ -107,8 +111,16 @@ class CheckoutService
 
             $this->auditLogger->record('order.created', $user, $order, [], ['total' => $order->total], $request);
 
+            $isNewOrder = true;
+
             return $order->load(['items', 'user', 'rider', 'delivery', 'statusHistories']);
         });
+
+        if ($isNewOrder) {
+            $this->orderEmailService->sendOrderPlaced($order);
+        }
+
+        return $order;
     }
 
     private function claimIdempotencyKey(User $user, ?string $key, string $requestHash, ?Request $request): ?IdempotencyKey

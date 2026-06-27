@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\PasswordResetOtp;
 use App\Models\User;
+use App\Services\Email\AuthEmailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -24,7 +24,7 @@ class PasswordResetOtpController extends Controller
         return view('auth.forgot-password');
     }
 
-    public function sendOtp(Request $request): RedirectResponse
+    public function sendOtp(Request $request, AuthEmailService $authEmailService): RedirectResponse
     {
         $validated = $request->validate([
             'email' => ['required', 'email', 'max:255'],
@@ -59,12 +59,7 @@ class PasswordResetOtpController extends Controller
                 ],
             );
 
-            Mail::raw(
-                "Your Arcade Kebab House password reset OTP is {$otp}. It expires in ".self::OTP_EXPIRES_MINUTES.' minutes.',
-                fn ($message) => $message
-                    ->to($user->email, $user->name)
-                    ->subject('Arcade Kebab House password reset OTP'),
-            );
+            $authEmailService->sendPasswordResetOtp($user, $otp, self::OTP_EXPIRES_MINUTES);
         }
 
         $request->session()->put('password_reset_email', $email);

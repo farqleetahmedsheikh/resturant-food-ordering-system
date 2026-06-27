@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Rider;
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\Order;
+use App\Services\Email\OrderEmailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -57,7 +58,7 @@ class RiderDashboardController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Order $order): RedirectResponse
+    public function updateStatus(Request $request, Order $order, OrderEmailService $orderEmailService): RedirectResponse
     {
         if ($order->rider_id !== $request->user()->id) {
             return redirect()->route('rider.orders')->with('status', 'You are not allowed to access this order.');
@@ -120,6 +121,10 @@ class RiderDashboardController extends Controller
                 'delivered_at' => $order->delivered_at ?? now(),
                 'payment_status' => $order->payment_method === 'cod' ? 'paid' : $order->payment_status,
             ]);
+
+            $orderEmailService->sendOrderDelivered(
+                $order->refresh()->loadMissing(['items', 'restaurant', 'user', 'rider', 'delivery']),
+            );
 
             return back()->with('status', 'Delivery marked as delivered.');
         }

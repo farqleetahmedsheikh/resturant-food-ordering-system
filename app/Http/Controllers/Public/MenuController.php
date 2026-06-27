@@ -17,6 +17,13 @@ class MenuController extends Controller
     {
         $restaurant = Restaurant::current();
         $availabilityStatus = $availability->status($restaurant);
+        $search = trim((string) $request->string('q'));
+        $sort = (string) $request->string('sort', 'recommended');
+        $allowedSorts = ['recommended', 'price_asc', 'price_desc', 'name'];
+
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'recommended';
+        }
 
         $categories = Category::query()
             ->where('is_active', true)
@@ -32,6 +39,10 @@ class MenuController extends Controller
             ->withCount(['activeSizes', 'activeAddons'])
             ->where('is_available', true)
             ->where('is_featured', true)
+            ->when($search !== '', fn ($query) => $query
+                ->where(fn ($searchQuery) => $searchQuery
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")))
             ->orderBy('sort_order')
             ->orderBy('name')
             ->take(4)
@@ -52,12 +63,21 @@ class MenuController extends Controller
                     $query->where('category_id', $selectedCategory->id);
                 }
             })
-            ->orderBy('category_id')
-            ->orderBy('sort_order')
-            ->orderBy('name')
+            ->when($search !== '', fn ($query) => $query
+                ->where(fn ($searchQuery) => $searchQuery
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")))
+            ->when($sort === 'recommended', fn ($query) => $query
+                ->orderByDesc('is_featured')
+                ->orderBy('category_id')
+                ->orderBy('sort_order')
+                ->orderBy('name'))
+            ->when($sort === 'price_asc', fn ($query) => $query->orderBy('price')->orderBy('name'))
+            ->when($sort === 'price_desc', fn ($query) => $query->orderByDesc('price')->orderBy('name'))
+            ->when($sort === 'name', fn ($query) => $query->orderBy('name'))
             ->get();
 
-        return view('pages.menu', compact('restaurant', 'availabilityStatus', 'categories', 'featuredItems', 'menuItems', 'selectedCategory'));
+        return view('pages.menu', compact('restaurant', 'availabilityStatus', 'categories', 'featuredItems', 'menuItems', 'selectedCategory', 'search', 'sort'));
     }
 
     public function show(MenuItem $menuItem, RestaurantAvailabilityService $availability): View

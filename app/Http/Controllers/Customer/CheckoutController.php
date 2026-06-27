@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\Restaurant;
+use App\Services\Email\OrderEmailService;
 use App\Services\RestaurantAvailabilityService;
 use App\Services\SmartMenuSuggestionService;
 use App\Support\Cart;
@@ -50,7 +51,7 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function store(Request $request, RestaurantAvailabilityService $availability): RedirectResponse
+    public function store(Request $request, RestaurantAvailabilityService $availability, OrderEmailService $orderEmailService): RedirectResponse
     {
         $restaurant = Restaurant::current();
         $cart = Cart::summary($restaurant);
@@ -121,6 +122,8 @@ class CheckoutController extends Controller
 
             return $order;
         });
+
+        $orderEmailService->sendOrderPlaced($order);
 
         Cart::clear();
 

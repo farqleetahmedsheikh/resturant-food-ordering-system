@@ -524,7 +524,7 @@ $cartCount = \App\Support\Cart::count();
                                         </p>
 
                                         <p class="mt-0.5 text-xl font-black text-warm-950">
-                                            ($item->price)
+                                            @money($item->price)
                                         </p>
                                     </div>
 
@@ -666,7 +666,7 @@ $cartCount = \App\Support\Cart::count();
 
                                 <div class="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                     <p class="text-base font-black text-warm-950 sm:text-xl">
-                                        ($item->price)
+                                        @money($item->price)
                                     </p>
 
                                     @if ($isAvailable)

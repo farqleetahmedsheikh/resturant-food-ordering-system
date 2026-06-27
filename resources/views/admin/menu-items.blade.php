@@ -750,12 +750,12 @@ method_exists($menuItems, 'items')
 
                                 <div class="mt-1 flex items-end gap-2 lg:block">
                                     <p class="text-xl font-black text-brand-500 lg:text-lg">
-                                        ($item->price)
+                                        @money($item->price)
                                     </p>
 
                                     @if ($hasDiscount)
                                         <p class="pb-0.5 text-xs font-bold text-warm-500 line-through lg:mt-1">
-                                            ($item->compare_at_price)
+                                            @money($item->compare_at_price)
                                         </p>
                                     @endif
                                 </div>

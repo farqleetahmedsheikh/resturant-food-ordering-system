@@ -890,7 +890,7 @@ $cartCount = \App\Support\Cart::count();
 
                                 <div class="mt-2 flex items-center justify-between gap-3">
                                     <p class="text-sm font-black text-brand-500 lg:text-lg">
-                                        ($item->price)
+                                        @money($item->price)
                                     </p>
 
                                     <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500">

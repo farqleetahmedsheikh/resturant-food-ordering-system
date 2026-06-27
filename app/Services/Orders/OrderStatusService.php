@@ -5,12 +5,16 @@ namespace App\Services\Orders;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\Email\OrderEmailService;
 use App\Services\Security\AuditLogger;
 use Illuminate\Support\Facades\DB;
 
 class OrderStatusService
 {
-    public function __construct(private AuditLogger $auditLogger) {}
+    public function __construct(
+        private AuditLogger $auditLogger,
+        private OrderEmailService $orderEmailService,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $metadata
@@ -21,7 +25,9 @@ class OrderStatusService
             throw new BusinessRuleException('Invalid order status.');
         }
 
-        return DB::transaction(function () use ($order, $newStatus, $actor, $reason, $metadata): Order {
+        $notificationStatus = null;
+
+        $updatedOrder = DB::transaction(function () use ($order, $newStatus, $actor, $reason, $metadata, &$notificationStatus): Order {
             $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
             $previousStatus = $lockedOrder->order_status;
 
@@ -63,8 +69,20 @@ class OrderStatusService
                 ['order_status' => $newStatus],
             );
 
+            $notificationStatus = $newStatus;
+
             return $lockedOrder->fresh(['items', 'user', 'rider', 'delivery', 'statusHistories']);
         });
+
+        if ($notificationStatus === 'accepted') {
+            $this->orderEmailService->sendOrderConfirmed($updatedOrder);
+        }
+
+        if ($notificationStatus === 'delivered') {
+            $this->orderEmailService->sendOrderDelivered($updatedOrder);
+        }
+
+        return $updatedOrder;
     }
 
     private function syncDeliveryFromOrderStatus(Order $order, string $status): void
