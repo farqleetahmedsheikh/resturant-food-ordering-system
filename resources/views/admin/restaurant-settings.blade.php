@@ -1,7 +1,11 @@
 @component('layouts.admin', ['title' => 'Restaurant Settings'])
 @php
-$currentLogo = $restaurant->logo_url ?? null;
-$currentCover = $restaurant->cover_image_url ?? null;
+$storedLogo = $restaurant->logo_url ?? null;
+$storedCover = $restaurant->cover_image_url ?? null;
+$removeLogoRequested = (bool) old('remove_logo', false);
+$removeCoverRequested = (bool) old('remove_cover_image', false);
+$currentLogo = $removeLogoRequested ? null : $storedLogo;
+$currentCover = $removeCoverRequested ? null : $storedCover;
 
     $initialName = old(
         'name',
@@ -84,12 +88,14 @@ $currentCover = $restaurant->cover_image_url ?? null;
         formattedAddress: @js($initialFormattedAddress),
 
         logoPreview: @js($currentLogo),
-        originalLogo: @js($currentLogo),
+        originalLogo: @js($storedLogo),
         logoFileName: '',
+        removeLogoOnSave: @js($removeLogoRequested),
 
         coverPreview: @js($currentCover),
-        originalCover: @js($currentCover),
+        originalCover: @js($storedCover),
         coverFileName: '',
+        removeCoverOnSave: @js($removeCoverRequested),
 
         isOpen: {{ $initialIsOpen ? 'true' : 'false' }},
         submitting: false,
@@ -126,6 +132,7 @@ $currentCover = $restaurant->cover_image_url ?? null;
 
             this.logoPreview = URL.createObjectURL(file);
             this.logoFileName = file.name;
+            this.removeLogoOnSave = false;
         },
 
         handleCover(event) {
@@ -145,6 +152,7 @@ $currentCover = $restaurant->cover_image_url ?? null;
 
             this.coverPreview = URL.createObjectURL(file);
             this.coverFileName = file.name;
+            this.removeCoverOnSave = false;
         },
 
         resetLogo() {
@@ -158,6 +166,7 @@ $currentCover = $restaurant->cover_image_url ?? null;
 
             this.logoPreview = this.originalLogo;
             this.logoFileName = '';
+            this.removeLogoOnSave = false;
 
             if (this.$refs.logoInput) {
                 this.$refs.logoInput.value = '';
@@ -175,10 +184,33 @@ $currentCover = $restaurant->cover_image_url ?? null;
 
             this.coverPreview = this.originalCover;
             this.coverFileName = '';
+            this.removeCoverOnSave = false;
 
             if (this.$refs.coverInput) {
                 this.$refs.coverInput.value = '';
             }
+        },
+
+        markLogoForRemoval() {
+            this.resetLogo();
+            this.logoPreview = null;
+            this.removeLogoOnSave = true;
+        },
+
+        undoLogoRemoval() {
+            this.removeLogoOnSave = false;
+            this.logoPreview = this.originalLogo;
+        },
+
+        markCoverForRemoval() {
+            this.resetCover();
+            this.coverPreview = null;
+            this.removeCoverOnSave = true;
+        },
+
+        undoCoverRemoval() {
+            this.removeCoverOnSave = false;
+            this.coverPreview = this.originalCover;
         }
     }"
     class="space-y-5 pb-28 sm:space-y-6 xl:pb-8"
@@ -1017,6 +1049,12 @@ $currentCover = $restaurant->cover_image_url ?? null;
                 <div class="grid gap-5 p-4 sm:p-6 md:grid-cols-2">
                     {{-- Logo Upload --}}
                     <div>
+                        <input
+                            type="hidden"
+                            name="remove_logo"
+                            x-bind:value="removeLogoOnSave ? '1' : '0'"
+                        >
+
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <p class="text-sm font-black text-warm-950">
@@ -1117,20 +1155,84 @@ $currentCover = $restaurant->cover_image_url ?? null;
 	                            </p>
 	                        @enderror
 
-                            @if ($restaurant->logo)
-                                <button
-                                    type="button"
-                                    x-on:click="confirmLogoRemoval = true"
-                                    class="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-black text-red-600 transition hover:bg-red-100"
-                                >
-                                    <x-ui-icon name="trash" class="h-4 w-4" />
-                                    Remove current logo
-                                </button>
-                            @endif
+                        @if ($restaurant->logo)
+                            <div
+                                x-show="! removeLogoOnSave"
+                                class="mt-3 rounded-2xl border border-warm-200 bg-white p-3"
+                            >
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs font-black text-warm-950">
+                                            Current logo is active
+                                        </p>
+
+                                        <p class="mt-1 text-[11px] font-semibold leading-5 text-warm-500">
+                                            Remove it with your next save, or delete it immediately.
+                                        </p>
+                                    </div>
+
+                                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500">
+                                        <x-ui-icon name="image" class="h-4 w-4" />
+                                    </span>
+                                </div>
+
+                                <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                                    <button
+                                        type="button"
+                                        x-on:click="markLogoForRemoval"
+                                        class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-black text-red-600 transition hover:bg-red-100"
+                                    >
+                                        <x-ui-icon name="trash" class="h-4 w-4" />
+                                        Remove on save
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        x-on:click="confirmLogoRemoval = true"
+                                        class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-warm-200 bg-white px-4 py-2 text-xs font-black text-warm-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                                    >
+                                        <x-ui-icon name="trash" class="h-4 w-4" />
+                                        Delete now
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div
+                                x-show="removeLogoOnSave"
+                                x-cloak
+                                class="mt-3 rounded-2xl border border-red-200 bg-red-50 p-3"
+                            >
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs font-black text-red-700">
+                                            Logo will be removed when you save.
+                                        </p>
+
+                                        <p class="mt-1 text-[11px] font-semibold leading-5 text-red-700">
+                                            The public site will show generated initials instead.
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        x-on:click="undoLogoRemoval"
+                                        class="shrink-0 rounded-lg bg-white px-2 py-1 text-xs font-black text-red-600 hover:bg-red-100"
+                                    >
+                                        Undo
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
 	                    </div>
 
                     {{-- Cover Upload --}}
                     <div>
+                        <input
+                            type="hidden"
+                            name="remove_cover_image"
+                            x-bind:value="removeCoverOnSave ? '1' : '0'"
+                        >
+
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <p class="text-sm font-black text-warm-950">
@@ -1242,16 +1344,74 @@ $currentCover = $restaurant->cover_image_url ?? null;
 	                            </p>
 	                        @enderror
 
-                            @if ($restaurant->cover_image)
-                                <button
-                                    type="button"
-                                    x-on:click="confirmCoverRemoval = true"
-                                    class="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-black text-red-600 transition hover:bg-red-100"
-                                >
-                                    <x-ui-icon name="trash" class="h-4 w-4" />
-                                    Remove current cover
-                                </button>
-                            @endif
+                        @if ($restaurant->cover_image)
+                            <div
+                                x-show="! removeCoverOnSave"
+                                class="mt-3 rounded-2xl border border-warm-200 bg-white p-3"
+                            >
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs font-black text-warm-950">
+                                            Current cover is active
+                                        </p>
+
+                                        <p class="mt-1 text-[11px] font-semibold leading-5 text-warm-500">
+                                            Remove it with your next save, or delete it immediately.
+                                        </p>
+                                    </div>
+
+                                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500">
+                                        <x-ui-icon name="image" class="h-4 w-4" />
+                                    </span>
+                                </div>
+
+                                <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                                    <button
+                                        type="button"
+                                        x-on:click="markCoverForRemoval"
+                                        class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-black text-red-600 transition hover:bg-red-100"
+                                    >
+                                        <x-ui-icon name="trash" class="h-4 w-4" />
+                                        Remove on save
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        x-on:click="confirmCoverRemoval = true"
+                                        class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-warm-200 bg-white px-4 py-2 text-xs font-black text-warm-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                                    >
+                                        <x-ui-icon name="trash" class="h-4 w-4" />
+                                        Delete now
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div
+                                x-show="removeCoverOnSave"
+                                x-cloak
+                                class="mt-3 rounded-2xl border border-red-200 bg-red-50 p-3"
+                            >
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs font-black text-red-700">
+                                            Cover image will be removed when you save.
+                                        </p>
+
+                                        <p class="mt-1 text-[11px] font-semibold leading-5 text-red-700">
+                                            The public site will use the branded placeholder background.
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        x-on:click="undoCoverRemoval"
+                                        class="shrink-0 rounded-lg bg-white px-2 py-1 text-xs font-black text-red-600 hover:bg-red-100"
+                                    >
+                                        Undo
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
 	                    </div>
                 </div>
             </section>

@@ -49,6 +49,8 @@ class AdminRestaurantSettingsController extends Controller
             'minimum_order_amount' => ['required', 'numeric', 'min:0'],
             'logo' => ImageUpload::validationRules(),
             'cover_image' => ImageUpload::validationRules(),
+            'remove_logo' => ['nullable', 'boolean'],
+            'remove_cover_image' => ['nullable', 'boolean'],
             'is_open' => ['nullable', 'boolean'],
         ]);
 
@@ -69,8 +71,18 @@ class AdminRestaurantSettingsController extends Controller
             'is_open' => $request->boolean('is_open'),
         ];
 
+        if ($request->boolean('remove_logo') && ! $request->hasFile('logo')) {
+            ImageUpload::delete($restaurant->logo);
+            $payload['logo'] = null;
+        }
+
         if ($request->hasFile('logo')) {
             $payload['logo'] = ImageUpload::store($request->file('logo'), 'restaurant/logos', $restaurant->logo);
+        }
+
+        if ($request->boolean('remove_cover_image') && ! $request->hasFile('cover_image')) {
+            ImageUpload::delete($restaurant->cover_image);
+            $payload['cover_image'] = null;
         }
 
         if ($request->hasFile('cover_image')) {

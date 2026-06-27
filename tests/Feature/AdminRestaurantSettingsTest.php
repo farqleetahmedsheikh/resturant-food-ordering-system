@@ -125,6 +125,35 @@ class AdminRestaurantSettingsTest extends TestCase
         Storage::disk('public')->assertMissing('restaurant/covers/cover.png');
     }
 
+    public function test_admin_can_remove_logo_and_cover_image_while_saving_settings(): void
+    {
+        Storage::fake('public');
+
+        Storage::disk('public')->put('restaurant/logos/logo.jpg', 'logo');
+        Storage::disk('public')->put('restaurant/covers/cover.png', 'cover');
+
+        $restaurant = Restaurant::create($this->restaurantPayload([
+            'logo' => 'restaurant/logos/logo.jpg',
+            'cover_image' => 'restaurant/covers/cover.png',
+        ]));
+
+        $this->actingAs($this->user('admin'))
+            ->from(route('admin.settings.restaurant.edit'))
+            ->put(route('admin.settings.restaurant.update'), $this->settingsPayload([
+                'remove_logo' => '1',
+                'remove_cover_image' => '1',
+            ]))
+            ->assertRedirect(route('admin.settings.restaurant.edit'))
+            ->assertSessionHas('status');
+
+        $restaurant->refresh();
+
+        $this->assertNull($restaurant->logo);
+        $this->assertNull($restaurant->cover_image);
+        Storage::disk('public')->assertMissing('restaurant/logos/logo.jpg');
+        Storage::disk('public')->assertMissing('restaurant/covers/cover.png');
+    }
+
     public function test_removing_missing_logo_does_not_fail(): void
     {
         Storage::fake('public');
