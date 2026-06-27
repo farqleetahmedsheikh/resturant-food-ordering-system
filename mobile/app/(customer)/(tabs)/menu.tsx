@@ -1,3 +1,5 @@
-import PublicMenuScreen from '@/app/(public)/menu';
+import { MenuBrowser } from '@/src/components/menu/MenuBrowser';
 
-export default PublicMenuScreen;
+export default function CustomerMenuScreen() {
+  return <MenuBrowser mode="customer" />;
+}

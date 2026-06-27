@@ -1,5 +1,5 @@
 import { PropsWithChildren } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, ViewStyle } from 'react-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, spacing } from '@/src/theme';
@@ -8,13 +8,25 @@ type AppScreenProps = PropsWithChildren<{
   scroll?: boolean;
   keyboard?: boolean;
   contentStyle?: ViewStyle;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }>;
 
-export function AppScreen({ children, scroll = true, keyboard = false, contentStyle }: AppScreenProps) {
+export function AppScreen({
+  children,
+  scroll = true,
+  keyboard = false,
+  contentStyle,
+  refreshing,
+  onRefresh,
+}: AppScreenProps) {
   const content = scroll ? (
     <ScrollView
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={[styles.content, contentStyle]}
+      refreshControl={
+        onRefresh ? <RefreshControl refreshing={Boolean(refreshing)} onRefresh={onRefresh} /> : undefined
+      }
       showsVerticalScrollIndicator={false}
     >
       {children}

@@ -1,42 +1,27 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { z } from 'zod';
 
 import { normalizeApiError } from '@/src/api/api-error';
 import { useAuthStore } from '@/src/auth/auth.store';
+import { registerSchema, type RegisterFormValues } from '@/src/auth/auth.validation';
 import { getRoleRedirect } from '@/src/auth/role-redirect';
 import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
 import { AppCheckbox } from '@/src/components/forms/AppCheckbox';
 import { AppInput } from '@/src/components/forms/AppInput';
+import { PasswordInput } from '@/src/components/forms/PasswordInput';
+import { FeedbackMessage } from '@/src/components/feedback/FeedbackMessage';
 import { AppHeader } from '@/src/components/layout/AppHeader';
 import { AppScreen } from '@/src/components/layout/AppScreen';
 import { env } from '@/src/config/env';
 import { colors, spacing } from '@/src/theme';
-import { emailSchema, passwordSchema } from '@/src/utils/validation';
-
-const schema = z
-  .object({
-    name: z.string().trim().min(2, 'Enter your full name.'),
-    email: emailSchema,
-    phone: z.string().trim().optional(),
-    password: passwordSchema,
-    password_confirmation: z.string().min(8, 'Confirm your password.'),
-    accepted: z.boolean().refine((value) => value, 'Please acknowledge the account terms placeholder.'),
-  })
-  .refine((value) => value.password === value.password_confirmation, {
-    path: ['password_confirmation'],
-    message: 'Passwords do not match.',
-  });
-
-type RegisterForm = z.infer<typeof schema>;
 
 export default function RegisterScreen() {
   const register = useAuthStore((state) => state.register);
-  const form = useForm<RegisterForm>({
-    resolver: zodResolver(schema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -47,14 +32,14 @@ export default function RegisterScreen() {
     },
   });
 
-  async function onSubmit(values: RegisterForm) {
+  async function onSubmit(values: RegisterFormValues) {
     try {
       const session = await register(values);
       router.replace(getRoleRedirect(session.user, env.enableAdminMobile));
     } catch (error) {
       const normalized = normalizeApiError(error);
       Object.entries(normalized.validationErrors).forEach(([field, messages]) => {
-        form.setError(field as keyof RegisterForm, { message: messages[0] });
+        form.setError(field as keyof RegisterFormValues, { message: messages[0] });
       });
       form.setError('root', { message: normalized.message });
     }
@@ -85,12 +70,10 @@ export default function RegisterScreen() {
           control={form.control}
           name="password"
           render={({ field, fieldState }) => (
-            <AppInput
+            <PasswordInput
               label="Password"
               value={field.value}
               onChangeText={field.onChange}
-              secureTextEntry
-              secureToggle
               error={fieldState.error?.message}
             />
           )}
@@ -99,12 +82,10 @@ export default function RegisterScreen() {
           control={form.control}
           name="password_confirmation"
           render={({ field, fieldState }) => (
-            <AppInput
+            <PasswordInput
               label="Confirm password"
               value={field.value}
               onChangeText={field.onChange}
-              secureTextEntry
-              secureToggle
               error={fieldState.error?.message}
             />
           )}
@@ -120,7 +101,7 @@ export default function RegisterScreen() {
           )}
         />
         {form.formState.errors.root ? (
-          <AppText color={colors.semantic.danger}>{form.formState.errors.root.message}</AppText>
+          <FeedbackMessage tone="error" message={form.formState.errors.root.message ?? 'Unable to register.'} />
         ) : null}
         <AppButton
           label="Create Account"
@@ -128,6 +109,9 @@ export default function RegisterScreen() {
           fullWidth
           onPress={form.handleSubmit(onSubmit)}
         />
+        <Link href="/(auth)/login">
+          <AppText color={colors.text.secondary}>Already have an account? Sign in</AppText>
+        </Link>
       </AppCard>
     </AppScreen>
   );

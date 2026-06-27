@@ -1,208 +1,134 @@
 # Arcade Kebab House Mobile
 
-One Expo React Native app for Arcade Kebab House customers, riders, and admins. The Laravel application remains the backend and primary admin system. Mobile talks to the existing Laravel REST API using Sanctum bearer tokens.
+Expo React Native app for Arcade Kebab House. The Laravel website remains the backend and primary admin system. Mobile uses Expo Router, TypeScript, TanStack Query, Zustand, React Hook Form, Zod, Axios, SecureStore, and the shared Arcade Kebab House theme tokens.
 
-## Architecture
+## Implemented Screens
 
-- Laravel backend: `/api/v1/*`
-- Auth: Laravel Sanctum personal access tokens
-- Mobile app: one Expo managed workflow app in `mobile/`
-- Public module: home, menu, contact, item detail
-- Customer module: dashboard, menu, cart shell, orders, profile, checkout shell
-- Rider module: dashboard, assigned deliveries, history shell, profile
-- Admin module: feature-flagged mobile overview only
+- Public: home, menu, menu item detail, contact/location.
+- Auth: login, register, forgot password support state.
+- Customer: dashboard, menu tab, cart tab, checkout, orders tab, order detail, profile.
+- Admin: protected unavailable screen by default.
+- Rider: existing protected scaffold remains in place.
 
-## Requirements
+## API Endpoints Used
 
-- Node LTS compatible with Expo SDK 56 and React Native 0.85
-- npm
-- VS Code
-- Physical Android phone
-- Expo Go for compatible JS-only screens, or a development APK for native-module testing
-- No Android Studio, emulator, local Android SDK, or local native build required
+- `GET /api/v1/restaurant`
+- `GET /api/v1/categories`
+- `GET /api/v1/menu-items`
+- `GET /api/v1/menu-items/{menuItem}`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/register`
+- `GET /api/v1/auth/me`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/customer/cart`
+- `DELETE /api/v1/customer/cart`
+- `POST /api/v1/customer/cart/items/{menuItem}`
+- `POST /api/v1/customer/checkout`
+- `GET /api/v1/customer/orders`
+- `GET /api/v1/customer/orders/{order}`
+- `GET /api/health` for development diagnostics
 
-## Install
+## Auth Flow
+
+Laravel Sanctum returns bearer tokens from login/register. Tokens are stored only in Expo SecureStore. On app boot the auth store restores the token, fetches `/auth/me`, and routes by role without flashing protected screens.
+
+Role routing:
+
+- `customer` -> customer tabs
+- `rider` -> rider scaffold
+- `admin` -> admin route, which shows the disabled mobile admin screen unless `EXPO_PUBLIC_ENABLE_ADMIN_MOBILE=true`
+- inactive or unsupported roles -> safe unavailable screen
+
+Logout calls the backend when a session exists, clears SecureStore, and resets auth state. A `401` response also clears the session.
+
+## Customer Flow
+
+Customer dashboard combines real restaurant availability, latest orders, and featured menu data. Customer menu uses the same Laravel menu API as public browsing and supports search, category filters, pull-to-refresh, and add-to-cart actions.
+
+## Cart Persistence
+
+Cart items are stored locally in Zustand and persisted with AsyncStorage. Stored data is non-sensitive: menu item id, name, image URL, unit price, quantity, notes, and availability. Auth tokens are never stored in AsyncStorage.
+
+The cart survives app reload, prevents quantities below one, calculates subtotal/total in AUD, applies backend restaurant delivery fee/minimum order settings, and clears only after successful order creation.
+
+## Checkout Status
+
+Checkout is integrated with the real Laravel customer checkout flow. Before submitting, mobile syncs the local cart into Laravel's authenticated cart endpoints, then calls `/api/v1/customer/checkout` with an idempotency key.
+
+Laravel remains the authority for item pricing, availability, minimum order validation, restaurant open/closed state, order ownership, and order creation. Current location is requested only after tapping "Use my current location"; manual address remains required.
+
+## Configuration
+
+Copy the example environment file:
 
 ```bash
 cd mobile
-npm install
 cp .env.example .env
 ```
 
-Set:
+Required values:
 
 ```bash
 EXPO_PUBLIC_API_URL=http://YOUR_COMPUTER_LAN_IP:8000/api/v1
 EXPO_PUBLIC_ENABLE_ADMIN_MOBILE=false
+EXPO_PUBLIC_WEB_ADMIN_URL=https://example.com/admin
 ```
 
-Do not use `localhost` or `127.0.0.1` for a physical phone. Those point to the phone itself.
+Use your computer LAN IP for physical phone testing. Do not point a physical phone at a loopback address because that resolves to the phone itself.
 
-## Find Your LAN IP
+## Physical Phone Testing
 
-macOS:
-
-```bash
-ipconfig getifaddr en0
-```
-
-Windows:
-
-```bash
-ipconfig
-```
-
-Linux:
-
-```bash
-hostname -I
-```
-
-## Run Laravel For Phone Access
-
-From the repository root:
+Run Laravel from the repository root:
 
 ```bash
 php artisan serve --host=0.0.0.0 --port=8000
 ```
 
-Your phone and computer must be on the same network. Tunnel mode for Expo does not automatically expose a Laravel server that only listens on localhost.
-
-## Start Expo
-
-LAN:
+Start Expo:
 
 ```bash
 cd mobile
 npm run start
 ```
 
-Tunnel:
+Phone and computer must be on the same network. If Expo is started with tunnel mode, Laravel still needs to be reachable by the API URL configured in `.env`.
+
+## Validation Commands
 
 ```bash
-npm run start:tunnel
-```
-
-Clear cache:
-
-```bash
-npm run start:clear
-```
-
-## API Diagnostics
-
-The public home screen shows a development-only diagnostics card with:
-
-- API URL
-- health check status
-- response time
-- app version
-- Expo version
-
-The health endpoint is:
-
-```text
-GET /api/health
-```
-
-It exposes only a safe status and application name.
-
-## Expo Go vs Development APK
-
-Expo Go is useful for early UI work. A development APK is better once native modules and EAS-like runtime behavior matter.
-
-Development APK:
-
-```bash
-npx eas-cli@latest login
-npx eas-cli@latest build --platform android --profile development
-```
-
-Preview APK:
-
-```bash
-npx eas-cli@latest build --platform android --profile preview
-```
-
-Production Android build:
-
-```bash
-npx eas-cli@latest build --platform android --profile production
-```
-
-Install the generated APK from the EAS build link on your Android phone.
-
-## Scripts
-
-```bash
+cd mobile
+npm install
+npx expo install --fix
+npx expo-doctor
 npm run lint
 npm run typecheck
 npm test -- --runInBand
-npm run doctor
-npm run export:check
 ```
 
-No script runs `expo run:android`, `expo run:ios`, `expo prebuild`, or local native builds.
-
-## Role Routing
-
-The root layout uses Expo Router protected route groups:
-
-- guests: public and auth routes
-- customer: customer tabs and customer detail routes
-- rider: rider tabs and delivery detail routes
-- admin: admin routes only when `EXPO_PUBLIC_ENABLE_ADMIN_MOBILE=true`
-- unsupported/inactive roles: safe access message and logout
-
-Client-side guards are navigation controls only. Laravel remains the authority for permissions.
-
-## Token Security
-
-- Tokens are stored in Expo SecureStore only.
-- AsyncStorage is used only for non-sensitive cart UI state.
-- Tokens are never placed in URLs.
-- Tokens are cleared after logout and unrecoverable 401 responses.
-
-## Troubleshooting
-
-Cannot reach Laravel:
-
-- Confirm Laravel is running with `--host=0.0.0.0`.
-- Confirm phone and computer are on the same Wi-Fi.
-- Confirm `EXPO_PUBLIC_API_URL` uses the computer LAN IP.
-
-HTTP cleartext issue on Android:
-
-- Expo Go/development builds may differ by Android version and network security behavior.
-- Prefer HTTPS for production.
-
-CORS issue:
-
-- Native app bearer-token requests are not browser SPA session requests.
-- The Laravel API is configured for API paths and bearer authentication.
-
-Invalid environment variable:
-
-- Remove trailing slash.
-- Do not use placeholders, `localhost`, or `127.0.0.1`.
-
-Expo cache problem:
+Backend validation after API changes:
 
 ```bash
-npm run start:clear
+composer install
+composer dump-autoload
+php artisan optimize:clear
+php artisan route:list --path=api
+php artisan test
 ```
 
-EAS credentials issue:
+## Known Limitations
 
-- Run `npx eas-cli@latest login`.
-- Link/create the EAS project when prompted.
+- Forgot password mobile API is not available yet; the screen directs users to the existing web/contact path.
+- Item notes are kept locally and folded into order notes during checkout because backend order items do not yet have a dedicated per-item note field.
+- Add-ons and sizes are displayed by the API types but not selected in this mobile phase.
+- Admin mobile is intentionally disabled by default and does not expose admin data.
+- Rider workflow remains the existing scaffold and is not expanded in this phase.
+- No paid map SDK is configured; contact and checkout use links/coordinates only.
 
-## Intentionally Left For Later
+## Next Phase Recommendations
 
-- Full mobile cart mutation UI
-- Production checkout form
-- Rider delivery status action buttons
-- Admin write actions
-- Push notifications
-- Paid map provider integration
-- Final app icon/splash replacement with approved Arcade Kebab House source asset
+- Add mobile password reset OTP endpoints.
+- Add size/add-on selectors and backend-supported item notes.
+- Add saved addresses and customer profile editing.
+- Add push notifications and device registration UX.
+- Build the rider delivery workflow as a separate phase.
+- Design a dedicated admin mobile phase only after the web admin parity requirements are clear.

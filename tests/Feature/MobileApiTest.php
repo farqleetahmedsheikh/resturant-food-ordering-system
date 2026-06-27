@@ -30,6 +30,56 @@ class MobileApiTest extends TestCase
         ])->assertUnauthorized();
     }
 
+    public function test_public_restaurant_endpoint_exposes_backend_availability_state(): void
+    {
+        Restaurant::create([
+            'name' => 'Arcade Kebab House',
+            'email' => 'hello@example.com',
+            'phone' => '+61 400 000 000',
+            'address' => 'Demo address',
+            'timezone' => 'Australia/Sydney',
+            'delivery_fee' => 4.99,
+            'minimum_order_amount' => 20,
+            'is_open' => false,
+        ]);
+
+        $this->getJson('/api/v1/restaurant')
+            ->assertOk()
+            ->assertJsonPath('data.is_open', false)
+            ->assertJsonPath('data.is_open_for_orders', false)
+            ->assertJsonPath('data.availability_label', 'Ordering paused')
+            ->assertJsonPath('data.timezone', 'Australia/Sydney')
+            ->assertJsonPath('data.currency', 'AUD');
+    }
+
+    public function test_public_menu_can_include_unavailable_items_for_mobile_state(): void
+    {
+        $available = $this->createMenuItem();
+        $unavailable = MenuItem::create([
+            'restaurant_id' => $available->restaurant_id,
+            'category_id' => $available->category_id,
+            'name' => 'Sold Out Kebab',
+            'slug' => 'sold-out-kebab',
+            'description' => 'Returns only when requested by mobile.',
+            'price' => 13,
+            'is_featured' => false,
+            'is_available' => false,
+            'sort_order' => 2,
+        ]);
+
+        $this->getJson('/api/v1/menu-items')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson('/api/v1/menu-items?include_unavailable=1')
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
+
+        $this->getJson('/api/v1/menu-items/'.$unavailable->id)
+            ->assertOk()
+            ->assertJsonPath('data.is_available', false);
+    }
+
     public function test_customer_can_checkout_with_database_cart_and_idempotency_key(): void
     {
         $menuItem = $this->createMenuItem(['price' => 12]);

@@ -13,6 +13,8 @@ export async function getMenuItems(params?: {
   featured?: boolean;
   category?: string | number;
   search?: string;
+  include_unavailable?: boolean;
+  per_page?: number;
 }): Promise<{ items: MenuItem[]; meta?: PaginationMeta }> {
   const response = await apiClient.get<ApiEnvelope<MenuItem[]>>(endpoints.menuItems, {
     params,
@@ -25,7 +27,11 @@ export async function getMenuItems(params?: {
 }
 
 export async function getMenuItem(id: string | number): Promise<MenuItem> {
-  const response = await apiClient.get<ApiEnvelope<MenuItem>>(`${endpoints.menuItems}/${id}`);
+  const response = await apiClient.get<ApiEnvelope<MenuItem>>(`${endpoints.menuItems}/${id}`, {
+    params: {
+      include_unavailable: true,
+    },
+  });
 
   return response.data.data;
 }

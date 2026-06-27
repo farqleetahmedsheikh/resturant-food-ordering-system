@@ -26,12 +26,12 @@ export default function CustomerOrdersScreen() {
   const orders = query.data ?? [];
 
   return (
-    <AppScreen>
+    <AppScreen refreshing={query.isRefetching} onRefresh={() => void query.refetch()}>
       <AppHeader title="My orders" subtitle="Customer orders are loaded from the authenticated API." eyebrow="Customer" />
       {orders.length === 0 ? (
         <EmptyState title="No orders yet" message="Your orders will appear here after checkout." />
       ) : (
-        orders.map((order) => <OrderRow key={order.id} order={order} />)
+        orders.map((order) => <OrderRow key={order.id} order={order} href={`/(customer)/orders/${order.id}`} />)
       )}
     </AppScreen>
   );

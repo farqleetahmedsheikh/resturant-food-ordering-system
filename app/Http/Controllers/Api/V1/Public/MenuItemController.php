@@ -19,8 +19,8 @@ class MenuItemController extends Controller
 
         $items = MenuItem::query()
             ->with(['category', 'activeSizes', 'activeAddons'])
-            ->where('is_available', true)
             ->whereHas('category', fn ($query) => $query->where('is_active', true))
+            ->when(! $request->boolean('include_unavailable'), fn ($query) => $query->where('is_available', true))
             ->when($request->boolean('featured'), fn ($query) => $query->where('is_featured', true))
             ->when($category, function ($query) use ($category): void {
                 $query->whereHas('category', fn ($categoryQuery) => $categoryQuery
@@ -47,7 +47,7 @@ class MenuItemController extends Controller
 
     public function show(MenuItem $menuItem): JsonResponse
     {
-        abort_unless($menuItem->is_available && ($menuItem->category?->is_active ?? true), 404);
+        abort_unless($menuItem->category?->is_active ?? true, 404);
 
         $menuItem->load(['category', 'activeSizes', 'activeAddons']);
 

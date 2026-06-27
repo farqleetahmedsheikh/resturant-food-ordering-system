@@ -4,12 +4,15 @@ namespace App\Http\Resources\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Services\RestaurantAvailabilityService;
 use App\Support\Money;
 
 class RestaurantResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $availability = app(RestaurantAvailabilityService::class)->status($this->resource);
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -29,6 +32,11 @@ class RestaurantResource extends JsonResource
             'cover_image_url' => $this->cover_image_url,
             'initials' => $this->initials,
             'is_open' => (bool) $this->is_open,
+            'is_open_for_orders' => (bool) $availability['is_open'],
+            'availability_label' => $availability['label'],
+            'availability_reason' => $availability['reason'],
+            'next_opening_time' => $availability['opens_at'] ?? null,
+            'current_closing_time' => $availability['closes_at'] ?? null,
             'currency' => Money::code(),
         ];
     }

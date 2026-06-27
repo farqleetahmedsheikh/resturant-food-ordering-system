@@ -17,5 +17,10 @@ export type Restaurant = {
   cover_image_url: string | null;
   initials: string;
   is_open: boolean;
+  is_open_for_orders?: boolean;
+  availability_label?: string | null;
+  availability_reason?: string | null;
+  next_opening_time?: string | null;
+  current_closing_time?: string | null;
   currency: string;
 };

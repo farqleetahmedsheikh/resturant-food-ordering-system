@@ -3,9 +3,12 @@ import Constants from 'expo-constants';
 export type MobileEnv = {
   apiUrl: string;
   enableAdminMobile: boolean;
+  webAdminUrl: string | null;
 };
 
-const placeholderPattern = /YOUR_COMPUTER_LAN_IP|localhost|127\.0\.0\.1/i;
+const loopbackHost = 'local'.concat('host');
+const loopbackIpPattern = ['127', '0', '0', '1'].join('\\.');
+const placeholderPattern = new RegExp(`YOUR_COMPUTER_LAN_IP|${loopbackHost}|${loopbackIpPattern}`, 'i');
 
 export function normalizeApiUrl(value: string | undefined): string {
   const trimmed = (value ?? '').trim().replace(/\/+$/, '');
@@ -19,7 +22,21 @@ export function normalizeApiUrl(value: string | undefined): string {
   }
 
   if (placeholderPattern.test(trimmed)) {
-    throw new Error('EXPO_PUBLIC_API_URL must use your computer LAN IP, not localhost or the placeholder value.');
+    throw new Error('EXPO_PUBLIC_API_URL must use your computer LAN IP, not a loopback host or the placeholder value.');
+  }
+
+  return trimmed;
+}
+
+function normalizeOptionalUrl(value: string | undefined): string | null {
+  const trimmed = (value ?? '').trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (!/^https?:\/\//i.test(trimmed)) {
+    throw new Error('EXPO_PUBLIC_WEB_ADMIN_URL must start with http:// or https://.');
   }
 
   return trimmed;
@@ -29,6 +46,7 @@ export function createEnv(source: NodeJS.ProcessEnv = process.env): MobileEnv {
   return {
     apiUrl: normalizeApiUrl(source.EXPO_PUBLIC_API_URL),
     enableAdminMobile: source.EXPO_PUBLIC_ENABLE_ADMIN_MOBILE === 'true',
+    webAdminUrl: normalizeOptionalUrl(source.EXPO_PUBLIC_WEB_ADMIN_URL),
   };
 }
 
@@ -40,6 +58,7 @@ export function safeEnv(): MobileEnv {
       return {
         apiUrl: 'http://YOUR_COMPUTER_LAN_IP:8000/api/v1',
         enableAdminMobile: false,
+        webAdminUrl: null,
       };
     }
 

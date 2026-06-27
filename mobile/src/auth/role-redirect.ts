@@ -1,6 +1,8 @@
 import type { AuthUser } from '@/src/types/auth';
 
 export function getRoleRedirect(user: AuthUser | null, enableAdminMobile: boolean): string {
+  void enableAdminMobile;
+
   if (!user) {
     return '/(public)';
   }
@@ -18,7 +20,7 @@ export function getRoleRedirect(user: AuthUser | null, enableAdminMobile: boolea
   }
 
   if (user.role === 'admin') {
-    return enableAdminMobile ? '/(admin)' : '/admin-unavailable';
+    return '/(admin)';
   }
 
   return '/unsupported-role';

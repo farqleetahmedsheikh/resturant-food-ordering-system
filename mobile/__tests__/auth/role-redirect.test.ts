@@ -19,8 +19,8 @@ describe('getRoleRedirect', () => {
     expect(getRoleRedirect({ ...baseUser, role: 'rider' }, false)).toBe('/(rider)/(tabs)');
   });
 
-  it('keeps admin behind the feature flag', () => {
-    expect(getRoleRedirect({ ...baseUser, role: 'admin' }, false)).toBe('/admin-unavailable');
+  it('routes admins to the admin shell where the feature flag controls available UI', () => {
+    expect(getRoleRedirect({ ...baseUser, role: 'admin' }, false)).toBe('/(admin)');
     expect(getRoleRedirect({ ...baseUser, role: 'admin' }, true)).toBe('/(admin)');
   });
 

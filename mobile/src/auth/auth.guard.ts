@@ -13,7 +13,7 @@ export function useRoleGuards() {
     guest: status === 'guest',
     customer: authenticated && canAccessRole(user, 'customer'),
     rider: authenticated && canAccessRole(user, 'rider'),
-    admin: authenticated && canAccessRole(user, 'admin') && env.enableAdminMobile,
+    admin: authenticated && canAccessRole(user, 'admin'),
     adminUnavailable: authenticated && canAccessRole(user, 'admin') && !env.enableAdminMobile,
     unsupported: authenticated && (!user?.is_active || !isSupportedRole(user.role)),
   };
