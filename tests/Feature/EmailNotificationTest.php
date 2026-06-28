@@ -18,6 +18,13 @@ class EmailNotificationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->fakeStripeCheckout();
+    }
+
     public function test_order_placed_email_is_sent_with_checkout(): void
     {
         Mail::fake();
@@ -47,9 +54,24 @@ class EmailNotificationTest extends TestCase
                 'customer_phone' => '+61 400 000 000',
                 'customer_email' => $customer->email,
                 'delivery_address' => 'Demo delivery address',
-                'payment_method' => 'cod',
             ])
             ->assertRedirect();
+
+        Mail::assertNotSent(OrderPlacedMail::class);
+
+        $order = Order::firstOrFail();
+        $payload = $this->eventPayload('evt_email_checkout_completed', 'checkout.session.completed', [
+            'id' => $order->stripe_checkout_session_id,
+            'object' => 'checkout.session',
+            'payment_status' => 'paid',
+            'payment_intent' => 'pi_test_email_checkout',
+            'client_reference_id' => (string) $order->id,
+            'metadata' => [
+                'order_id' => (string) $order->id,
+            ],
+        ]);
+
+        $this->postStripeWebhook($payload)->assertOk();
 
         Mail::assertSent(OrderPlacedMail::class, fn (OrderPlacedMail $mail) => $mail->order->items->contains('item_name', 'Chicken Kebab'));
     }
@@ -162,5 +184,32 @@ class EmailNotificationTest extends TestCase
                 'is_open' => true,
             ],
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $object
+     */
+    private function eventPayload(string $eventId, string $type, array $object): string
+    {
+        return json_encode([
+            'id' => $eventId,
+            'object' => 'event',
+            'type' => $type,
+            'data' => [
+                'object' => $object,
+            ],
+        ], JSON_THROW_ON_ERROR);
+    }
+
+    private function postStripeWebhook(string $payload)
+    {
+        $timestamp = time();
+        $secret = (string) config('services.stripe.webhook_secret');
+        $signature = hash_hmac('sha256', $timestamp.'.'.$payload, $secret);
+
+        return $this->call('POST', route('stripe.webhook'), [], [], [], [
+            'HTTP_STRIPE_SIGNATURE' => 't='.$timestamp.',v1='.$signature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $payload);
     }
 }

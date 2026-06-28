@@ -24,7 +24,7 @@ return new class extends Migration
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('delivery_fee', 10, 2)->default(0);
             $table->decimal('total', 10, 2)->default(0);
-            $table->string('payment_method')->default('cod');
+            $table->string('payment_method')->default('stripe');
             $table->string('payment_status')->default('pending');
             $table->string('order_status')->default('pending');
             $table->timestamps();

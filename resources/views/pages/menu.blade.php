@@ -67,7 +67,7 @@ $cartCount = \App\Support\Cart::count();
                             </span>
 
                             <span class="text-[10px] font-semibold text-warm-500 sm:text-xs">
-                                Cash on delivery
+                                Secure card payment
                             </span>
                         </div>
                     </div>
@@ -112,7 +112,7 @@ $cartCount = \App\Support\Cart::count();
                     </h1>
 
                     <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-warm-600 sm:mt-5 sm:text-base sm:leading-8">
-                        Browse fresh meals, customize your favourites, and order with cash on delivery.
+                        Browse fresh meals, customize your favourites, and pay securely by card.
                     </p>
                 </div>
 
@@ -196,7 +196,7 @@ $cartCount = \App\Support\Cart::count();
                             </p>
 
                             <p class="mt-0.5 text-xs font-black text-leaf-700 sm:text-sm">
-                                COD
+                                Card
                             </p>
                         </div>
                     </div>

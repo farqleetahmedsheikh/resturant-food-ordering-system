@@ -25,10 +25,19 @@ class OrderStatusService
             throw new BusinessRuleException('Invalid order status.');
         }
 
+        if (! $order->canEnterFulfillment() && $newStatus !== 'cancelled') {
+            throw new BusinessRuleException('Stripe payment must be confirmed before this order enters fulfilment.');
+        }
+
         $notificationStatus = null;
 
         $updatedOrder = DB::transaction(function () use ($order, $newStatus, $actor, $reason, $metadata, &$notificationStatus): Order {
             $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
+
+            if (! $lockedOrder->canEnterFulfillment() && $newStatus !== 'cancelled') {
+                throw new BusinessRuleException('Stripe payment must be confirmed before this order enters fulfilment.');
+            }
+
             $previousStatus = $lockedOrder->order_status;
 
             if ($previousStatus === $newStatus) {

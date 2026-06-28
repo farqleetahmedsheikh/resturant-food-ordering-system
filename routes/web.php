@@ -6,10 +6,12 @@ use App\Http\Controllers\Auth\PasswordResetOtpController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\MenuController;
 use App\Http\Controllers\Public\SeoController;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -20,6 +22,10 @@ Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::get('/restaurant/{restaurantSlug}', [SeoController::class, 'redirectRestaurant']);
 Route::get('/restaurant/{restaurantSlug}/menu', [SeoController::class, 'redirectRestaurantMenu']);
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+
+Route::post('/stripe/webhook', StripeWebhookController::class)
+    ->withoutMiddleware([ValidateCsrfToken::class])
+    ->name('stripe.webhook');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -54,5 +60,6 @@ Route::middleware('customer')->group(function (): void {
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
 });

@@ -262,7 +262,7 @@ $cartCount = \App\Support\Cart::count();
                                 </div>
 
                                 <span class="rounded-full bg-leaf-500 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]">
-                                    COD available
+                                    Card payment
                                 </span>
                             </div>
                         </div>
@@ -321,7 +321,7 @@ $cartCount = \App\Support\Cart::count();
                                 </p>
 
                                 <p class="mt-0.5 truncate text-xs font-black text-leaf-700 sm:text-sm">
-                                    COD
+                                    Stripe
                                 </p>
                             </div>
                         </div>

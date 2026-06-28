@@ -68,6 +68,10 @@ class RiderDashboardController extends Controller
             return back()->with('status', 'Delivered or cancelled orders cannot be updated again.');
         }
 
+        if (! $order->canEnterFulfillment()) {
+            return back()->with('status', 'Stripe payment must be confirmed before delivery can progress.');
+        }
+
         $validated = $request->validate([
             'status' => ['required', Rule::in(['picked_up', 'out_for_delivery', 'delivered', 'failed'])],
             'notes' => ['string', 'max:1000', Rule::requiredIf($request->input('status') === 'failed')],

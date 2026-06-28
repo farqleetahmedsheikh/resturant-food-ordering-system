@@ -25,14 +25,17 @@ class DashboardController extends Controller
         return ApiResponse::success([
             'cards' => [
                 'total_orders' => Order::count(),
-                'pending_orders' => Order::where('order_status', 'pending')->count(),
+                'pending_orders' => Order::where('order_status', 'pending')
+                    ->where(fn ($query) => $query
+                        ->where('payment_status', 'paid')
+                        ->orWhere('payment_method', 'cod'))
+                    ->count(),
                 'preparing_orders' => Order::where('order_status', 'preparing')->count(),
                 'assigned_deliveries' => Order::where('order_status', 'assigned_to_rider')->count(),
                 'out_for_delivery' => Order::where('order_status', 'out_for_delivery')->count(),
                 'delivered_orders' => Order::where('order_status', 'delivered')->count(),
                 'total_riders' => User::where('role', 'rider')->count(),
-                'total_cod_revenue' => (float) Order::where('payment_method', 'cod')
-                    ->where('payment_status', 'paid')
+                'total_paid_revenue' => (float) Order::where('payment_status', 'paid')
                     ->sum('total'),
                 'total_categories' => Category::count(),
                 'active_categories' => Category::where('is_active', true)->count(),

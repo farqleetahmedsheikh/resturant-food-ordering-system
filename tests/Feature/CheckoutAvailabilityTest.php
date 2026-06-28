@@ -16,6 +16,13 @@ class CheckoutAvailabilityTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->fakeStripeCheckout();
+    }
+
     public function test_backend_blocks_checkout_when_restaurant_is_manually_closed(): void
     {
         $customer = $this->user();
@@ -61,12 +68,16 @@ class CheckoutAvailabilityTest extends TestCase
                 'delivery_latitude' => '-33.8688000',
                 'delivery_longitude' => '151.2093000',
             ]))
-            ->assertRedirect();
+            ->assertRedirect('https://checkout.stripe.test/session');
 
         $order = Order::firstOrFail();
 
         $this->assertSame('-33.8688000', $order->delivery_latitude);
         $this->assertSame('151.2093000', $order->delivery_longitude);
+        $this->assertSame('stripe', $order->payment_method);
+        $this->assertSame('pending', $order->payment_status);
+        $this->assertSame('pending_payment', $order->order_status);
+        $this->assertSame('cs_test_checkout_session', $order->stripe_checkout_session_id);
     }
 
     public function test_checkout_rejects_invalid_delivery_coordinates(): void
@@ -138,7 +149,6 @@ class CheckoutAvailabilityTest extends TestCase
             'customer_phone' => '+61 400 000 000',
             'customer_email' => $customer->email,
             'delivery_address' => 'Customer entered delivery address',
-            'payment_method' => 'cod',
         ], $overrides);
     }
 

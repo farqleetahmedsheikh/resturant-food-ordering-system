@@ -94,7 +94,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                     </h1>
 
                     <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-warm-600">
-                        Adjust quantities, review your choices, and continue to cash-on-delivery checkout.
+                        Adjust quantities, review your choices, and continue to secure card checkout.
                     </p>
                 </div>
 
@@ -299,7 +299,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                                         </h3>
 
                                                         <p class="mt-1 text-xs font-bold text-brand-500 sm:text-sm">
-                                                            ($item['price']) each
+                                                            @money($item['price'] ?? 0) each
                                                         </p>
                                                     </div>
 
@@ -357,7 +357,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
 
                                                 {{-- Mobile Item Total --}}
                                                 <p class="mt-2 text-base font-black text-warm-950 sm:hidden">
-                                                    ($item['total'])
+                                                    @money($item['total'] ?? 0)
                                                 </p>
 
                                                 {{-- Desktop Description --}}
@@ -373,7 +373,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                                 </p>
 
                                                 <p class="mt-1 text-lg font-black text-warm-950">
-                                                    ($item['total'])
+                                                    @money($item['total'] ?? 0)
                                                 </p>
                                             </div>
                                         </div>
@@ -519,7 +519,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
 
                                                 <p class="mt-0.5 text-xs font-bold text-warm-500">
                                                     {{ $item['quantity'] }}
-                                                    × ($item['price'])
+                                                    × @money($item['price'] ?? 0)
                                                 </p>
                                             </div>
                                         </div>
@@ -542,7 +542,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                 </div>
 
                                 <p class="text-2xl font-black text-brand-500">
-                                    ($cart['total'])
+                                    @money($cart['total'])
                                 </p>
                             </div>
 
@@ -553,7 +553,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                     </p>
 
                                     <p class="mt-1 text-sm font-black text-warm-950">
-                                        ($cart['subtotal'])
+                                        @money($cart['subtotal'])
                                     </p>
                                 </div>
 
@@ -563,25 +563,9 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                     </p>
 
                                     <p class="mt-1 text-sm font-black text-warm-950">
-                                        ($cart['delivery_fee'])
+                                        @money($cart['delivery_fee'])
                                     </p>
                                 </div>
-                            </div>
-
-                            <div class="mt-3 flex items-center gap-2 rounded-xl bg-leaf-50 px-3 py-3 text-xs font-bold text-leaf-700">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    class="h-4 w-4 shrink-0"
-                                >
-                                    <rect x="3" y="6" width="18" height="12" rx="2" />
-                                    <circle cx="12" cy="12" r="2" />
-                                </svg>
-
-                                Cash on delivery
                             </div>
                         </section>
 
@@ -645,7 +629,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                                 </a>
 
                                                 <p class="mt-1 text-sm font-black text-brand-500">
-                                                    ($suggestion->price)
+                                                    @money($suggestion->price ?? 0)
                                                 </p>
                                             </div>
 
@@ -805,7 +789,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                 </span>
 
                                 <span class="font-black text-warm-950">
-                                    ($cart['subtotal'])
+                                    @money($cart['subtotal'] ?? 0)
                                 </span>
                             </div>
 
@@ -815,7 +799,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                 </span>
 
                                 <span class="font-black text-warm-950">
-                                    ($cart['delivery_fee'])
+                                    @money($cart['delivery_fee'] ?? 0)
                                 </span>
                             </div>
 
@@ -826,7 +810,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                     </span>
 
                                     <span class="text-2xl font-black text-brand-500">
-                                        ($cart['total'])
+                                        @money($cart['total'] ?? 0)
                                     </span>
                                 </div>
                             </div>
@@ -878,11 +862,11 @@ $cartCount = (int) ($cart['count'] ?? 0);
 
                             <div>
                                 <p class="text-sm font-black text-leaf-900">
-                                    Cash on Delivery
+                                    Secure card payment
                                 </p>
 
                                 <p class="mt-1 text-xs font-semibold leading-5 text-leaf-700">
-                                    Pay the rider when your order arrives.
+                                    Pay securely by card through Stripe Checkout.
                                 </p>
                             </div>
                         </div>
@@ -955,7 +939,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                             </p>
 
                             <p class="mt-0.5 whitespace-nowrap text-lg font-black text-warm-950">
-                                ($cart['total'])
+                                @money($cart['total'] ?? 0)
                             </p>
                         </div>
 

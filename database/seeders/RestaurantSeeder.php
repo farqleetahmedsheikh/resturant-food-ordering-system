@@ -16,7 +16,7 @@ class RestaurantSeeder extends Seeder
                 'phone' => '03000000010',
                 'address' => 'Address to be configured',
                 'formatted_address' => 'Address to be configured',
-                'short_description' => 'Fresh kebabs, grilled plates, pizzas, burgers, drinks, and desserts delivered with a simple cash-on-delivery flow.',
+                'short_description' => 'Fresh kebabs, grilled plates, pizzas, burgers, drinks, and desserts delivered with secure card payment.',
                 'opening_time' => '12:00',
                 'closing_time' => '23:00',
                 'timezone' => 'Australia/Sydney',

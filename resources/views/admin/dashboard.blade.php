@@ -146,11 +146,11 @@
 
                 <div class="mt-5 rounded-2xl border border-white/10 bg-white/10 p-4">
                     <p class="text-[10px] font-black uppercase tracking-[0.16em] text-white/50">
-                        COD Revenue
+                        Paid Revenue
                     </p>
 
                     <p class="mt-1 text-2xl font-black">
-                        @money($totalCodRevenue)
+                        @money($totalPaidRevenue)
                     </p>
                 </div>
             </aside>

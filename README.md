@@ -7,6 +7,34 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Stripe Checkout Sandbox
+
+Arcade Kebab House uses Stripe Checkout for one-time AUD card payments. Do not use live keys during development and never commit `.env`.
+
+You are in Stripe sandbox/test mode while using `pk_test_` and `sk_test_` keys. No real money moves in this mode. Switch to live keys only after full testing and Stripe account activation.
+
+Required `.env` values:
+
+```dotenv
+STRIPE_MODE=sandbox
+STRIPE_CURRENCY=AUD
+STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+STRIPE_CHECKOUT_SUCCESS_URL="${APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}"
+STRIPE_CHECKOUT_CANCEL_URL="${APP_URL}/checkout/cancel"
+```
+
+For local webhooks, run:
+
+```bash
+stripe listen --forward-to http://127.0.0.1:8000/stripe/webhook
+```
+
+Copy the generated `whsec_...` value into `STRIPE_WEBHOOK_SECRET`. Use Stripe test cards only, for example `4242 4242 4242 4242`, any future expiry such as `12/34`, any three-digit CVC such as `123`, and any valid postal code.
+
+Before going live, test payment success, cancellation, declined cards, webhook signature rejection, duplicate webhook delivery, success-page refreshes, closed restaurant checkout, unavailable items, changed cart totals, double-click checkout, and admin/rider handling of unpaid orders.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

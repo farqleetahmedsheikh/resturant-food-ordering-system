@@ -53,7 +53,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                     </p>
 
                     <p class="mt-0.5 text-[10px] font-semibold text-warm-500">
-                        Secure cash-on-delivery order
+                        Secure Stripe card payment
                     </p>
                 </div>
 
@@ -85,7 +85,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                         </h1>
 
                         <p class="mt-3 max-w-2xl text-sm font-semibold leading-7 text-warm-600">
-                            Confirm your contact and delivery information before placing your order.
+                            Confirm your contact and delivery information before paying securely by card.
                         </p>
                     </div>
 
@@ -170,7 +170,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                             </p>
 
                             <p class="mt-0.5 text-sm font-black text-warm-600">
-                                Order confirmation
+                                Secure payment
                             </p>
                         </div>
                     </div>
@@ -243,7 +243,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                         </p>
 
                         <p class="mt-1 text-sm font-black text-leaf-700">
-                            Cash on Delivery
+                            Card via Stripe
                         </p>
                     </div>
                 </section>
@@ -277,6 +277,40 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
 
                             <p class="mt-1 text-xs font-semibold leading-5 text-gold-700 sm:text-sm">
                                 Restaurant is closed now. Your items are in cart and you can checkout later when restaurant opens.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- Checkout Alert --}}
+            @if (session('status'))
+                <div
+                    role="alert"
+                    class="mb-5 rounded-2xl border border-gold-100 bg-gold-50 p-4 shadow-sm"
+                >
+                    <div class="flex items-start gap-3">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-gold-500 shadow-sm">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                class="h-5 w-5"
+                            >
+                                <circle cx="12" cy="12" r="9" />
+                                <path stroke-linecap="round" d="M12 7v5M12 16h.01" />
+                            </svg>
+                        </span>
+
+                        <div>
+                            <p class="text-sm font-black text-gold-900">
+                                Checkout needs attention
+                            </p>
+
+                            <p class="mt-1 text-xs font-semibold leading-5 text-gold-700 sm:text-sm">
+                                {{ session('status') }}
                             </p>
                         </div>
                     </div>
@@ -317,12 +351,27 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                 </div>
             @endif
 
+            @error('payment')
+                <div
+                    role="alert"
+                    class="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm"
+                >
+                    <p class="text-sm font-black text-red-900">
+                        Card payment is not available
+                    </p>
+
+                    <p class="mt-1 text-xs font-semibold leading-5 text-red-700 sm:text-sm">
+                        {{ $message }}
+                    </p>
+                </div>
+            @enderror
+
             <form
                 id="checkout-form"
                 action="{{ route('checkout.store') }}"
                 method="POST"
                 class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-8"
-                x-on:submit="submitting = true"
+                x-on:submit="if (submitting) { $event.preventDefault(); return; } submitting = true"
             >
                 @csrf
 
@@ -405,7 +454,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                                         </div>
 
                                         <p class="shrink-0 text-sm font-black text-warm-950">
-                                            ($item['total'])
+                                            @money($item['total'])
                                         </p>
                                     </div>
                                 @endforeach
@@ -768,41 +817,27 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                                     stroke-width="2"
                                     class="h-5 w-5"
                                 >
-                                    <rect x="3" y="6" width="18" height="12" rx="2" />
-                                    <circle cx="12" cy="12" r="2" />
+                                    <rect x="5" y="10" width="14" height="11" rx="2" />
+                                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
                                 </svg>
                             </span>
 
                             <div class="min-w-0 flex-1">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <h2 class="text-base font-black text-warm-950 sm:text-lg">
-                                        Cash on Delivery
+                                        Secure card payment
                                     </h2>
 
                                     <span class="rounded-full bg-leaf-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-leaf-700">
-                                        Selected
+                                        Stripe Checkout
                                     </span>
                                 </div>
 
                                 <p class="mt-1 text-xs font-semibold leading-5 text-warm-500 sm:text-sm">
-                                    Pay the rider in cash after receiving your order.
+                                    Pay securely on Stripe's hosted checkout page. Arcade Kebab House never stores card numbers, CVC, expiry dates, or raw payment details.
                                 </p>
                             </div>
-
-                            <input
-                                type="radio"
-                                name="payment_method"
-                                value="cod"
-                                checked
-                                class="mt-1 h-5 w-5 shrink-0 border-leaf-500 text-leaf-700 focus:ring-leaf-500"
-                            >
                         </div>
-
-                        @error('payment_method')
-                            <p class="mt-2 text-xs font-semibold text-red-600">
-                                {{ $message }}
-                            </p>
-                        @enderror
                     </section>
 
                     {{-- Suggestions --}}
@@ -877,7 +912,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                                             </span>
 
                                             <span class="mt-1 block text-sm font-black text-brand-500">
-                                                ($suggestion->price)
+                                                @money($suggestion->price)
                                             </span>
                                         </span>
 
@@ -920,7 +955,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                         </span>
 
                         <p class="text-xs font-semibold leading-5 text-blue-800">
-                            By placing your order, you confirm that the phone number and delivery address are correct.
+                            By continuing to payment, you confirm that the phone number and delivery address are correct.
                         </p>
                     </div>
                 </div>
@@ -984,7 +1019,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                                     </div>
 
                                     <p class="shrink-0 text-sm font-black text-warm-950">
-                                        ($item['total'])
+                                        @money($item['total'])
                                     </p>
                                 </div>
                             @endforeach
@@ -1040,11 +1075,11 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
 
                                 <div>
                                     <p class="text-sm font-black text-leaf-900">
-                                        Cash on Delivery
+                                        Secure card payment
                                     </p>
 
                                     <p class="mt-1 text-xs font-semibold leading-5 text-leaf-700">
-                                        Payment will be collected when your food arrives.
+                                        You will be redirected to Stripe Checkout to pay in AUD.
                                     </p>
                                 </div>
                             </div>
@@ -1078,7 +1113,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                                         ></path>
                                     </svg>
 
-                                    <span x-text="submitting ? 'Placing order...' : 'Place Order'"></span>
+                                    <span x-text="submitting ? 'Creating secure checkout...' : 'Pay securely with card'"></span>
 
                                     <svg
                                         x-show="! submitting"
@@ -1107,7 +1142,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                             @endif
 
                             <p class="mt-3 text-center text-xs font-semibold leading-5 text-warm-500">
-                                Please review your contact information before placing the order.
+                                Please review your contact information before opening secure payment.
                             </p>
                         </div>
                     </div>
@@ -1159,7 +1194,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                         ></path>
                     </svg>
 
-                    <span x-text="submitting ? 'Placing...' : 'Place Order'"></span>
+                    <span x-text="submitting ? 'Opening Stripe...' : 'Pay by Card'"></span>
 
                     <svg
                         x-show="! submitting"

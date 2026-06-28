@@ -75,7 +75,7 @@ Requires a customer token.
 | PUT | `/customer/cart/items/{cartItem}` | Update quantity |
 | DELETE | `/customer/cart/items/{cartItem}` | Remove item |
 | DELETE | `/customer/cart` | Clear cart |
-| POST | `/customer/checkout` | Place COD order. Send `Idempotency-Key` |
+| POST | `/customer/checkout` | Create a Stripe Checkout Session. Send `Idempotency-Key` |
 | GET | `/customer/orders` | Customer order list |
 | GET | `/customer/orders/{order}` | Customer order detail and progress |
 
@@ -87,10 +87,27 @@ Checkout body:
   "customer_phone": "03001234567",
   "customer_email": "customer@example.com",
   "delivery_address": "Demo delivery address",
-  "order_notes": "No onions",
-  "payment_method": "cod"
+  "order_notes": "No onions"
 }
 ```
+
+Checkout response includes:
+
+```json
+{
+  "order_id": 123,
+  "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_...",
+  "stripe_checkout_session_id": "cs_test_...",
+  "order": {
+    "payment_method": "stripe",
+    "payment_status": "pending",
+    "order_status": "pending_payment",
+    "currency": "AUD"
+  }
+}
+```
+
+Open `checkout_url` in the app browser. Do not send Stripe secret keys, webhook secrets, or card details from mobile clients.
 
 ## Rider
 

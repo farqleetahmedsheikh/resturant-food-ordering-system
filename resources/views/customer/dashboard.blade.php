@@ -292,7 +292,7 @@ $user = auth()->user();
                                         </p>
 
                                         <p class="mt-1 truncate text-sm font-black">
-                                            {{ strtoupper($latestOrder->payment_method ?? 'COD') }}
+                                            {{ $latestOrder->payment_method_label }}
                                         </p>
                                     </div>
 

@@ -74,7 +74,7 @@ Ownership:
 - Rider status updates use `DeliveryStatusService`.
 - Valid statuses: `picked_up`, `out_for_delivery`, `delivered`, `failed`.
 - Delivered/cancelled orders cannot be updated again.
-- COD orders are marked paid when delivered, matching the existing demo behavior.
+- Stripe orders are marked paid only after verified Stripe webhook confirmation.
 - Status changes create audit records and order status history where applicable.
 
 ## Admin Workflow

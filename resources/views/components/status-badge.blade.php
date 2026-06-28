@@ -34,10 +34,11 @@ $labels = match ($normalizedType) {
     'delivery' => \App\Models\Delivery::STATUSES,
 
     'payment' => [
-        'pending' => 'Pending',
+        'pending' => 'Pending Payment',
         'unpaid' => 'Unpaid',
         'paid' => 'Paid',
         'failed' => 'Failed',
+        'cancelled' => 'Cancelled',
         'refunded' => 'Refunded',
     ],
 
@@ -54,7 +55,7 @@ $label = $labels[$normalizedStatus]
 */
 
 $statusConfig = match ($normalizedStatus) {
-    'pending' => [
+    'pending', 'pending_payment' => [
         'badge' => 'border-gold-100 bg-gold-50 text-gold-700',
         'dot' => 'bg-gold-500',
         'pulse' => 'bg-gold-500',

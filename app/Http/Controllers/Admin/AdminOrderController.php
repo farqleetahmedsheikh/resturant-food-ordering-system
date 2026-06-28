@@ -57,14 +57,22 @@ class AdminOrderController extends Controller
             'order_status' => ['required', Rule::in(array_keys(Order::STATUSES))],
         ]);
 
+        if (! $order->canEnterFulfillment() && $validated['order_status'] !== 'cancelled') {
+            return back()->with('status', 'Stripe payment must be confirmed before this order enters fulfilment.');
+        }
+
         $payload = ['order_status' => $validated['order_status']];
 
-        if ($validated['order_status'] === 'delivered') {
+        if ($validated['order_status'] === 'delivered' && $order->payment_method === 'cod') {
             $payload['payment_status'] = 'paid';
             $payload['delivered_at'] = $order->delivered_at ?? now();
         }
 
-        if ($validated['order_status'] === 'cancelled') {
+        if ($validated['order_status'] === 'delivered') {
+            $payload['delivered_at'] = $order->delivered_at ?? now();
+        }
+
+        if ($validated['order_status'] === 'cancelled' && $order->payment_method === 'cod') {
             $payload['payment_status'] = 'cancelled';
         }
 
@@ -104,6 +112,10 @@ class AdminOrderController extends Controller
     {
         if (in_array($order->order_status, ['delivered', 'cancelled'], true)) {
             return back()->with('status', 'Delivered or cancelled orders cannot be assigned.');
+        }
+
+        if (! $order->canEnterFulfillment()) {
+            return back()->with('status', 'Stripe payment must be confirmed before assigning a rider.');
         }
 
         $validated = $request->validate([

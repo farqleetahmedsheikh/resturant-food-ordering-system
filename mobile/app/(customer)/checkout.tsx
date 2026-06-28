@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { z } from 'zod';
 
 import { syncLocalCartToBackend } from '@/src/api/cart.api';
@@ -44,7 +44,6 @@ export default function CustomerCheckoutScreen() {
   const user = useAuthStore((state) => state.session?.user);
   const items = useCartStore((state) => state.items);
   const subtotal = useCartStore((state) => state.getSubtotal());
-  const clearCart = useCartStore((state) => state.clearCart);
   const location = useLocationPermission();
   const restaurantQuery = useQuery({
     queryKey: queryKeys.restaurant,
@@ -89,7 +88,7 @@ export default function CustomerCheckoutScreen() {
         .map((item) => `${item.name}: ${item.notes.trim()}`)
         .join('\n');
 
-      const order = await checkoutApi(
+      const result = await checkoutApi(
         {
           customer_name: values.customer_name,
           customer_phone: values.customer_phone,
@@ -98,13 +97,12 @@ export default function CustomerCheckoutScreen() {
           delivery_latitude: location.coords?.latitude ?? null,
           delivery_longitude: location.coords?.longitude ?? null,
           order_notes: compactNote([values.order_notes, itemNotes ? `Item notes:\n${itemNotes}` : null]),
-          payment_method: 'cod',
         },
         createIdempotencyKey(),
       );
 
-      clearCart();
-      router.replace(`/(customer)/orders/${order.id}`);
+      await Linking.openURL(result.checkout_url);
+      router.replace(`/(customer)/orders/${result.order_id}`);
     } catch (error) {
       const normalized = normalizeApiError(error);
       Object.entries(normalized.validationErrors).forEach(([field, messages]) => {
@@ -120,7 +118,7 @@ export default function CustomerCheckoutScreen() {
 
   return (
     <AppScreen keyboard>
-      <AppHeader title="Checkout" subtitle="Orders are created by the Laravel backend." eyebrow="Customer" />
+      <AppHeader title="Checkout" subtitle="Pay securely by card through Stripe Checkout." eyebrow="Customer" />
 
       {items.length === 0 ? (
         <EmptyState title="Your cart is empty" message="Add an item before checkout." />
@@ -246,7 +244,7 @@ export default function CustomerCheckoutScreen() {
               />
             ) : null}
             <AppButton
-              label="Place order"
+              label="Pay securely with card"
               loading={form.formState.isSubmitting}
               disabled={checkoutBlocked}
               fullWidth

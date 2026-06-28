@@ -86,7 +86,7 @@ $cartCount = \App\Support\Cart::count();
         },
 
         formatPrice(value) {
-            return Number(value || 0).toLocaleString();
+            return '$' + Number(value || 0).toFixed(2);
         }
     }"
     class="min-h-screen bg-[var(--color-surface-warm)] pb-28 lg:pb-0"
@@ -250,7 +250,7 @@ $cartCount = \App\Support\Cart::count();
                                 </p>
 
                                 <p class="mt-1 text-sm font-black text-warm-950">
-                                    ($restaurant->delivery_fee)
+                                    @money($restaurant->delivery_fee)
                                 </p>
                             </div>
                         @endif
@@ -294,13 +294,12 @@ $cartCount = \App\Support\Cart::count();
                                 aria-live="polite"
                                 class="text-3xl font-black tracking-tight text-brand-500 sm:text-4xl"
                             >
-	                                A$
                                 <span x-text="formatPrice(unitPrice)"></span>
                             </p>
 
                             @if ($hasDiscount)
                                 <p class="pb-1 text-sm font-bold text-warm-500 line-through sm:text-lg">
-                                    ($menuItem->compare_at_price)
+                                    @money($menuItem->compare_at_price)
                                 </p>
 
                                 <span class="mb-1 rounded-full bg-red-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-red-600 sm:text-xs">
@@ -314,8 +313,7 @@ $cartCount = \App\Support\Cart::count();
                             x-cloak
                             class="mt-1 text-xs font-bold text-leaf-700"
                         >
-	                            Includes A$
-                            <span x-text="formatPrice(addonsTotal)"></span>
+                            Includes <span x-text="formatPrice(addonsTotal)"></span>
                             in extras
                         </p>
                     </header>
@@ -388,7 +386,7 @@ $cartCount = \App\Support\Cart::count();
                                 </p>
 
                                 <p class="mt-0.5 truncate text-xs font-black text-warm-950">
-                                    ($restaurant->delivery_fee)
+                                    @money($restaurant->delivery_fee)
                                 </p>
                             </div>
                         @endif
@@ -528,7 +526,7 @@ $cartCount = \App\Support\Cart::count();
                                             </span>
 
                                             <span class="mt-2 block text-base font-black text-brand-500 sm:text-lg">
-                                                ($size['price'])
+                                                @money($size['price'])
                                             </span>
                                         </label>
                                     @endforeach
@@ -595,7 +593,7 @@ $cartCount = \App\Support\Cart::count();
                                             </span>
 
                                             <span class="shrink-0 text-sm font-black text-brand-500">
-                                                + ($addon['price'])
+                                                + @money($addon['price'])
                                             </span>
                                         </label>
                                     @endforeach
@@ -644,7 +642,7 @@ $cartCount = \App\Support\Cart::count();
                                     </div>
 
                                     <p class="shrink-0 text-lg font-black text-brand-500">
-	                                        A$ <span x-text="formatPrice(unitPrice)"></span>
+                                        <span x-text="formatPrice(unitPrice)"></span>
                                     </p>
                                 </div>
                             </div>
@@ -698,8 +696,7 @@ $cartCount = \App\Support\Cart::count();
                                     <span x-text="submitting ? 'Adding...' : 'Add to Cart'"></span>
 
                                     <span>
-	                                        · A$
-                                        <span x-text="formatPrice(unitPrice)"></span>
+                                        · <span x-text="formatPrice(unitPrice)"></span>
                                     </span>
                                 </button>
                             @else
@@ -787,7 +784,7 @@ $cartCount = \App\Support\Cart::count();
                                 </a>
 
                                 <p class="mt-1 text-sm font-black text-brand-500">
-                                    ($suggestion->price)
+                                    @money($suggestion->price)
                                 </p>
 
                                 <div class="mt-2">
@@ -930,7 +927,7 @@ $cartCount = \App\Support\Cart::count();
                     aria-live="polite"
                     class="mt-0.5 whitespace-nowrap text-lg font-black text-warm-950"
                 >
-	                    A$ <span x-text="formatPrice(unitPrice)"></span>
+                    <span x-text="formatPrice(unitPrice)"></span>
                 </p>
             </div>
 

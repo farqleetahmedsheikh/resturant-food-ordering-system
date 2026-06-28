@@ -27,15 +27,12 @@ $deliveryStatus = $order->delivery?->status;
 
     $itemCount = (int) $order->items->sum('quantity');
 
-    $paymentMethod = strtoupper(
-        $order->payment_method ?? 'COD'
-    );
+    $paymentMethod = $order->payment_method_label;
 
-    $paymentStatus = \Illuminate\Support\Str::headline(
-        $order->payment_status ?? 'pending'
-    );
+    $paymentStatus = $order->payment_status_label;
 
     $currentStage = match ($effectiveStatus) {
+        'pending_payment' => 1,
         'pending' => 1,
         'accepted' => 2,
         'preparing' => 2,
@@ -48,6 +45,7 @@ $deliveryStatus = $order->delivery?->status;
     };
 
     $progressPercentage = match ($effectiveStatus) {
+        'pending_payment' => 5,
         'pending' => 10,
         'accepted' => 25,
         'preparing' => 42,
@@ -60,6 +58,7 @@ $deliveryStatus = $order->delivery?->status;
     };
 
     $statusMessage = match ($effectiveStatus) {
+        'pending_payment' => 'Your card payment is being confirmed before the restaurant receives this order.',
         'pending' => 'Your order has been received and is waiting for restaurant confirmation.',
         'accepted' => 'The restaurant has accepted your order and will begin preparing it.',
         'preparing' => 'Your meal is currently being prepared by the restaurant.',
@@ -135,7 +134,9 @@ $deliveryStatus = $order->delivery?->status;
         ],
         [
             'title' => 'Delivered',
-            'description' => 'Your order arrives and payment is collected.',
+            'description' => $order->payment_method === 'cod'
+                ? 'Your order arrives and payment is collected.'
+                : 'Your order arrives with card payment already confirmed.',
         ],
     ];
 
@@ -394,7 +395,7 @@ $deliveryStatus = $order->delivery?->status;
                     </p>
 
                     <p class="mt-1 truncate text-sm font-black sm:text-lg">
-                        ($order->total)
+                        @money($order->total)
                     </p>
                 </div>
             </div>
@@ -735,7 +736,7 @@ $deliveryStatus = $order->delivery?->status;
                     </div>
 
                     <p class="text-2xl font-black text-brand-500">
-                        ($order->total)
+                        @money($order->total)
                     </p>
                 </div>
 
@@ -746,7 +747,7 @@ $deliveryStatus = $order->delivery?->status;
                         </p>
 
                         <p class="mt-1 text-sm font-black text-warm-950">
-                            ($order->subtotal)
+                                @money($order->subtotal)
                         </p>
                     </div>
 
@@ -756,7 +757,7 @@ $deliveryStatus = $order->delivery?->status;
                         </p>
 
                         <p class="mt-1 text-sm font-black text-warm-950">
-                            ($order->delivery_fee)
+                                @money($order->delivery_fee)
                         </p>
                     </div>
                 </div>
@@ -920,7 +921,7 @@ $deliveryStatus = $order->delivery?->status;
                         </span>
 
                         <span class="font-black text-warm-950">
-                            ($order->subtotal)
+                            @money($order->subtotal)
                         </span>
                     </div>
 
@@ -930,7 +931,7 @@ $deliveryStatus = $order->delivery?->status;
                         </span>
 
                         <span class="font-black text-warm-950">
-                            ($order->delivery_fee)
+                            @money($order->delivery_fee)
                         </span>
                     </div>
 
@@ -941,7 +942,7 @@ $deliveryStatus = $order->delivery?->status;
                             </span>
 
                             <span class="text-2xl font-black text-brand-500">
-                                ($order->total)
+                                @money($order->total)
                             </span>
                         </div>
                     </div>

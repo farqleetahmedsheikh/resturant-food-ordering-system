@@ -414,13 +414,9 @@ method_exists($orders, 'items')
                             $deliveryStatus
                         );
 
-                        $paymentMethod = strtoupper(
-                            $order->payment_method ?? 'COD'
-                        );
+                        $paymentMethod = $order->payment_method_label;
 
-                        $paymentStatusLabel = \Illuminate\Support\Str::headline(
-                            $order->payment_status ?? 'pending'
-                        );
+                        $paymentStatusLabel = $order->payment_status_label;
 
                         $customerPhoneHref = $order->customer_phone
                             ? preg_replace(
@@ -437,7 +433,8 @@ method_exists($orders, 'items')
                         );
 
                         $needsRider = ! $order->rider
-                            && ! $isClosed;
+                            && ! $isClosed
+                            && $order->canEnterFulfillment();
 
                         $needsAttention = $order->order_status === 'pending'
                             || (
@@ -491,7 +488,11 @@ method_exists($orders, 'items')
                                         type="delivery"
                                     />
 
-                                    @if ($needsAttention)
+                                    @if ($order->order_status === 'pending_payment')
+                                        <span class="rounded-full bg-gold-50 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-gold-700">
+                                            Payment pending
+                                        </span>
+                                    @elseif ($needsAttention)
                                         <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.1em] text-red-700">
                                             <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500"></span>
 
@@ -543,7 +544,7 @@ method_exists($orders, 'items')
                                 </p>
 
                                 <p class="mt-1 text-lg font-black text-brand-900">
-                                    ($order->total)
+                                    @money($order->total)
                                 </p>
 
                                 <div class="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-brand-600">

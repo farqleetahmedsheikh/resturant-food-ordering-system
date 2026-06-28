@@ -16,6 +16,13 @@ class MobileApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->fakeStripeCheckout();
+    }
+
     public function test_public_menu_is_available_and_customer_cart_requires_authentication(): void
     {
         $menuItem = $this->createMenuItem();
@@ -98,14 +105,17 @@ class MobileApiTest extends TestCase
             'customer_phone' => '03001234567',
             'customer_email' => $customer->email,
             'delivery_address' => 'Demo delivery address',
-            'payment_method' => 'cod',
         ];
 
         $this->withHeader('Idempotency-Key', 'test-checkout-001')
             ->postJson('/api/v1/customer/checkout', $payload)
             ->assertCreated()
-            ->assertJsonPath('data.order_status', 'pending')
-            ->assertJsonPath('data.total', 28.99);
+            ->assertJsonPath('data.checkout_url', 'https://checkout.stripe.test/session')
+            ->assertJsonPath('data.stripe_checkout_session_id', 'cs_test_checkout_session')
+            ->assertJsonPath('data.order.order_status', 'pending_payment')
+            ->assertJsonPath('data.order.payment_method', 'stripe')
+            ->assertJsonPath('data.order.payment_status', 'pending')
+            ->assertJsonPath('data.order.total', 28.99);
 
         $this->withHeader('Idempotency-Key', 'test-checkout-001')
             ->postJson('/api/v1/customer/checkout', $payload)

@@ -22,8 +22,17 @@ class RiderAssignmentService
             throw new BusinessRuleException('Delivered or cancelled orders cannot be assigned.');
         }
 
+        if (! $order->canEnterFulfillment()) {
+            throw new BusinessRuleException('Stripe payment must be confirmed before assigning a rider.');
+        }
+
         return DB::transaction(function () use ($order, $rider, $actor): Order {
             $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
+
+            if (! $lockedOrder->canEnterFulfillment()) {
+                throw new BusinessRuleException('Stripe payment must be confirmed before assigning a rider.');
+            }
+
             $previousRiderId = $lockedOrder->rider_id;
             $previousStatus = $lockedOrder->order_status;
 

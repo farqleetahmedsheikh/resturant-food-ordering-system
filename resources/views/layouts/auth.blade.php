@@ -46,7 +46,7 @@
                 </h1>
 
                 <p class="mt-6 text-base leading-8 text-warm-600">
-                    Login or create a customer account to add items to cart, place cash-on-delivery orders, and track delivery status from your dashboard.
+                    Login or create a customer account to add items to cart, pay securely by card, and track delivery status from your dashboard.
                 </p>
             </div>
 

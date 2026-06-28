@@ -1,5 +1,5 @@
 @php
-    $paymentLabel = strtoupper((string) $order->payment_method) === 'COD' ? 'Cash on Delivery' : ucfirst((string) $order->payment_method);
+    $paymentLabel = $order->payment_method_label;
 @endphp
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:18px;border:1px solid #E8DED6;border-radius:18px;background:#FFFFFF;">
@@ -16,7 +16,7 @@
                         <strong style="color:#171310;">{{ $order->customer_name }}</strong><br>
                         {{ $order->customer_phone }}<br>
                         {{ $order->delivery_address }}<br>
-                        Payment: {{ $paymentLabel }} · {{ ucfirst((string) $order->payment_status) }}
+                        Payment: {{ $paymentLabel }} · {{ $order->payment_status_label }}
                     </td>
                 </tr>
                 @if ($order->rider)

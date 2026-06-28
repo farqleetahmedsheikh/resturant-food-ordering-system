@@ -29,13 +29,9 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
     $mapsUrl = 'https://www.google.com/maps/search/?api=1&query='
         . rawurlencode($order->delivery_address ?? '');
 
-    $paymentMethod = strtoupper(
-        $order->payment_method ?? 'COD'
-    );
+    $paymentMethod = $order->payment_method_label;
 
-    $paymentStatus = \Illuminate\Support\Str::headline(
-        $order->payment_status ?? 'pending'
-    );
+    $paymentStatus = $order->payment_status_label;
 
     $statusMessage = match ($order->order_status) {
         'pending' => 'This order requires confirmation before preparation can begin.',
@@ -314,7 +310,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                     </p>
 
                     <p class="mt-1 text-xl font-black text-brand-200 sm:text-2xl">
-                        ($order->total)
+                        @money($order->total)
                     </p>
                 </div>
 
@@ -641,7 +637,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                             </p>
 
                                             <p class="mt-1 text-sm font-black text-warm-950 sm:text-base">
-                                                ($item->total)
+                                                @money($item->total)
                                             </p>
                                         </div>
                                     </div>
@@ -1025,7 +1021,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                         @endif
                     </div>
 
-                    @if (! $isCompleted)
+                    @if (! $isCompleted && $order->canEnterFulfillment())
                         <form
                             action="{{ route('admin.orders.assign-rider', $order) }}"
                             method="POST"
@@ -1109,6 +1105,12 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                 </x-confirm-submit>
                             </div>
                         @endif
+                    @elseif (! $order->canEnterFulfillment())
+                        <div class="mt-4 rounded-xl border border-gold-100 bg-gold-50 p-4">
+                            <p class="text-xs font-semibold leading-5 text-gold-800">
+                                Rider assignment unlocks after Stripe confirms this card payment.
+                            </p>
+                        </div>
                     @else
                         <div class="mt-4 rounded-xl border border-warm-200 bg-warm-50 p-4">
                             <p class="text-xs font-semibold leading-5 text-warm-600">
@@ -1177,7 +1179,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                             </span>
 
                             <span class="font-black text-warm-950">
-                                ($order->subtotal)
+                                @money($order->subtotal)
                             </span>
                         </div>
 
@@ -1187,7 +1189,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                             </span>
 
                             <span class="font-black text-warm-950">
-                                ($order->delivery_fee)
+                                @money($order->delivery_fee)
                             </span>
                         </div>
 
@@ -1198,17 +1200,37 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                 </span>
 
                                 <span class="text-2xl font-black text-brand-500">
-                                    ($order->total)
+                                    @money($order->total)
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    @if ($paymentMethod === 'COD')
+                    @if ($order->payment_method === 'stripe' && ($order->stripe_checkout_session_id || $order->stripe_payment_intent_id))
+                        <div class="mt-4 space-y-2 rounded-xl border border-brand-100 bg-brand-50 p-4">
+                            <p class="text-[9px] font-black uppercase tracking-[0.14em] text-brand-600">
+                                Stripe references
+                            </p>
+
+                            @if ($order->stripe_checkout_session_id)
+                                <p class="break-all text-xs font-semibold text-warm-700">
+                                    Checkout session: {{ $order->stripe_checkout_session_id }}
+                                </p>
+                            @endif
+
+                            @if ($order->stripe_payment_intent_id)
+                                <p class="break-all text-xs font-semibold text-warm-700">
+                                    Payment intent: {{ $order->stripe_payment_intent_id }}
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if ($order->payment_method === 'cod')
                         <div class="mt-4 rounded-xl border border-leaf-100 bg-leaf-50 p-4">
                             <p class="text-xs font-semibold leading-5 text-leaf-900">
                                 The rider should collect
-                                <strong>($order->total)</strong>
+                                <strong>@money($order->total)</strong>
                                 from the customer upon delivery.
                             </p>
                         </div>

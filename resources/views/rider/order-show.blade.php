@@ -149,10 +149,14 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
             'status' => 'delivered',
             'label' => 'Complete Delivery',
             'short_label' => 'Mark Delivered',
-            'description' => 'Use this only after handing the order to the customer and collecting payment.',
+            'description' => $order->payment_method === 'cod'
+                ? 'Use this only after handing the order to the customer and collecting payment.'
+                : 'Use this only after handing the prepaid order to the customer.',
             'button' => 'bg-leaf-700 hover:bg-leaf-700 shadow-leaf-700/25',
             'icon_bg' => 'bg-leaf-500',
-            'confirmation' => 'Confirm that the order was delivered and payment was collected?',
+            'confirmation' => $order->payment_method === 'cod'
+                ? 'Confirm that the order was delivered and payment was collected?'
+                : 'Confirm that the prepaid order was delivered?',
         ],
 
         default => null,
@@ -181,13 +185,9 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
         ],
     ];
 
-    $paymentMethod = strtoupper(
-        $order->payment_method ?? 'COD'
-    );
+    $paymentMethod = $order->payment_method_label;
 
-    $paymentStatus = \Illuminate\Support\Str::headline(
-        $order->payment_status ?? 'pending'
-    );
+    $paymentStatus = $order->payment_status_label;
 @endphp
 
 <div
@@ -418,7 +418,7 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
                     </p>
 
                     <p class="mt-1 truncate text-sm font-black text-brand-200 sm:text-lg">
-                        ($order->total)
+                        @money($order->total)
                     </p>
                 </div>
             </div>
@@ -530,7 +530,7 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
                                 </p>
 
                                 <p class="mt-1 text-lg font-black text-leaf-900">
-                                    ($order->total)
+                                    @money($order->total)
                                 </p>
 
                                 <p class="mt-0.5 text-xs font-semibold text-leaf-700">
@@ -808,12 +808,12 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
 
                                             <p class="mt-1 text-xs font-semibold text-warm-500 sm:text-sm">
                                                 {{ $item->quantity }}
-                                                × ($item->price)
+                                                × @money($item->price)
                                             </p>
                                         </div>
 
                                         <p class="shrink-0 text-sm font-black text-warm-950 sm:text-base">
-                                            ($item->total)
+                                            @money($item->total)
                                         </p>
                                     </div>
 
@@ -841,7 +841,7 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
                     </div>
 
                     <p class="text-2xl font-black text-brand-500">
-                        ($order->total)
+                        @money($order->total)
                     </p>
                 </div>
 
@@ -852,7 +852,7 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
                         </p>
 
                         <p class="mt-1 text-sm font-black text-warm-950">
-                            ($order->subtotal)
+                            @money($order->subtotal)
                         </p>
                     </div>
 
@@ -862,7 +862,7 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
                         </p>
 
                         <p class="mt-1 text-sm font-black text-warm-950">
-                            ($order->delivery_fee)
+                            @money($order->delivery_fee)
                         </p>
                     </div>
                 </div>
@@ -1236,7 +1236,7 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
                         </span>
 
                         <span class="font-black text-warm-950">
-                            ($order->subtotal)
+                            @money($order->subtotal)
                         </span>
                     </div>
 
@@ -1246,7 +1246,7 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
                         </span>
 
                         <span class="font-black text-warm-950">
-                            ($order->delivery_fee)
+                            @money($order->delivery_fee)
                         </span>
                     </div>
 
@@ -1257,7 +1257,7 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
                             </span>
 
                             <span class="text-2xl font-black text-brand-500">
-                                ($order->total)
+                                @money($order->total)
                             </span>
                         </div>
                     </div>

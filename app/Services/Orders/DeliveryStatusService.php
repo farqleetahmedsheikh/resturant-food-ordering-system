@@ -27,6 +27,10 @@ class DeliveryStatusService
             throw new BusinessRuleException('Delivered or cancelled orders cannot be updated again.');
         }
 
+        if (! $order->canEnterFulfillment()) {
+            throw new BusinessRuleException('Stripe payment must be confirmed before delivery can progress.');
+        }
+
         if (! in_array($status, ['picked_up', 'out_for_delivery', 'delivered', 'failed'], true)) {
             throw new BusinessRuleException('Invalid delivery status.');
         }
@@ -37,6 +41,11 @@ class DeliveryStatusService
 
         $updatedOrder = DB::transaction(function () use ($order, $rider, $status, $notes): Order {
             $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
+
+            if (! $lockedOrder->canEnterFulfillment()) {
+                throw new BusinessRuleException('Stripe payment must be confirmed before delivery can progress.');
+            }
+
             $delivery = $lockedOrder->delivery()->firstOrCreate(
                 ['order_id' => $lockedOrder->id],
                 [

@@ -15,13 +15,18 @@ class CheckoutController extends Controller
 
     public function store(CheckoutRequest $request): JsonResponse
     {
-        $order = $this->checkoutService->checkout(
+        $result = $this->checkoutService->checkout(
             $request->user(),
             $request->validated(),
             $request->headers->get('Idempotency-Key'),
             $request,
         );
 
-        return ApiResponse::success(new OrderResource($order), 'Order placed successfully.', status: 201);
+        return ApiResponse::success([
+            'order_id' => $result->order->id,
+            'checkout_url' => $result->checkoutUrl,
+            'stripe_checkout_session_id' => $result->stripeCheckoutSessionId,
+            'order' => new OrderResource($result->order),
+        ], 'Stripe Checkout session created.', status: 201);
     }
 }

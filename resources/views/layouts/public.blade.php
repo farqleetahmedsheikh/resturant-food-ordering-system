@@ -345,7 +345,7 @@
                     </a>
 
                     <p class="mt-5 max-w-md text-sm leading-7 text-warm-600">
-                        Fresh food, simple ordering, cash on delivery, and easy delivery tracking from your customer dashboard.
+                        Fresh food, simple ordering, secure card payment, and easy delivery tracking from your customer dashboard.
                     </p>
                 </div>
 
@@ -367,7 +367,6 @@
                     </h3>
 
                     <div class="mt-5 grid gap-3 text-sm font-semibold text-warm-600">
-                        <p>Cash on delivery</p>
                         <p>Freshly prepared meals</p>
                         <p>Rider delivery updates</p>
                     </div>

@@ -21,7 +21,7 @@ class CheckoutRequest extends FormRequest
             'delivery_latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'delivery_longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'order_notes' => ['nullable', 'string', 'max:1000'],
-            'payment_method' => ['required', 'in:cod'],
+            'payment_method' => ['nullable', 'in:stripe'],
         ];
     }
 }

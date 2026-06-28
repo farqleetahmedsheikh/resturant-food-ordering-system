@@ -603,7 +603,7 @@ $riderName = auth()->user()->name ?? 'Rider';
                                         </p>
 
                                         <p class="mt-1 truncate text-sm font-black text-warm-950">
-                                            {{ strtoupper($nextOrder->payment_method ?? 'COD') }}
+                                            {{ $nextOrder->payment_method_label }}
                                         </p>
                                     </div>
 
@@ -759,13 +759,13 @@ $riderName = auth()->user()->name ?? 'Rider';
                                             <span class="text-warm-300">•</span>
 
                                             <span>
-                                                ($order->total)
+                                                @money($order->total)
                                             </span>
 
                                             <span class="text-warm-300">•</span>
 
                                             <span>
-                                                {{ strtoupper($order->payment_method ?? 'COD') }}
+                                                {{ $order->payment_method_label }}
                                             </span>
                                         </div>
 
@@ -937,7 +937,7 @@ $riderName = auth()->user()->name ?? 'Rider';
 
                                 <span class="mt-0.5 block truncate text-xs font-semibold text-warm-500">
                                     {{ $order->customer_name }}
-                                    · ($order->total)
+                                    · @money($order->total)
                                 </span>
                             </span>
 

@@ -33,25 +33,29 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [
-            SecurityRateLimiter::class,
-        ]);
+  ->withMiddleware(function (Middleware $middleware): void {
+    $middleware->validateCsrfTokens(except: [
+        'stripe/webhook',
+    ]);
 
-        $middleware->api(append: [
-            SecurityRateLimiter::class,
-        ]);
+    $middleware->web(append: [
+        SecurityRateLimiter::class,
+    ]);
 
-        $middleware->alias([
-            'admin' => AdminMiddleware::class,
-            'customer' => CustomerMiddleware::class,
-            'rider' => RiderMiddleware::class,
-            'api.active' => EnsureUserIsActive::class,
-            'api.role' => EnsureUserHasRole::class,
-            'api.ability' => EnsureTokenAbility::class,
-            'request.id' => RequestCorrelationId::class,
-        ]);
-    })
+    $middleware->api(append: [
+        SecurityRateLimiter::class,
+    ]);
+
+    $middleware->alias([
+        'admin' => AdminMiddleware::class,
+        'customer' => CustomerMiddleware::class,
+        'rider' => RiderMiddleware::class,
+        'api.active' => EnsureUserIsActive::class,
+        'api.role' => EnsureUserHasRole::class,
+        'api.ability' => EnsureTokenAbility::class,
+        'request.id' => RequestCorrelationId::class,
+    ]);
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),

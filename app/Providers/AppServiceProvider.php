@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Contracts\Payments\StripeCheckoutGateway;
 use App\Models\Restaurant;
+use App\Services\Payments\StripeSdkCheckoutGateway;
 use App\Support\Money;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -18,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(StripeCheckoutGateway::class, StripeSdkCheckoutGateway::class);
     }
 
     /**

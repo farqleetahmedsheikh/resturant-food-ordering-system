@@ -138,7 +138,7 @@
                                     </span>
 
                                     <span>
-                                        ($order->total)
+                                        @money($order->total)
                                     </span>
 
                                     <span>
@@ -330,7 +330,7 @@
                                 <span class="text-warm-300">•</span>
 
                                 <span>
-                                    ($order->total)
+                                    @money($order->total)
                                 </span>
 
                                 <span class="text-warm-300">•</span>

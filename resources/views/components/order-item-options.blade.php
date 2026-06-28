@@ -36,7 +36,7 @@ $hasAddonsPrice = (float) ($item->addons_total ?? 0) > 0;
 
                         @if ($hasSizePrice)
                             <span class="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-brand-600 shadow-sm">
-                                ($item->size_price)
+                                @money($item->size_price ?? 0)
                             </span>
                         @endif
                     </div>

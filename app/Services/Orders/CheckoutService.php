@@ -7,7 +7,7 @@ use App\Models\IdempotencyKey;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Cart\DatabaseCartService;
-use App\Services\Email\OrderEmailService;
+use App\Services\Payments\StripeCheckoutService;
 use App\Services\RestaurantAvailabilityService;
 use App\Services\Security\AuditLogger;
 use App\Support\Money;
@@ -20,20 +20,25 @@ class CheckoutService
         private DatabaseCartService $cartService,
         private AuditLogger $auditLogger,
         private RestaurantAvailabilityService $availability,
-        private OrderEmailService $orderEmailService,
+        private StripeCheckoutService $stripeCheckoutService,
     ) {}
 
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function checkout(User $user, array $payload, ?string $idempotencyKey = null, ?Request $request = null): Order
+    public function checkout(User $user, array $payload, ?string $idempotencyKey = null, ?Request $request = null): CheckoutResult
     {
+        $this->stripeCheckoutService->assertReadyForCheckout();
+
         $requestHash = hash('sha256', json_encode($payload));
 
         $isNewOrder = false;
+        $claimedIdempotency = null;
+        $cartToConvert = null;
 
-        $order = DB::transaction(function () use ($user, $payload, $idempotencyKey, $requestHash, $request, &$isNewOrder): Order {
+        $order = DB::transaction(function () use ($user, $payload, $idempotencyKey, $requestHash, $request, &$isNewOrder, &$claimedIdempotency, &$cartToConvert): Order {
             $idempotency = $this->claimIdempotencyKey($user, $idempotencyKey, $requestHash, $request);
+            $claimedIdempotency = $idempotency;
 
             if ($idempotency?->order_id) {
                 return Order::query()
@@ -42,6 +47,7 @@ class CheckoutService
             }
 
             $cart = $this->cartService->get($user);
+            $cartToConvert = $cart;
             $summary = $this->cartService->summary($cart);
             $restaurant = $summary['restaurant'];
 
@@ -73,9 +79,10 @@ class CheckoutService
                 'subtotal' => $summary['subtotal'],
                 'delivery_fee' => $summary['delivery_fee'],
                 'total' => $summary['total'],
-                'payment_method' => 'cod',
+                'currency' => 'AUD',
+                'payment_method' => 'stripe',
                 'payment_status' => 'pending',
-                'order_status' => 'pending',
+                'order_status' => 'pending_payment',
             ]);
 
             foreach ($summary['items'] as $item) {
@@ -94,14 +101,12 @@ class CheckoutService
 
             $order->statusHistories()->create([
                 'previous_status' => null,
-                'new_status' => 'pending',
+                'new_status' => 'pending_payment',
                 'changed_by_user_id' => $user->id,
                 'changed_by_role' => $user->role,
-                'reason' => 'Order placed',
+                'reason' => 'Stripe Checkout session requested',
                 'metadata' => ['source' => 'mobile_api'],
             ]);
-
-            $this->cartService->markConverted($cart);
 
             $idempotency?->update([
                 'response_code' => 201,
@@ -116,11 +121,40 @@ class CheckoutService
             return $order->load(['items', 'user', 'rider', 'delivery', 'statusHistories']);
         });
 
-        if ($isNewOrder) {
-            $this->orderEmailService->sendOrderPlaced($order);
+        if (! $isNewOrder) {
+            $responseBody = $claimedIdempotency?->response_body ?? [];
+            $checkoutUrl = (string) ($responseBody['checkout_url'] ?? '');
+
+            if ($checkoutUrl === '') {
+                throw new BusinessRuleException('Checkout session is still being prepared. Please retry in a moment.', 409);
+            }
+
+            return new CheckoutResult(
+                $order,
+                $checkoutUrl,
+                (string) ($responseBody['stripe_checkout_session_id'] ?? $order->stripe_checkout_session_id),
+            );
         }
 
-        return $order;
+        $session = $this->stripeCheckoutService->createForOrder($order);
+
+        if ($cartToConvert) {
+            $this->cartService->markConverted($cartToConvert);
+        }
+
+        $claimedIdempotency?->update([
+            'response_body' => [
+                'order_id' => $order->id,
+                'checkout_url' => $session->url,
+                'stripe_checkout_session_id' => $session->id,
+            ],
+        ]);
+
+        return new CheckoutResult(
+            $order->refresh()->load(['items', 'user', 'rider', 'delivery', 'statusHistories']),
+            $session->url,
+            $session->id,
+        );
     }
 
     private function claimIdempotencyKey(User $user, ?string $key, string $requestHash, ?Request $request): ?IdempotencyKey

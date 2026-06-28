@@ -68,5 +68,12 @@ export type CheckoutPayload = {
   delivery_latitude?: number | null;
   delivery_longitude?: number | null;
   order_notes?: string | null;
-  payment_method: 'cod';
+  payment_method?: 'stripe';
+};
+
+export type CheckoutResult = {
+  order_id: number;
+  checkout_url: string;
+  stripe_checkout_session_id: string;
+  order: Order;
 };

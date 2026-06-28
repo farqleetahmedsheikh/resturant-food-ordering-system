@@ -34,8 +34,13 @@ class OrderFactory extends Factory
             'subtotal' => $subtotal,
             'delivery_fee' => $deliveryFee,
             'total' => $subtotal + $deliveryFee,
-            'payment_method' => 'cod',
-            'payment_status' => 'pending',
+            'currency' => 'AUD',
+            'payment_method' => 'stripe',
+            'payment_status' => 'paid',
+            'stripe_checkout_session_id' => 'cs_test_'.fake()->unique()->regexify('[A-Za-z0-9]{24}'),
+            'stripe_payment_intent_id' => 'pi_test_'.fake()->unique()->regexify('[A-Za-z0-9]{24}'),
+            'stripe_payment_status' => 'paid',
+            'paid_at' => now(),
             'order_status' => 'pending',
         ];
     }

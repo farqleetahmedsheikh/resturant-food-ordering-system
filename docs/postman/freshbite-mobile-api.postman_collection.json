@@ -83,7 +83,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\"customer_name\":\"Demo Customer\",\"customer_phone\":\"03001234567\",\"customer_email\":\"customer@example.com\",\"delivery_address\":\"Demo delivery address\",\"payment_method\":\"cod\"}",
+          "raw": "{\"customer_name\":\"Demo Customer\",\"customer_phone\":\"03001234567\",\"customer_email\":\"customer@example.com\",\"delivery_address\":\"Demo delivery address\"}",
           "options": {
             "raw": {
               "language": "json"

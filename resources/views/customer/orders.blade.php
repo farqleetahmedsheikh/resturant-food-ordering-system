@@ -34,6 +34,7 @@ $totalOrderCount = method_exists($orders, 'total')
                 'preparing' => 5,
                 'accepted' => 6,
                 'pending' => 7,
+                'pending_payment' => 8,
                 'delivered' => 90,
                 'cancelled', 'failed' => 99,
                 default => 50,
@@ -239,6 +240,7 @@ $totalOrderCount = method_exists($orders, 'total')
                                 : $order->order_status;
 
                             $statusMessage = match ($effectiveStatus) {
+                                'pending_payment' => 'Waiting for card payment confirmation.',
                                 'pending' => 'Waiting for restaurant confirmation.',
                                 'accepted' => 'The restaurant accepted your order.',
                                 'preparing' => 'Your food is being prepared.',
@@ -250,6 +252,7 @@ $totalOrderCount = method_exists($orders, 'total')
                             };
 
                             $progress = match ($effectiveStatus) {
+                                'pending_payment' => 6,
                                 'pending' => 12,
                                 'accepted' => 28,
                                 'preparing' => 48,
@@ -379,7 +382,7 @@ $totalOrderCount = method_exists($orders, 'total')
                                         </p>
 
                                         <p class="mt-1 truncate text-sm font-black text-warm-950 sm:text-base">
-                                            ($order->total)
+                                            @money($order->total)
                                         </p>
                                     </div>
 
@@ -389,7 +392,7 @@ $totalOrderCount = method_exists($orders, 'total')
                                         </p>
 
                                         <p class="mt-1 truncate text-sm font-black text-warm-950 sm:text-base">
-                                            {{ strtoupper($order->payment_method ?? 'COD') }}
+                                            {{ $order->payment_method_label }}
                                         </p>
                                     </div>
 
@@ -489,7 +492,7 @@ $totalOrderCount = method_exists($orders, 'total')
                                             </p>
 
                                             <p class="mt-1 text-sm font-black text-warm-950">
-                                                ($order->total)
+                                                @money($order->total)
                                             </p>
                                         </div>
 
@@ -499,7 +502,7 @@ $totalOrderCount = method_exists($orders, 'total')
                                             </p>
 
                                             <p class="mt-1 text-sm font-black text-warm-950">
-                                                {{ strtoupper($order->payment_method ?? 'COD') }}
+                                                {{ $order->payment_method_label }}
                                             </p>
                                         </div>
                                     </div>

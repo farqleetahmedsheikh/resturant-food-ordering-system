@@ -74,7 +74,9 @@ class AdminDashboardController extends Controller
     {
         return [
             'totalOrders' => Order::count(),
-            'pendingOrders' => Order::where('order_status', 'pending')->count(),
+            'pendingOrders' => $this->paidOrderQuery()
+                ->where('order_status', 'pending')
+                ->count(),
             'preparingOrders' => Order::where('order_status', 'preparing')->count(),
             'assignedDeliveries' => Order::where('order_status', 'assigned_to_rider')->count(),
             'outForDeliveryOrders' => Order::where('order_status', 'out_for_delivery')->count(),
@@ -87,7 +89,7 @@ class AdminDashboardController extends Controller
             'totalCustomers' => User::where('role', 'customer')->count(),
             'totalRiders' => User::where('role', 'rider')->count(),
             'restaurant' => Restaurant::current(),
-            'totalCodRevenue' => Order::where('payment_method', 'cod')
+            'totalPaidRevenue' => Order::where('payment_status', 'paid')
                 ->whereNotIn('order_status', ['cancelled'])
                 ->sum('total'),
         ];
@@ -102,23 +104,36 @@ class AdminDashboardController extends Controller
             'pendingQuickOrders' => Order::query()
                 ->with(['user'])
                 ->where('order_status', 'pending')
+                ->where(fn ($query) => $query
+                    ->where('payment_status', 'paid')
+                    ->orWhere('payment_method', 'cod'))
                 ->oldest()
                 ->take(6)
                 ->get(),
             'recentOrders' => Order::with(['user', 'rider'])->latest()->take(8)->get(),
             'liveUpdatedAt' => now(),
-            'livePendingOrders' => Order::where('order_status', 'pending')->count(),
+            'livePendingOrders' => $this->paidOrderQuery()
+                ->where('order_status', 'pending')
+                ->count(),
             'liveAcceptedOrders' => Order::where('order_status', 'accepted')->count(),
             'livePreparingOrders' => Order::where('order_status', 'preparing')->count(),
             'liveOutForDeliveryOrders' => Order::where('order_status', 'out_for_delivery')->count(),
         ];
     }
 
+    private function paidOrderQuery()
+    {
+        return Order::query()
+            ->where(fn ($query) => $query
+                ->where('payment_status', 'paid')
+                ->orWhere('payment_method', 'cod'));
+    }
+
     private function ensurePending(Order $order): void
     {
-        if ($order->order_status !== 'pending') {
+        if ($order->order_status !== 'pending' || ! $order->canEnterFulfillment()) {
             throw ValidationException::withMessages([
-                'order' => 'Only pending orders can be handled from quick actions.',
+                'order' => 'Only paid pending orders can be handled from quick actions.',
             ]);
         }
     }
