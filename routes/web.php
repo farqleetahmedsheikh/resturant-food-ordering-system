@@ -60,6 +60,10 @@ Route::middleware('customer')->group(function (): void {
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
-    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
 });
+Route::get('/checkout/success', [CheckoutController::class, 'success'])
+    ->name('checkout.success');
+
+Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])
+    ->name('checkout.cancel');
+    

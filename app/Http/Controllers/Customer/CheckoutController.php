@@ -79,28 +79,38 @@ class CheckoutController extends Controller
         return redirect()->away($result->checkoutUrl);
     }
 
-    public function success(Request $request): View
-    {
-        $sessionId = (string) $request->query('session_id', '');
-        $order = null;
+public function success(Request $request): View
+{
+    $sessionId = (string) $request->query('session_id', '');
 
-        if ($sessionId !== '') {
-            $order = Order::query()
-                ->with('items')
-                ->where('stripe_checkout_session_id', $sessionId)
-                ->first();
+    $order = null;
+    $canShowOrderDetails = false;
 
-            if ($order) {
-                abort_unless($order->user_id === $request->user()->id, 403);
+    if ($sessionId !== '') {
+        $order = Order::query()
+            ->with('items')
+            ->where('stripe_checkout_session_id', $sessionId)
+            ->first();
+
+        if ($order) {
+            $user = $request->user();
+
+            $canShowOrderDetails = $user
+                && (int) $order->user_id === (int) $user->id;
+
+            if ($canShowOrderDetails) {
                 Cart::clear();
             }
         }
-
-        return view('customer.order-success', [
-            'order' => $order,
-            'sessionId' => $sessionId,
-        ]);
     }
+
+    return view('customer.order-success', [
+        'order' => $order,
+        'sessionId' => $sessionId,
+        'canShowOrderDetails' => $canShowOrderDetails,
+        'paymentStatus' => $order?->payment_status ?? 'processing',
+    ]);
+}
 
     public function cancel(): View
     {

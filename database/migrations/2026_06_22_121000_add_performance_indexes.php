@@ -14,7 +14,9 @@ return new class extends Migration
         $this->index('orders', ['user_id', 'created_at'], 'orders_user_created_idx');
         $this->index('orders', ['rider_id', 'order_status'], 'orders_rider_status_idx');
         $this->index('orders', ['order_status', 'created_at'], 'orders_status_created_idx');
-        $this->index('orders', ['payment_method', 'payment_status', 'order_status'], 'orders_payment_status_idx');
+        $this->index('orders', ['payment_method'], 'orders_payment_method_idx');
+        $this->index('orders', ['payment_status'], 'orders_payment_status_idx');
+        $this->index('orders', ['order_status'], 'orders_order_status_idx');
 
         $this->index('deliveries', ['rider_id', 'status'], 'deliveries_rider_status_idx');
         $this->index('deliveries', ['status', 'updated_at'], 'deliveries_status_updated_idx');
@@ -49,7 +51,9 @@ return new class extends Migration
         $this->dropIndex('categories', 'categories_active_sort_idx');
         $this->dropIndex('deliveries', 'deliveries_status_updated_idx');
         $this->dropIndex('deliveries', 'deliveries_rider_status_idx');
+        $this->dropIndex('orders', 'orders_order_status_idx');
         $this->dropIndex('orders', 'orders_payment_status_idx');
+        $this->dropIndex('orders', 'orders_payment_method_idx');
         $this->dropIndex('orders', 'orders_status_created_idx');
         $this->dropIndex('orders', 'orders_rider_status_idx');
         $this->dropIndex('orders', 'orders_user_created_idx');
