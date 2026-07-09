@@ -40,17 +40,18 @@ $riderName = auth()->user()->name ?? 'Rider';
             return match (true) {
                 $deliveryStatus === 'out_for_delivery' => 1,
                 $deliveryStatus === 'picked_up' => 2,
+                $deliveryStatus === 'accepted' => 3,
 
                 in_array(
                     $deliveryStatus,
                     ['assigned', 'assigned_to_rider'],
                     true
-                ) => 3,
+                ) => 4,
 
-                $order->order_status === 'ready' => 4,
-                $order->order_status === 'preparing' => 5,
-                $order->order_status === 'accepted' => 6,
-                $order->order_status === 'pending' => 7,
+                $order->order_status === 'ready' => 5,
+                $order->order_status === 'preparing' => 6,
+                $order->order_status === 'accepted' => 7,
+                $order->order_status === 'pending' => 8,
 
                 $deliveryStatus === 'delivered'
                     || $order->order_status === 'delivered' => 90,
@@ -139,6 +140,17 @@ $riderName = auth()->user()->name ?? 'Rider';
                 'accent' => 'bg-sky-500',
                 'icon' => 'bg-sky-50 text-sky-600',
                 'button' => 'bg-sky-600 hover:bg-sky-700 shadow-sky-600/20',
+                'is_completed' => false,
+                'is_failed' => false,
+            ],
+
+            $deliveryStatus === 'accepted' => [
+                'label' => 'Accepted',
+                'message' => 'You accepted this delivery. Pickup is next.',
+                'badge' => 'border-indigo-200 bg-indigo-50 text-indigo-700',
+                'accent' => 'bg-indigo-500',
+                'icon' => 'bg-indigo-50 text-indigo-600',
+                'button' => 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20',
                 'is_completed' => false,
                 'is_failed' => false,
             ],

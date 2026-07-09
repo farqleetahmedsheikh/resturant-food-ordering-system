@@ -1,13 +1,20 @@
-import { PropsWithChildren } from 'react';
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, ViewStyle } from 'react-native';
+import { PropsWithChildren, ReactNode } from 'react';
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
+import { useSegments } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuthStore } from '@/src/auth/auth.store';
+import { AdminQuickActionBar } from './AdminQuickActionBar';
+import { AppNavigationHeader } from './AppNavigationHeader';
 import { colors, spacing } from '@/src/theme';
 
 type AppScreenProps = PropsWithChildren<{
   scroll?: boolean;
   keyboard?: boolean;
-  contentStyle?: ViewStyle;
+  contentStyle?: StyleProp<ViewStyle>;
+  header?: ReactNode;
+  footer?: ReactNode;
   refreshing?: boolean;
   onRefresh?: () => void;
 }>;
@@ -17,11 +24,18 @@ export function AppScreen({
   scroll = true,
   keyboard = false,
   contentStyle,
+  header,
+  footer,
   refreshing,
   onRefresh,
 }: AppScreenProps) {
+  const segments = useSegments().map(String);
+  const user = useAuthStore((state) => state.session?.user ?? null);
+  const resolvedHeader = header === undefined ? <AppNavigationHeader /> : header;
+  const resolvedFooter = footer ?? (user?.role === 'admin' && segments.includes('(admin)') ? <AdminQuickActionBar /> : null);
   const content = scroll ? (
     <ScrollView
+      style={styles.flex}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={[styles.content, contentStyle]}
       refreshControl={
@@ -42,10 +56,16 @@ export function AppScreen({
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.flex}
         >
+          {resolvedHeader}
           {content}
+          {resolvedFooter}
         </KeyboardAvoidingView>
       ) : (
-        content
+        <>
+          {resolvedHeader}
+          {content}
+          {resolvedFooter}
+        </>
       )}
     </SafeAreaView>
   );

@@ -15,7 +15,7 @@ class DeliveryStatusUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', Rule::in(['picked_up', 'out_for_delivery', 'delivered', 'failed'])],
+            'status' => ['required', Rule::in(['accepted', 'picked_up', 'out_for_delivery', 'delivered', 'failed'])],
             'notes' => ['nullable', 'string', 'max:1000', Rule::requiredIf($this->input('status') === 'failed')],
         ];
     }

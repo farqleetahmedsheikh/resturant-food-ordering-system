@@ -56,3 +56,14 @@ jest.mock('expo-location', () => ({
     UNDETERMINED: 'undetermined',
   },
 }));
+
+jest.mock('expo-notifications', () => ({
+  AndroidImportance: {
+    MAX: 'max',
+  },
+  getExpoPushTokenAsync: jest.fn(async () => ({ data: 'ExponentPushToken[test]' })),
+  getPermissionsAsync: jest.fn(async () => ({ granted: true })),
+  requestPermissionsAsync: jest.fn(async () => ({ granted: true })),
+  setNotificationChannelAsync: jest.fn(async () => null),
+  setNotificationHandler: jest.fn(),
+}));

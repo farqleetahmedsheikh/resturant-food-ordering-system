@@ -44,6 +44,7 @@ class AdminCategoryController extends Controller
 
         $validated['slug'] = $this->uniqueSlug($validated['slug'] ?: str($validated['name'])->slug()->toString());
         $validated['is_active'] = $request->boolean('is_active');
+        unset($validated['remove_image']);
 
         Category::create($validated);
 
@@ -65,10 +66,14 @@ class AdminCategoryController extends Controller
 
         if ($request->hasFile('image')) {
             $validated['image'] = ImageUpload::store($request->file('image'), 'categories', $category->image);
+        } elseif ($request->boolean('remove_image')) {
+            ImageUpload::delete($category->image);
+            $validated['image'] = null;
         }
 
         $validated['slug'] = $this->uniqueSlug($validated['slug'] ?: str($validated['name'])->slug()->toString(), $category);
         $validated['is_active'] = $request->boolean('is_active');
+        unset($validated['remove_image']);
 
         $category->update($validated);
 
@@ -97,7 +102,8 @@ class AdminCategoryController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('categories', 'slug')->ignore($category?->id)],
             'description' => ['nullable', 'string', 'max:1000'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ImageUpload::validationRules(),
+            'remove_image' => ['nullable', 'boolean'],
             'sort_order' => ['required', 'integer'],
             'is_active' => ['nullable', 'boolean'],
         ]);

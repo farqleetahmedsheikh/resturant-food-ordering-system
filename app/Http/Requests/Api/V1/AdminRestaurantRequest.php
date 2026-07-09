@@ -29,6 +29,8 @@ class AdminRestaurantRequest extends FormRequest
             'minimum_order_amount' => ['required', 'numeric', 'min:0'],
             'logo' => \App\Support\ImageUpload::validationRules(),
             'cover_image' => \App\Support\ImageUpload::validationRules(),
+            'remove_logo' => ['sometimes', 'boolean'],
+            'remove_cover_image' => ['sometimes', 'boolean'],
             'is_open' => ['sometimes', 'boolean'],
         ];
     }

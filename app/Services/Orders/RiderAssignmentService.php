@@ -26,6 +26,10 @@ class RiderAssignmentService
             throw new BusinessRuleException('Stripe payment must be confirmed before assigning a rider.');
         }
 
+        if (! in_array($order->order_status, ['accepted', 'preparing', 'ready', 'assigned_to_rider', 'out_for_delivery'], true)) {
+            throw new BusinessRuleException('Confirm and prepare this order before assigning a rider.');
+        }
+
         return DB::transaction(function () use ($order, $rider, $actor): Order {
             $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
 
@@ -33,12 +37,20 @@ class RiderAssignmentService
                 throw new BusinessRuleException('Stripe payment must be confirmed before assigning a rider.');
             }
 
+            if (! in_array($lockedOrder->order_status, ['accepted', 'preparing', 'ready', 'assigned_to_rider', 'out_for_delivery'], true)) {
+                throw new BusinessRuleException('Confirm and prepare this order before assigning a rider.');
+            }
+
             $previousRiderId = $lockedOrder->rider_id;
             $previousStatus = $lockedOrder->order_status;
+            $previousDeliveryStatus = $lockedOrder->delivery?->status;
+            $nextDeliveryStatus = in_array($previousDeliveryStatus, ['picked_up', 'out_for_delivery'], true)
+                ? $previousDeliveryStatus
+                : 'assigned';
 
             $lockedOrder->update([
                 'rider_id' => $rider->id,
-                'order_status' => 'assigned_to_rider',
+                'order_status' => $previousStatus === 'out_for_delivery' ? 'out_for_delivery' : 'assigned_to_rider',
                 'assigned_at' => now(),
             ]);
 
@@ -46,7 +58,7 @@ class RiderAssignmentService
                 ['order_id' => $lockedOrder->id],
                 [
                     'rider_id' => $rider->id,
-                    'status' => 'assigned',
+                    'status' => $nextDeliveryStatus,
                 ],
             );
 
@@ -82,7 +94,7 @@ class RiderAssignmentService
         return DB::transaction(function () use ($order, $actor): Order {
             $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
             $previousRiderId = $lockedOrder->rider_id;
-            $nextStatus = $lockedOrder->order_status === 'cancelled' ? 'cancelled' : 'preparing';
+            $nextStatus = $lockedOrder->order_status === 'cancelled' ? 'cancelled' : 'ready';
 
             $lockedOrder->update([
                 'rider_id' => null,

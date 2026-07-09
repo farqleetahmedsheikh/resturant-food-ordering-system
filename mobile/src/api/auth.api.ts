@@ -54,3 +54,20 @@ export async function me(): Promise<AuthUser> {
 export async function logout(): Promise<void> {
   await apiClient.post(endpoints.auth.logout);
 }
+
+export async function requestPasswordOtp(email: string): Promise<void> {
+  await apiClient.post(endpoints.auth.passwordOtp, { email });
+}
+
+export async function verifyPasswordOtp(email: string, otp: string): Promise<void> {
+  await apiClient.post(endpoints.auth.passwordOtpVerify, { email, otp });
+}
+
+export async function resetPasswordWithOtp(payload: {
+  email: string;
+  otp: string;
+  password: string;
+  password_confirmation: string;
+}): Promise<void> {
+  await apiClient.post(endpoints.auth.passwordReset, payload);
+}

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Rider;
 
+use App\Exceptions\BusinessRuleException;
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\Order;
-use App\Services\Email\OrderEmailService;
+use App\Services\Orders\DeliveryStatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -58,89 +59,40 @@ class RiderDashboardController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Order $order, OrderEmailService $orderEmailService): RedirectResponse
+    public function updateStatus(Request $request, Order $order, DeliveryStatusService $deliveryStatusService): RedirectResponse
     {
         if ($order->rider_id !== $request->user()->id) {
             return redirect()->route('rider.orders')->with('status', 'You are not allowed to access this order.');
         }
 
-        if (in_array($order->order_status, ['delivered', 'cancelled'], true)) {
-            return back()->with('status', 'Delivered or cancelled orders cannot be updated again.');
-        }
-
-        if (! $order->canEnterFulfillment()) {
-            return back()->with('status', 'Stripe payment must be confirmed before delivery can progress.');
-        }
-
         $validated = $request->validate([
-            'status' => ['required', Rule::in(['picked_up', 'out_for_delivery', 'delivered', 'failed'])],
+            'status' => ['required', Rule::in(['accepted', 'picked_up', 'out_for_delivery', 'delivered', 'failed'])],
             'notes' => ['string', 'max:1000', Rule::requiredIf($request->input('status') === 'failed')],
         ], [
             'notes.required' => 'Failed delivery reason is required.',
         ]);
 
-        $delivery = $order->delivery()->firstOrCreate(
-            ['order_id' => $order->id],
-            [
-                'rider_id' => $request->user()->id,
-                'status' => 'assigned',
-            ],
-        );
-
-        if ($validated['status'] === 'picked_up') {
-            $delivery->update([
-                'rider_id' => $request->user()->id,
-                'status' => 'picked_up',
-                'pickup_time' => $delivery->pickup_time ?? now(),
-            ]);
-
-            $order->update([
-                'order_status' => 'out_for_delivery',
-                'picked_up_at' => $order->picked_up_at ?? now(),
-            ]);
-
-            return back()->with('status', 'Delivery marked as picked up.');
-        }
-
-        if ($validated['status'] === 'out_for_delivery') {
-            $delivery->update([
-                'rider_id' => $request->user()->id,
-                'status' => 'out_for_delivery',
-            ]);
-
-            $order->update(['order_status' => 'out_for_delivery']);
-
-            return back()->with('status', 'Delivery marked as out for delivery.');
-        }
-
-        if ($validated['status'] === 'delivered') {
-            $delivery->update([
-                'rider_id' => $request->user()->id,
-                'status' => 'delivered',
-                'delivered_time' => $delivery->delivered_time ?? now(),
-            ]);
-
-            $order->update([
-                'order_status' => 'delivered',
-                'delivered_at' => $order->delivered_at ?? now(),
-                'payment_status' => $order->payment_method === 'cod' ? 'paid' : $order->payment_status,
-            ]);
-
-            $orderEmailService->sendOrderDelivered(
-                $order->refresh()->loadMissing(['items', 'restaurant', 'user', 'rider', 'delivery']),
+        try {
+            $deliveryStatusService->update(
+                $order,
+                $request->user(),
+                $validated['status'],
+                $validated['notes'] ?? null,
             );
-
-            return back()->with('status', 'Delivery marked as delivered.');
+        } catch (BusinessRuleException $exception) {
+            return back()
+                ->withInput()
+                ->with('status', $exception->getMessage());
         }
 
-        $delivery->update([
-            'rider_id' => $request->user()->id,
-            'status' => 'failed',
-            'notes' => $validated['notes'],
-        ]);
+        $message = match ($validated['status']) {
+            'accepted' => 'Delivery accepted.',
+            'picked_up' => 'Delivery marked as picked up.',
+            'out_for_delivery' => 'Delivery marked as out for delivery.',
+            'delivered' => 'Delivery marked as delivered.',
+            'failed' => 'Delivery marked as failed.',
+        };
 
-        $order->update(['order_status' => 'cancelled']);
-
-        return back()->with('status', 'Delivery marked as failed.');
+        return back()->with('status', $message);
     }
 }

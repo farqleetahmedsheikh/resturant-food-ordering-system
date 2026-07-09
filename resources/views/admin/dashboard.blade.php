@@ -3,9 +3,10 @@
     $adminName = auth()->user()->name ?? 'Administrator';
     $firstName = \Illuminate\Support\Str::before($adminName, ' ');
     $restaurantConfigured = (bool) $restaurant;
-    $restaurantOpen = (bool) ($restaurant?->is_open ?? false);
+    $restaurantOpen = (bool) ($availabilityStatus['is_open'] ?? false);
+    $manualPaused = (bool) ($manualOrderingPaused ?? false);
     $activeDeliveryOrders = (int) $assignedDeliveries + (int) $outForDeliveryOrders;
-    $operationalQueue = (int) $pendingOrders + (int) $preparingOrders + $activeDeliveryOrders;
+    $operationalQueue = (int) $pendingOrders + (int) $acceptedOrders + (int) $preparingOrders + (int) $readyOrders + $activeDeliveryOrders;
     $deliveryCompletionRate = $totalOrders > 0
         ? min(100, round(($deliveredOrders / $totalOrders) * 100))
         : 0;
@@ -15,7 +16,7 @@
     $needsImmediateAttention = (int) $pendingOrders > 0;
     $restaurantStatusLabel = ! $restaurantConfigured
         ? 'Setup Required'
-        : ($restaurantOpen ? 'Restaurant Open' : 'Restaurant Closed');
+        : ($restaurantOpen ? ($availabilityStatus['label'] ?? 'Open now') : ($availabilityStatus['label'] ?? 'Restaurant Closed'));
     $restaurantStatusClasses = ! $restaurantConfigured
         ? 'border-gold-100 bg-gold-50 text-gold-700'
         : ($restaurantOpen
@@ -125,11 +126,11 @@
 
                     <div class="rounded-xl bg-white/10 px-3 py-3">
                         <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/50">
-                            Delivery
+                            Ready
                         </p>
 
                         <p class="mt-1 text-lg font-black">
-                            {{ $activeDeliveryOrders }}
+                            {{ $readyOrders }}
                         </p>
                     </div>
 
@@ -146,12 +147,48 @@
 
                 <div class="mt-5 rounded-2xl border border-white/10 bg-white/10 p-4">
                     <p class="text-[10px] font-black uppercase tracking-[0.16em] text-white/50">
-                        Paid Revenue
+                        Today Sales
                     </p>
 
                     <p class="mt-1 text-2xl font-black">
-                        @money($totalPaidRevenue)
+                        @money($todaySalesTotal)
                     </p>
+
+                    <p class="mt-1 text-xs font-semibold text-white/50">
+                        {{ $todayOrders }} orders today
+                    </p>
+                </div>
+
+                <div class="mt-3 grid grid-cols-3 gap-2">
+                    <div class="rounded-xl bg-white/10 px-3 py-3">
+                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/50">
+                            Preparing
+                        </p>
+
+                        <p class="mt-1 text-lg font-black">
+                            {{ $todayPreparingOrders }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl bg-white/10 px-3 py-3">
+                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/50">
+                            Sent
+                        </p>
+
+                        <p class="mt-1 text-lg font-black">
+                            {{ $todayOutForDeliveryOrders }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-xl bg-white/10 px-3 py-3">
+                        <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/50">
+                            Closed
+                        </p>
+
+                        <p class="mt-1 text-lg font-black">
+                            {{ $todayCompletedOrders + $todayCancelledOrders }}
+                        </p>
+                    </div>
                 </div>
             </aside>
         </div>
@@ -388,6 +425,19 @@
                     </a>
 
                     <a
+                        href="{{ route('admin.categories.index') }}"
+                        class="rounded-[1.1rem] border border-gold-100 bg-gold-50 p-4 transition active:scale-[0.98] hover:bg-gold-100"
+                    >
+                        <span class="block text-sm font-black text-warm-950">
+                            Categories
+                        </span>
+
+                        <span class="mt-1 block text-[10px] font-semibold leading-4 text-warm-500">
+                            {{ $activeCategories }} active
+                        </span>
+                    </a>
+
+                    <a
                         href="{{ route('admin.settings.restaurant.edit') }}"
                         class="rounded-[1.1rem] border border-violet-100 bg-violet-50 p-4 transition active:scale-[0.98] hover:bg-violet-100"
                     >
@@ -425,13 +475,39 @@
                     <p class="mt-1 text-xs font-semibold leading-5">
                         @if (! $restaurantConfigured)
                             Restaurant settings must be completed.
+                        @elseif ($manualPaused)
+                            Manual ordering pause is on. The website remains visible, but checkout is closed.
                         @elseif ($restaurantOpen)
-                            Customers can currently place orders.
+                            Customers can currently place orders in {{ $availabilityStatus['timezone'] ?? 'restaurant timezone' }}.
                         @else
-                            Public ordering is currently unavailable.
+                            {{ $availabilityStatus['reason'] ?? 'Public ordering is currently unavailable.' }}
                         @endif
                     </p>
                 </div>
+
+                @if ($restaurantConfigured)
+                    <div class="mt-3 grid grid-cols-2 gap-3">
+                        <div class="rounded-2xl bg-warm-50 p-4">
+                            <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
+                                Manual Pause
+                            </p>
+
+                            <p class="mt-1 text-sm font-black {{ $manualPaused ? 'text-red-700' : 'text-leaf-700' }}">
+                                {{ $manualPaused ? 'Paused' : 'Off' }}
+                            </p>
+                        </div>
+
+                        <div class="rounded-2xl bg-warm-50 p-4">
+                            <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
+                                Timezone
+                            </p>
+
+                            <p class="mt-1 truncate text-sm font-black text-warm-950">
+                                {{ $availabilityStatus['timezone'] ?? 'Australia/Sydney' }}
+                            </p>
+                        </div>
+                    </div>
+                @endif
             </section>
 
             <section class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm">
@@ -476,14 +552,39 @@
 
                         <div class="rounded-2xl bg-warm-50 p-4">
                             <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
-                                Featured
+                                Disabled
                             </p>
 
                             <p class="mt-1 text-xl font-black text-warm-950">
-                                {{ $featuredMenuItems }}
+                                {{ $disabledMenuItems }}
                             </p>
                         </div>
                     </div>
+
+                    @if ($disabledMenuItemsList->isNotEmpty())
+                        <div class="rounded-2xl border border-gold-100 bg-gold-50 p-4">
+                            <p class="text-[9px] font-black uppercase tracking-[0.12em] text-gold-700">
+                                Disabled menu items
+                            </p>
+
+                            <div class="mt-3 space-y-2">
+                                @foreach ($disabledMenuItemsList as $item)
+                                    <a
+                                        href="{{ route('admin.menu-items.edit', $item) }}"
+                                        class="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-xs font-black text-warm-800 shadow-sm transition hover:text-brand-600"
+                                    >
+                                        <span class="min-w-0 truncate">
+                                            {{ $item->name }}
+                                        </span>
+
+                                        <span class="shrink-0 text-[9px] font-semibold text-warm-500">
+                                            {{ $item->category?->name ?? 'Menu' }}
+                                        </span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </section>
         </aside>

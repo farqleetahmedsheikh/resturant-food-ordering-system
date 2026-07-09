@@ -30,5 +30,5 @@ Route::middleware(['auth', 'admin'])
 
         Route::resource('menu-items', AdminMenuItemController::class)->except(['show']);
         Route::resource('categories', AdminCategoryController::class)->except(['show']);
-        Route::resource('riders', AdminRiderController::class)->except(['show']);
+        Route::resource('riders', AdminRiderController::class);
     });

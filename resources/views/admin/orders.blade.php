@@ -51,6 +51,7 @@ method_exists($orders, 'items')
                 [
                     'assigned',
                     'assigned_to_rider',
+                    'accepted',
                     'picked_up',
                     'out_for_delivery',
                 ],
@@ -316,6 +317,108 @@ method_exists($orders, 'items')
                 </a>
             @endforeach
         </nav>
+
+        <form
+            action="{{ route('admin.orders.index') }}"
+            method="GET"
+            class="mt-5 grid gap-3 border-t border-warm-100 pt-5 md:grid-cols-2 xl:grid-cols-[minmax(180px,1.2fr)_150px_180px_140px_140px_auto]"
+        >
+            @if ($currentStatus)
+                <input type="hidden" name="status" value="{{ $currentStatus }}">
+            @endif
+
+            <label class="block">
+                <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
+                    Search
+                </span>
+
+                <input
+                    type="search"
+                    name="search"
+                    value="{{ $filters['search'] ?? '' }}"
+                    placeholder="Order, customer, phone"
+                    class="mt-2 min-h-11 w-full rounded-xl border border-warm-200 bg-warm-50 px-4 py-2 text-sm font-semibold text-warm-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                >
+            </label>
+
+            <label class="block">
+                <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
+                    Payment
+                </span>
+
+                <select
+                    name="payment_status"
+                    class="mt-2 min-h-11 w-full rounded-xl border border-warm-200 bg-warm-50 px-3 py-2 text-sm font-semibold text-warm-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                >
+                    <option value="">Any</option>
+                    @foreach ($paymentStatuses as $value => $label)
+                        <option value="{{ $value }}" @selected(($filters['payment_status'] ?? '') === $value)>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label class="block">
+                <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
+                    Rider
+                </span>
+
+                <select
+                    name="rider_id"
+                    class="mt-2 min-h-11 w-full rounded-xl border border-warm-200 bg-warm-50 px-3 py-2 text-sm font-semibold text-warm-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                >
+                    <option value="">Any rider</option>
+                    @foreach ($activeRiders as $rider)
+                        <option value="{{ $rider->id }}" @selected((int) ($filters['rider_id'] ?? 0) === (int) $rider->id)>
+                            {{ $rider->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label class="block">
+                <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
+                    From
+                </span>
+
+                <input
+                    type="date"
+                    name="date_from"
+                    value="{{ $filters['date_from'] ?? '' }}"
+                    class="mt-2 min-h-11 w-full rounded-xl border border-warm-200 bg-warm-50 px-3 py-2 text-sm font-semibold text-warm-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                >
+            </label>
+
+            <label class="block">
+                <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
+                    To
+                </span>
+
+                <input
+                    type="date"
+                    name="date_to"
+                    value="{{ $filters['date_to'] ?? '' }}"
+                    class="mt-2 min-h-11 w-full rounded-xl border border-warm-200 bg-warm-50 px-3 py-2 text-sm font-semibold text-warm-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                >
+            </label>
+
+            <div class="flex items-end gap-2">
+                <button
+                    type="submit"
+                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-warm-950 px-4 py-2 text-sm font-black text-white transition hover:bg-warm-900"
+                >
+                    Apply
+                </button>
+
+                <a
+                    href="{{ route('admin.orders.index') }}"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-warm-200 bg-white px-4 py-2 text-sm font-black text-warm-600 transition hover:bg-warm-50"
+                >
+                    Reset
+                </a>
+            </div>
+        </form>
     </section>
 
     @if ($visibleOrders->isEmpty())

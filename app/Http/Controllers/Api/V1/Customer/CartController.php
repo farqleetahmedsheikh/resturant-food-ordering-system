@@ -30,6 +30,7 @@ class CartController extends Controller
             $request->integer('size_id') ?: null,
             $request->input('addon_ids', []),
             (int) $request->integer('quantity'),
+            $request->input('item_notes'),
         );
 
         return $this->cartResponse($request, 'Item added to cart.');
@@ -37,7 +38,7 @@ class CartController extends Controller
 
     public function update(CartItemUpdateRequest $request, CartItem $cartItem): JsonResponse
     {
-        $this->cartService->update($request->user(), $cartItem, (int) $request->integer('quantity'));
+        $this->cartService->update($request->user(), $cartItem, (int) $request->integer('quantity'), $request->input('item_notes'));
 
         return $this->cartResponse($request, 'Cart updated successfully.');
     }

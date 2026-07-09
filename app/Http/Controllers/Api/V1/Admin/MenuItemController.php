@@ -14,7 +14,10 @@ use App\Support\Api\ApiResponse;
 use App\Support\ImageUpload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class MenuItemController extends Controller
 {
@@ -59,8 +62,15 @@ class MenuItemController extends Controller
         if ($request->hasFile('image')) {
             $payload['image'] = ImageUpload::store($request->file('image'), 'menu-items');
         }
+        unset($payload['remove_image']);
 
-        $menuItem = MenuItem::create($payload)->load(['category', 'activeSizes', 'activeAddons']);
+        $menuItem = DB::transaction(function () use ($payload, $request): MenuItem {
+            $menuItem = MenuItem::create(Arr::except($payload, ['sizes', 'addons']));
+            $this->syncOptions($menuItem, $request->validated());
+
+            return $menuItem->fresh(['category', 'activeSizes', 'activeAddons']);
+        });
+
         $this->auditLogger->record('menu_item.created', $request->user(), $menuItem, [], $menuItem->toArray());
 
         return ApiResponse::success(new MenuItemResource($menuItem), 'Menu item created successfully.', status: 201);
@@ -78,10 +88,18 @@ class MenuItemController extends Controller
 
         if ($request->hasFile('image')) {
             $payload['image'] = ImageUpload::store($request->file('image'), 'menu-items', $menuItem->image);
+        } elseif ($request->boolean('remove_image')) {
+            ImageUpload::delete($menuItem->image);
+            $payload['image'] = null;
         }
+        unset($payload['remove_image']);
 
-        $menuItem->update($payload);
-        $menuItem = $menuItem->fresh(['category', 'activeSizes', 'activeAddons']);
+        $menuItem = DB::transaction(function () use ($menuItem, $payload, $request): MenuItem {
+            $menuItem->update(Arr::except($payload, ['sizes', 'addons']));
+            $this->syncOptions($menuItem, $request->validated());
+
+            return $menuItem->fresh(['category', 'activeSizes', 'activeAddons']);
+        });
 
         $this->auditLogger->record('menu_item.updated', $request->user(), $menuItem, $old, $menuItem->toArray());
 
@@ -125,6 +143,74 @@ class MenuItemController extends Controller
             'is_available' => $request->boolean('is_available', $menuItem?->is_available ?? true),
             'sort_order' => $validated['sort_order'] ?? 0,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function syncOptions(MenuItem $menuItem, array $validated): void
+    {
+        if (! array_key_exists('sizes', $validated) && ! array_key_exists('addons', $validated)) {
+            return;
+        }
+
+        $menuItem->sizes()->delete();
+        $menuItem->addons()->delete();
+
+        $sizes = $this->cleanOptionRows($validated['sizes'] ?? [], 'sizes')
+            ->map(fn (array $row, int $index): array => [
+                'name' => $row['name'],
+                'price' => $row['price'],
+                'sort_order' => $row['sort_order'] ?? $index,
+                'is_active' => (bool) ($row['is_active'] ?? false),
+            ]);
+
+        if ($sizes->isNotEmpty()) {
+            $menuItem->sizes()->createMany($sizes->all());
+        }
+
+        $addons = $this->cleanOptionRows($validated['addons'] ?? [], 'addons')
+            ->map(fn (array $row, int $index): array => [
+                'name' => $row['name'],
+                'type' => $row['type'] ?? 'topping',
+                'price' => $row['price'],
+                'sort_order' => $row['sort_order'] ?? $index,
+                'is_active' => (bool) ($row['is_active'] ?? false),
+            ]);
+
+        if ($addons->isNotEmpty()) {
+            $menuItem->addons()->createMany($addons->all());
+        }
+    }
+
+    private function cleanOptionRows(mixed $rows, string $field): \Illuminate\Support\Collection
+    {
+        return collect(is_array($rows) ? $rows : [])
+            ->map(function (array $row, int $index) use ($field): ?array {
+                $name = trim((string) ($row['name'] ?? ''));
+                $price = $row['price'] ?? null;
+                $hasAnyValue = $name !== '' || $price !== null && $price !== '';
+
+                if (! $hasAnyValue) {
+                    return null;
+                }
+
+                if ($name === '' || $price === null || $price === '') {
+                    throw ValidationException::withMessages([
+                        "{$field}.{$index}.name" => 'Each option row needs both a name and price.',
+                    ]);
+                }
+
+                return [
+                    'name' => $name,
+                    'type' => $row['type'] ?? 'topping',
+                    'price' => round((float) $price, 2),
+                    'sort_order' => isset($row['sort_order']) ? (int) $row['sort_order'] : $index,
+                    'is_active' => (bool) ($row['is_active'] ?? false),
+                ];
+            })
+            ->filter()
+            ->values();
     }
 
     private function uniqueSlug(string $baseSlug, ?int $ignoreId = null): string

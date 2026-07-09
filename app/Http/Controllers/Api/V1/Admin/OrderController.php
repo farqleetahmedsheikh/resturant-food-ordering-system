@@ -23,11 +23,32 @@ class OrderController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $status = $request->query('status');
+        $status = (string) $request->query('status', '');
+        $paymentStatus = (string) $request->query('payment_status', '');
+        $search = trim((string) $request->query('search', ''));
+        $riderId = $request->integer('rider_id');
+        $dateFrom = $request->date('date_from');
+        $dateTo = $request->date('date_to');
 
         $orders = Order::query()
             ->with(['user', 'rider', 'delivery'])
-            ->when($status && array_key_exists((string) $status, Order::STATUSES), fn ($query) => $query->where('order_status', $status))
+            ->when($status !== '' && array_key_exists($status, Order::STATUSES), fn ($query) => $query->where('order_status', $status))
+            ->when($paymentStatus !== '' && array_key_exists($paymentStatus, Order::PAYMENT_STATUSES), fn ($query) => $query->where('payment_status', $paymentStatus))
+            ->when($riderId > 0, fn ($query) => $query->where('rider_id', $riderId))
+            ->when($dateFrom, fn ($query) => $query->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo, fn ($query) => $query->whereDate('created_at', '<=', $dateTo))
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query
+                        ->where('order_number', 'like', '%'.$search.'%')
+                        ->orWhere('customer_name', 'like', '%'.$search.'%')
+                        ->orWhere('customer_phone', 'like', '%'.$search.'%')
+                        ->orWhere('customer_email', 'like', '%'.$search.'%')
+                        ->orWhereHas('user', fn ($query) => $query
+                            ->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%'));
+                });
+            })
             ->latest()
             ->paginate(min((int) $request->integer('per_page', 20), 75))
             ->withQueryString();

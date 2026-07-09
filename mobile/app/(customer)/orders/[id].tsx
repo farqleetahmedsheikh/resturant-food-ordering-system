@@ -13,6 +13,8 @@ import { ErrorState } from '@/src/components/feedback/ErrorState';
 import { LoadingScreen } from '@/src/components/feedback/LoadingScreen';
 import { AppHeader } from '@/src/components/layout/AppHeader';
 import { AppScreen } from '@/src/components/layout/AppScreen';
+import { OrderTrackingCard, shouldPollOrderTracking } from '@/src/components/tracking/OrderTrackingCard';
+import { queryKeys } from '@/src/constants/queryKeys';
 import { colors, spacing } from '@/src/theme';
 import type { OrderItem, OrderStatusHistory } from '@/src/types/order';
 import { formatCurrency } from '@/src/utils/currency';
@@ -21,9 +23,11 @@ import { formatDate } from '@/src/utils/date';
 export default function CustomerOrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const query = useQuery({
-    queryKey: ['customer', 'orders', id],
+    queryKey: queryKeys.customerOrder(id),
     queryFn: () => getCustomerOrder(id),
     enabled: Boolean(id),
+    refetchInterval: (liveQuery) => (shouldPollOrderTracking(liveQuery.state.data) ? 10000 : false),
+    refetchIntervalInBackground: true,
   });
 
   if (query.isLoading) {
@@ -46,6 +50,14 @@ export default function CustomerOrderDetailScreen() {
   return (
     <AppScreen refreshing={query.isRefetching} onRefresh={() => void query.refetch()}>
       <AppHeader title={order.order_number} subtitle={formatDate(order.created_at)} eyebrow="Order detail" />
+
+      <OrderTrackingCard
+        order={order}
+        mode="customer"
+        refreshedAt={query.dataUpdatedAt}
+        refreshing={query.isRefetching}
+        onRefresh={() => void query.refetch()}
+      />
 
       <AppCard style={styles.card}>
         <View style={styles.badges}>
@@ -110,6 +122,7 @@ function OrderItemRow({ item }: { item: OrderItem }) {
             {item.addons.map((addon) => addon.name).join(', ')}
           </AppText>
         ) : null}
+        {item.item_notes ? <AppText color={colors.text.secondary}>Note: {item.item_notes}</AppText> : null}
       </View>
       <PriceText amount={item.total} />
     </View>

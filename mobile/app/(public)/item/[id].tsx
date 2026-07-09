@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { getMenuItem } from '@/src/api/menu.api';
 import { getRestaurant } from '@/src/api/restaurant.api';
@@ -12,6 +12,7 @@ import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
 import { PriceText } from '@/src/components/common/PriceText';
 import { QuantityStepper } from '@/src/components/common/QuantityStepper';
+import { SectionTitle } from '@/src/components/common/SectionTitle';
 import { AppInput } from '@/src/components/forms/AppInput';
 import { ErrorState } from '@/src/components/feedback/ErrorState';
 import { FeedbackMessage } from '@/src/components/feedback/FeedbackMessage';
@@ -20,11 +21,14 @@ import { AppScreen } from '@/src/components/layout/AppScreen';
 import { queryKeys } from '@/src/constants/queryKeys';
 import { useCartStore } from '@/src/store/cart.store';
 import { colors, radius, spacing } from '@/src/theme';
+import { formatCurrency } from '@/src/utils/currency';
 import { getRestaurantAvailability } from '@/src/utils/restaurant';
 
 export default function MenuItemDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
+  const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
+  const [selectedAddonIds, setSelectedAddonIds] = useState<number[]>([]);
   const [notes, setNotes] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const addItem = useCartStore((state) => state.addItem);
@@ -48,6 +52,13 @@ export default function MenuItemDetailScreen() {
   }
 
   const item = itemQuery.data;
+  const sizes = item.sizes ?? [];
+  const addons = item.addons ?? [];
+  const selectedSize = sizes.find((size) => size.id === selectedSizeId) ?? sizes[0] ?? null;
+  const selectedAddons = addons.filter((addon) => selectedAddonIds.includes(addon.id));
+  const basePrice = Number(selectedSize?.price ?? item.price);
+  const addonsTotal = selectedAddons.reduce((sum, addon) => sum + Number(addon.price ?? 0), 0);
+  const unitPrice = basePrice + addonsTotal;
   const availability = getRestaurantAvailability(restaurantQuery.data);
   const disabled = !availability.isOpenForOrders || !item.is_available;
   const disabledMessage = !item.is_available
@@ -55,8 +66,14 @@ export default function MenuItemDetailScreen() {
     : availability.reason ?? 'Ordering is currently paused.';
 
   function addToCart() {
-    addItem({ item, quantity, notes });
+    addItem({ item, quantity, size: selectedSize, addons: selectedAddons, notes });
     setMessage(`${quantity} x ${item.name} added to cart.`);
+  }
+
+  function toggleAddon(addonId: number) {
+    setSelectedAddonIds((current) =>
+      current.includes(addonId) ? current.filter((id) => id !== addonId) : [...current, addonId],
+    );
   }
 
   return (
@@ -79,10 +96,64 @@ export default function MenuItemDetailScreen() {
         </View>
         <AppText variant="h1">{item.name}</AppText>
         <AppText color={colors.text.secondary}>{item.description ?? 'Freshly prepared for every order.'}</AppText>
-        <PriceText amount={item.price} variant="h2" />
+        <PriceText amount={unitPrice} variant="h2" />
 
         {message ? <FeedbackMessage tone="success" message={message} /> : null}
         {disabled ? <FeedbackMessage tone="warning" message={disabledMessage} /> : null}
+
+        {sizes.length > 0 ? (
+          <View style={styles.optionGroup}>
+            <SectionTitle title="Choose a size" subtitle="Required for this item" />
+            <View style={styles.optionGrid}>
+              {sizes.map((size) => {
+                const active = selectedSize?.id === size.id;
+
+                return (
+                  <Pressable
+                    key={size.id}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    disabled={disabled}
+                    onPress={() => setSelectedSizeId(size.id)}
+                    style={[styles.optionCard, active && styles.optionCardActive]}
+                  >
+                    <AppText variant="title">{size.name}</AppText>
+                    <AppText color={active ? colors.brand.primary : colors.text.secondary}>
+                      {formatCurrency(size.price)}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
+
+        {addons.length > 0 ? (
+          <View style={styles.optionGroup}>
+            <SectionTitle title="Add extras" subtitle="Optional toppings and sauces" />
+            <View style={styles.optionGrid}>
+              {addons.map((addon) => {
+                const active = selectedAddonIds.includes(addon.id);
+
+                return (
+                  <Pressable
+                    key={addon.id}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: active }}
+                    disabled={disabled}
+                    onPress={() => toggleAddon(addon.id)}
+                    style={[styles.optionCard, active && styles.optionCardActive]}
+                  >
+                    <AppText variant="title">{addon.name}</AppText>
+                    <AppText color={active ? colors.brand.primary : colors.text.secondary}>
+                      + {formatCurrency(addon.price)}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.row}>
           <View style={styles.flex}>
@@ -95,7 +166,7 @@ export default function MenuItemDetailScreen() {
             <AppText variant="caption" color={colors.text.secondary}>
               Item total
             </AppText>
-            <PriceText amount={item.price * quantity} />
+            <PriceText amount={unitPrice * quantity} />
           </View>
         </View>
 
@@ -157,5 +228,25 @@ const styles = StyleSheet.create({
   },
   notesInput: {
     minHeight: 88,
+  },
+  optionGroup: {
+    gap: spacing.md,
+  },
+  optionGrid: {
+    gap: spacing.md,
+  },
+  optionCard: {
+    minHeight: 72,
+    justifyContent: 'center',
+    gap: spacing.xs,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border.strong,
+    backgroundColor: colors.surface.card,
+    padding: spacing.lg,
+  },
+  optionCardActive: {
+    borderColor: colors.brand.primary,
+    backgroundColor: colors.brand.soft,
   },
 });

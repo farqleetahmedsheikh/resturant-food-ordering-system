@@ -19,6 +19,7 @@ class Order extends Model
         'pending' => 'Pending',
         'accepted' => 'Accepted',
         'preparing' => 'Preparing',
+        'ready' => 'Ready',
         'assigned_to_rider' => 'Assigned to Rider',
         'out_for_delivery' => 'Out for Delivery',
         'delivered' => 'Delivered',

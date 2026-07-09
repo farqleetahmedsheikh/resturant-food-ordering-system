@@ -1,16 +1,19 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { z } from 'zod';
 
+import { getCustomerAddresses } from '@/src/api/addresses.api';
 import { syncLocalCartToBackend } from '@/src/api/cart.api';
 import { normalizeApiError } from '@/src/api/api-error';
 import { checkout as checkoutApi } from '@/src/api/orders.api';
 import { getRestaurant } from '@/src/api/restaurant.api';
 import { useAuthStore } from '@/src/auth/auth.store';
 import { AppButton } from '@/src/components/common/AppButton';
+import { AppBadge } from '@/src/components/common/AppBadge';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
 import { PriceText } from '@/src/components/common/PriceText';
@@ -49,6 +52,10 @@ export default function CustomerCheckoutScreen() {
     queryKey: queryKeys.restaurant,
     queryFn: getRestaurant,
   });
+  const addressesQuery = useQuery({
+    queryKey: queryKeys.customerAddresses,
+    queryFn: getCustomerAddresses,
+  });
   const form = useForm<CheckoutForm>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -68,6 +75,15 @@ export default function CustomerCheckoutScreen() {
   const belowMinimum = minimumOrder > 0 && subtotal < minimumOrder;
   const checkoutBlocked = items.length === 0 || !availability.isOpenForOrders || belowMinimum;
 
+  useEffect(() => {
+    const defaultAddress = addressesQuery.data?.find((address) => address.is_default);
+
+    if (defaultAddress && !form.getValues('delivery_address')) {
+      form.setValue('delivery_address', defaultAddress.address);
+      form.setValue('order_notes', defaultAddress.delivery_notes ?? '');
+    }
+  }, [addressesQuery.data, form]);
+
   async function onSubmit(values: CheckoutForm) {
     if (checkoutBlocked) {
       form.setError('root', {
@@ -82,11 +98,7 @@ export default function CustomerCheckoutScreen() {
 
     try {
       await syncLocalCartToBackend(items);
-
-      const itemNotes = items
-        .filter((item) => item.notes.trim())
-        .map((item) => `${item.name}: ${item.notes.trim()}`)
-        .join('\n');
+      const savedAddress = addressesQuery.data?.find((address) => address.address === values.delivery_address);
 
       const result = await checkoutApi(
         {
@@ -94,9 +106,9 @@ export default function CustomerCheckoutScreen() {
           customer_phone: values.customer_phone,
           customer_email: values.customer_email || null,
           delivery_address: values.delivery_address,
-          delivery_latitude: location.coords?.latitude ?? null,
-          delivery_longitude: location.coords?.longitude ?? null,
-          order_notes: compactNote([values.order_notes, itemNotes ? `Item notes:\n${itemNotes}` : null]),
+          delivery_latitude: location.coords?.latitude ?? savedAddress?.latitude ?? null,
+          delivery_longitude: location.coords?.longitude ?? savedAddress?.longitude ?? null,
+          order_notes: compactNote([values.order_notes]),
         },
         createIdempotencyKey(),
       );
@@ -137,12 +149,17 @@ export default function CustomerCheckoutScreen() {
           <AppCard style={styles.card}>
             <SectionTitle title="Cart summary" subtitle={`${items.length} saved line item${items.length === 1 ? '' : 's'}`} />
             {items.map((item) => (
-              <View key={item.menuItemId} style={styles.summaryRow}>
+              <View key={item.lineKey} style={styles.summaryRow}>
                 <View style={styles.flex}>
                   <AppText variant="title" numberOfLines={1}>
                     {item.quantity} x {item.name}
                   </AppText>
                   <AppText color={colors.text.secondary}>{formatCurrency(item.unitPrice)} each</AppText>
+                  {item.sizeName ? <AppText color={colors.text.secondary}>{item.sizeName}</AppText> : null}
+                  {item.addons.length > 0 ? (
+                    <AppText color={colors.text.secondary}>{item.addons.map((addon) => addon.name).join(', ')}</AppText>
+                  ) : null}
+                  {item.notes.trim() ? <AppText color={colors.text.secondary}>Note: {item.notes.trim()}</AppText> : null}
                 </View>
                 <PriceText amount={item.unitPrice * item.quantity} />
               </View>
@@ -155,6 +172,27 @@ export default function CustomerCheckoutScreen() {
 
           <AppCard style={styles.card}>
             <SectionTitle title="Delivery details" subtitle="Manual delivery address is required." />
+            {(addressesQuery.data ?? []).length > 0 ? (
+              <View style={styles.savedAddresses}>
+                {(addressesQuery.data ?? []).map((address) => (
+                  <Pressable
+                    key={address.id}
+                    accessibilityRole="button"
+                    style={styles.savedAddress}
+                    onPress={() => {
+                      form.setValue('delivery_address', address.address, { shouldValidate: true });
+                      form.setValue('order_notes', address.delivery_notes ?? '', { shouldValidate: true });
+                    }}
+                  >
+                    <View style={styles.savedAddressTop}>
+                      <AppText variant="title">{address.label ?? 'Saved address'}</AppText>
+                      {address.is_default ? <AppBadge label="Default" tone="green" /> : null}
+                    </View>
+                    <AppText color={colors.text.secondary}>{address.address}</AppText>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
             <Controller
               control={form.control}
               name="customer_name"
@@ -285,5 +323,22 @@ const styles = StyleSheet.create({
   },
   addressInput: {
     minHeight: 88,
+  },
+  savedAddresses: {
+    gap: spacing.md,
+  },
+  savedAddress: {
+    gap: spacing.sm,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    backgroundColor: colors.surface.muted,
+    padding: spacing.md,
+  },
+  savedAddressTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
   },
 });

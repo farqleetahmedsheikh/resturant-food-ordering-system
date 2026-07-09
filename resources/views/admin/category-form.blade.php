@@ -41,12 +41,15 @@ $isCreateMode = $mode === 'create';
         'restaurant_id',
         $category->restaurant_id ?? ''
     );
+
+    $initialRemoveImage = (bool) old('remove_image', false);
 @endphp
 
 <div
     x-data="{
-        preview: @js($currentImage),
+        preview: @js($initialRemoveImage ? null : $currentImage),
         currentImage: @js($currentImage),
+        removeImage: {{ $initialRemoveImage ? 'true' : 'false' }},
         name: @js($initialName),
         slug: @js($initialSlug),
         description: @js($initialDescription),
@@ -88,6 +91,7 @@ $isCreateMode = $mode === 'create';
 
             this.preview = URL.createObjectURL(file);
             this.fileName = file.name;
+            this.removeImage = false;
         },
 
         resetSelectedImage() {
@@ -101,10 +105,17 @@ $isCreateMode = $mode === 'create';
 
             this.preview = this.currentImage;
             this.fileName = '';
+            this.removeImage = false;
 
             if (this.$refs.imageInput) {
                 this.$refs.imageInput.value = '';
             }
+        },
+
+        removeCurrentImage() {
+            this.resetSelectedImage();
+            this.preview = null;
+            this.removeImage = true;
         }
     }"
     class="space-y-5 pb-28 sm:space-y-6 lg:pb-8"
@@ -850,19 +861,21 @@ $isCreateMode = $mode === 'create';
                         </p>
 
                         <p class="relative mt-1 text-xs font-semibold text-warm-500">
-                            JPG, PNG or WEBP · Maximum 2 MB
+                            JPG or PNG · Maximum 2 MB
                         </p>
 
                         <input
                             id="image"
                             name="image"
                             type="file"
-                            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                             x-ref="imageInput"
                             x-on:change="handleImage($event)"
                             class="sr-only"
                         >
                     </label>
+
+                    <input type="hidden" name="remove_image" x-bind:value="removeImage ? '1' : '0'">
 
                     <div
                         x-show="fileName"
@@ -907,6 +920,24 @@ $isCreateMode = $mode === 'create';
                             Undo
                         </button>
                     </div>
+
+                    @if ($mode === 'edit' && $currentImage)
+                        <div
+                            x-show="! fileName && currentImage"
+                            class="mt-3 flex flex-col gap-3 rounded-xl border border-warm-200 bg-warm-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <p class="text-xs font-semibold leading-5 text-warm-600">
+                                Current category image is saved.
+                            </p>
+
+                            <button
+                                type="button"
+                                x-on:click="removeImage ? resetSelectedImage() : removeCurrentImage()"
+                                class="inline-flex min-h-9 items-center justify-center rounded-lg border border-red-100 bg-white px-3 py-2 text-xs font-black text-red-600 transition hover:bg-red-50"
+                                x-text="removeImage ? 'Keep Image' : 'Remove Image'"
+                            ></button>
+                        </div>
+                    @endif
 
                     @error('image')
                         <p class="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-600">

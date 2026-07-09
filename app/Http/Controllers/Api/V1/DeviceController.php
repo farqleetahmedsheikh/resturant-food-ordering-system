@@ -13,6 +13,17 @@ use Illuminate\Http\Request;
 
 class DeviceController extends Controller
 {
+    public function index(Request $request): JsonResponse
+    {
+        $devices = $request->user()
+            ->devices()
+            ->whereNull('revoked_at')
+            ->latest('last_seen_at')
+            ->get();
+
+        return ApiResponse::success(UserDeviceResource::collection($devices));
+    }
+
     public function store(DeviceStoreRequest $request): JsonResponse
     {
         $validated = $request->validated();

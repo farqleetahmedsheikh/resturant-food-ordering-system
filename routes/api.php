@@ -8,8 +8,10 @@ use App\Http\Controllers\Api\V1\Admin\RestaurantController as AdminRestaurantCon
 use App\Http\Controllers\Api\V1\Admin\RiderController as AdminRiderController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Auth\PasswordResetOtpController as ApiPasswordResetOtpController;
 use App\Http\Controllers\Api\V1\Customer\CartController as CustomerCartController;
 use App\Http\Controllers\Api\V1\Customer\CheckoutController as CustomerCheckoutController;
+use App\Http\Controllers\Api\V1\Customer\AddressController as CustomerAddressController;
 use App\Http\Controllers\Api\V1\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Api\V1\Customer\ProfileController as CustomerProfileController;
 use App\Http\Controllers\Api\V1\DeviceController;
@@ -33,6 +35,9 @@ Route::prefix('v1')->middleware('request.id')->group(function (): void {
     Route::prefix('auth')->middleware('throttle:api-auth')->group(function (): void {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/password/otp', [ApiPasswordResetOtpController::class, 'send']);
+        Route::post('/password/otp/verify', [ApiPasswordResetOtpController::class, 'verify']);
+        Route::post('/password/reset', [ApiPasswordResetOtpController::class, 'reset']);
     });
 
     Route::middleware(['auth:sanctum', 'api.active'])->group(function (): void {
@@ -40,6 +45,7 @@ Route::prefix('v1')->middleware('request.id')->group(function (): void {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::post('/auth/logout-all', [AuthController::class, 'logoutAll']);
 
+        Route::get('/devices', [DeviceController::class, 'index'])->middleware('throttle:api-customer');
         Route::post('/devices', [DeviceController::class, 'store'])->middleware('throttle:api-customer');
         Route::delete('/devices/{device}', [DeviceController::class, 'destroy'])->middleware('throttle:api-customer');
 
@@ -48,6 +54,10 @@ Route::prefix('v1')->middleware('request.id')->group(function (): void {
             ->group(function (): void {
                 Route::get('/profile', [CustomerProfileController::class, 'show']);
                 Route::put('/profile', [CustomerProfileController::class, 'update']);
+                Route::get('/addresses', [CustomerAddressController::class, 'index']);
+                Route::post('/addresses', [CustomerAddressController::class, 'store']);
+                Route::put('/addresses/{address}', [CustomerAddressController::class, 'update']);
+                Route::delete('/addresses/{address}', [CustomerAddressController::class, 'destroy']);
 
                 Route::get('/cart', [CustomerCartController::class, 'show']);
                 Route::post('/cart/items/{menuItem}', [CustomerCartController::class, 'store']);
@@ -67,8 +77,14 @@ Route::prefix('v1')->middleware('request.id')->group(function (): void {
                 Route::put('/profile', [RiderProfileController::class, 'update']);
                 Route::get('/dashboard', [RiderDeliveryController::class, 'dashboard']);
                 Route::get('/deliveries', [RiderDeliveryController::class, 'index']);
+                Route::get('/deliveries/history', [RiderDeliveryController::class, 'history']);
                 Route::get('/deliveries/{order}', [RiderDeliveryController::class, 'show']);
+                Route::post('/deliveries/{order}/accept', [RiderDeliveryController::class, 'accept'])->middleware('throttle:api-status-update');
+                Route::post('/deliveries/{order}/picked-up', [RiderDeliveryController::class, 'markPickedUp'])->middleware('throttle:api-status-update');
+                Route::post('/deliveries/{order}/out-for-delivery', [RiderDeliveryController::class, 'markOutForDelivery'])->middleware('throttle:api-status-update');
+                Route::post('/deliveries/{order}/delivered', [RiderDeliveryController::class, 'markDelivered'])->middleware('throttle:api-status-update');
                 Route::post('/deliveries/{order}/status', [RiderDeliveryController::class, 'updateStatus'])->middleware('throttle:api-status-update');
+                Route::post('/location', [RiderDeliveryController::class, 'updateLocation'])->middleware('throttle:api-status-update');
             });
 
         Route::prefix('admin')

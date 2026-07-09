@@ -11,6 +11,18 @@ use Illuminate\Support\Facades\DB;
 
 class OrderStatusService
 {
+    private const TRANSITIONS = [
+        'pending_payment' => ['cancelled'],
+        'pending' => ['accepted', 'cancelled'],
+        'accepted' => ['preparing', 'cancelled'],
+        'preparing' => ['ready', 'assigned_to_rider', 'cancelled'],
+        'ready' => ['assigned_to_rider', 'out_for_delivery', 'cancelled'],
+        'assigned_to_rider' => ['out_for_delivery', 'cancelled'],
+        'out_for_delivery' => ['delivered', 'cancelled'],
+        'delivered' => [],
+        'cancelled' => [],
+    ];
+
     public function __construct(
         private AuditLogger $auditLogger,
         private OrderEmailService $orderEmailService,
@@ -43,6 +55,8 @@ class OrderStatusService
             if ($previousStatus === $newStatus) {
                 return $lockedOrder->fresh(['items', 'user', 'rider', 'delivery', 'statusHistories']);
             }
+
+            $this->ensureValidTransition($lockedOrder, $newStatus);
 
             $payload = ['order_status' => $newStatus];
 
@@ -96,6 +110,10 @@ class OrderStatusService
 
     private function syncDeliveryFromOrderStatus(Order $order, string $status): void
     {
+        if ($status === 'assigned_to_rider') {
+            $order->delivery->update(['status' => 'assigned']);
+        }
+
         if ($status === 'out_for_delivery') {
             $order->delivery->update(['status' => 'out_for_delivery']);
         }
@@ -109,6 +127,27 @@ class OrderStatusService
 
         if ($status === 'cancelled') {
             $order->delivery->update(['status' => 'failed']);
+        }
+    }
+
+    private function ensureValidTransition(Order $order, string $newStatus): void
+    {
+        $allowed = self::TRANSITIONS[$order->order_status] ?? [];
+
+        if (! in_array($newStatus, $allowed, true)) {
+            throw new BusinessRuleException(sprintf(
+                'Order status cannot move from %s to %s.',
+                Order::STATUSES[$order->order_status] ?? str($order->order_status)->headline(),
+                Order::STATUSES[$newStatus] ?? str($newStatus)->headline(),
+            ));
+        }
+
+        if ($newStatus === 'assigned_to_rider' && ! $order->rider_id) {
+            throw new BusinessRuleException('Assign an active rider before moving this order to assigned.');
+        }
+
+        if (in_array($newStatus, ['out_for_delivery', 'delivered'], true) && ! $order->rider_id) {
+            throw new BusinessRuleException('Assign a rider before moving this order into delivery.');
         }
     }
 }

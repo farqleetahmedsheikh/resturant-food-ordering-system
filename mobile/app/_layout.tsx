@@ -12,8 +12,8 @@ function RootNavigator() {
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="(public)" />
         <Stack.Protected guard={guards.guest}>
-          <Stack.Screen name="(public)" />
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
         <Stack.Protected guard={guards.customer}>

@@ -26,8 +26,12 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
         ? preg_replace('/[^0-9+]/', '', $customerPhone)
         : null;
 
+    $mapsQuery = $order->delivery_latitude !== null && $order->delivery_longitude !== null
+        ? number_format((float) $order->delivery_latitude, 7, '.', '') . ',' . number_format((float) $order->delivery_longitude, 7, '.', '')
+        : ($order->delivery_address ?? '');
+
     $mapsUrl = 'https://www.google.com/maps/search/?api=1&query='
-        . rawurlencode($order->delivery_address ?? '');
+        . rawurlencode($mapsQuery);
 
     $paymentMethod = $order->payment_method_label;
 
@@ -533,6 +537,13 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                                 {{ $order->delivery_address }}
                             </span>
 
+                            @if ($order->delivery_latitude !== null && $order->delivery_longitude !== null)
+                                <span class="mt-1 block font-mono text-[11px] font-bold text-warm-500">
+                                    {{ number_format((float) $order->delivery_latitude, 6) }},
+                                    {{ number_format((float) $order->delivery_longitude, 6) }}
+                                </span>
+                            @endif
+
                             <span class="mt-2 inline-flex items-center gap-1.5 text-xs font-black text-brand-600">
                                 Open in maps
 
@@ -841,6 +852,28 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                     </div>
 
                     @error('order_status')
+                        <p class="mt-2 text-xs font-semibold text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
+
+                    <label
+                        for="status_reason"
+                        class="mt-4 block text-sm font-black text-warm-900"
+                    >
+                        Internal note
+                    </label>
+
+                    <textarea
+                        id="status_reason"
+                        name="reason"
+                        rows="3"
+                        maxlength="500"
+                        placeholder="Optional kitchen, customer, or delivery note for the audit trail."
+                        class="mt-2 w-full resize-y rounded-xl border border-warm-200 bg-warm-50 px-4 py-3 text-sm font-semibold leading-6 text-warm-900 outline-none transition placeholder:text-warm-500 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                    >{{ old('reason') }}</textarea>
+
+                    @error('reason')
                         <p class="mt-2 text-xs font-semibold text-red-600">
                             {{ $message }}
                         </p>

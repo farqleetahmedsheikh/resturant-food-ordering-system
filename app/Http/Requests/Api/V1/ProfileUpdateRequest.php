@@ -3,8 +3,6 @@
 namespace App\Http\Requests\Api\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-
 class ProfileUpdateRequest extends FormRequest
 {
     public function authorize(): bool
@@ -16,7 +14,6 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->user())],
             'phone' => ['nullable', 'string', 'max:30'],
         ];
     }

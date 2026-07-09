@@ -69,7 +69,7 @@ class AdminMenuItemController extends Controller
         $validated['is_featured'] = $request->boolean('is_featured');
 
         DB::transaction(function () use ($validated): void {
-            $menuItem = MenuItem::create(Arr::except($validated, ['sizes', 'addons']));
+            $menuItem = MenuItem::create(Arr::except($validated, ['sizes', 'addons', 'remove_image']));
 
             $this->syncOptions($menuItem, $validated);
         });
@@ -95,6 +95,9 @@ class AdminMenuItemController extends Controller
 
         if ($request->hasFile('image')) {
             $validated['image'] = ImageUpload::store($request->file('image'), 'menu-items', $menuItem->image);
+        } elseif ($request->boolean('remove_image')) {
+            ImageUpload::delete($menuItem->image);
+            $validated['image'] = null;
         }
 
         $validated['slug'] = $this->uniqueSlug($validated['slug'] ?: str($validated['name'])->slug()->toString(), $menuItem);
@@ -102,7 +105,7 @@ class AdminMenuItemController extends Controller
         $validated['is_featured'] = $request->boolean('is_featured');
 
         DB::transaction(function () use ($menuItem, $validated): void {
-            $menuItem->update(Arr::except($validated, ['sizes', 'addons']));
+            $menuItem->update(Arr::except($validated, ['sizes', 'addons', 'remove_image']));
 
             $this->syncOptions($menuItem, $validated);
         });
@@ -135,7 +138,8 @@ class AdminMenuItemController extends Controller
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0'],
             'compare_at_price' => ['nullable', 'numeric', 'min:0'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ImageUpload::validationRules(),
+            'remove_image' => ['nullable', 'boolean'],
             'preparation_time' => ['nullable', 'integer', 'min:1'],
             'calories' => ['nullable', 'integer', 'min:0'],
             'is_featured' => ['nullable', 'boolean'],

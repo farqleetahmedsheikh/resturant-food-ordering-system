@@ -12,6 +12,17 @@ use Illuminate\Support\Facades\DB;
 
 class DeliveryStatusService
 {
+    private const TRANSITIONS = [
+        'pending' => ['accepted', 'picked_up', 'failed'],
+        'assigned' => ['accepted', 'picked_up', 'failed'],
+        'assigned_to_rider' => ['accepted', 'picked_up', 'failed'],
+        'accepted' => ['picked_up', 'failed'],
+        'picked_up' => ['out_for_delivery', 'failed'],
+        'out_for_delivery' => ['delivered', 'failed'],
+        'delivered' => [],
+        'failed' => [],
+    ];
+
     public function __construct(
         private AuditLogger $auditLogger,
         private OrderEmailService $orderEmailService,
@@ -31,7 +42,7 @@ class DeliveryStatusService
             throw new BusinessRuleException('Stripe payment must be confirmed before delivery can progress.');
         }
 
-        if (! in_array($status, ['picked_up', 'out_for_delivery', 'delivered', 'failed'], true)) {
+        if (! in_array($status, ['accepted', 'picked_up', 'out_for_delivery', 'delivered', 'failed'], true)) {
             throw new BusinessRuleException('Invalid delivery status.');
         }
 
@@ -55,7 +66,11 @@ class DeliveryStatusService
             );
             $previousDeliveryStatus = $delivery->status;
 
-            if ($status === 'picked_up') {
+            $this->ensureValidTransition($previousDeliveryStatus, $status);
+
+            if ($status === 'accepted') {
+                $this->markAccepted($lockedOrder, $delivery, $rider);
+            } elseif ($status === 'picked_up') {
                 $this->markPickedUp($lockedOrder, $delivery, $rider);
             } elseif ($status === 'out_for_delivery') {
                 $this->markOutForDelivery($lockedOrder, $delivery, $rider);
@@ -83,10 +98,22 @@ class DeliveryStatusService
         return $updatedOrder;
     }
 
+    private function markAccepted(Order $order, Delivery $delivery, User $rider): void
+    {
+        $delivery->update([
+            'rider_id' => $rider->id,
+            'status' => 'accepted',
+        ]);
+
+        if ($order->order_status !== 'assigned_to_rider') {
+            $previousStatus = $order->order_status;
+            $order->update(['order_status' => 'assigned_to_rider']);
+            $this->recordStatusHistory($order, $previousStatus, 'assigned_to_rider', $rider, 'Delivery accepted');
+        }
+    }
+
     private function markPickedUp(Order $order, Delivery $delivery, User $rider): void
     {
-        $previousStatus = $order->order_status;
-
         $delivery->update([
             'rider_id' => $rider->id,
             'status' => 'picked_up',
@@ -94,11 +121,8 @@ class DeliveryStatusService
         ]);
 
         $order->update([
-            'order_status' => 'out_for_delivery',
             'picked_up_at' => $order->picked_up_at ?? now(),
         ]);
-
-        $this->recordStatusHistory($order, $previousStatus, 'out_for_delivery', $rider, 'Delivery picked up');
     }
 
     private function markOutForDelivery(Order $order, Delivery $delivery, User $rider): void
@@ -147,6 +171,23 @@ class DeliveryStatusService
         $order->update(['order_status' => 'cancelled']);
 
         $this->recordStatusHistory($order, $previousStatus, 'cancelled', $rider, 'Delivery failed', ['notes' => $notes]);
+    }
+
+    private function ensureValidTransition(string $currentStatus, string $nextStatus): void
+    {
+        if ($currentStatus === $nextStatus) {
+            return;
+        }
+
+        $allowed = self::TRANSITIONS[$currentStatus] ?? [];
+
+        if (! in_array($nextStatus, $allowed, true)) {
+            throw new BusinessRuleException(sprintf(
+                'Delivery status cannot move from %s to %s.',
+                Delivery::STATUSES[$currentStatus] ?? str($currentStatus)->headline(),
+                Delivery::STATUSES[$nextStatus] ?? str($nextStatus)->headline(),
+            ));
+        }
     }
 
     /**

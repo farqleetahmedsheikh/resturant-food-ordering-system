@@ -6,6 +6,7 @@ use App\Exceptions\BusinessRuleException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AdminRiderStoreRequest;
 use App\Http\Requests\Api\V1\AdminRiderUpdateRequest;
+use App\Http\Resources\V1\OrderResource;
 use App\Http\Resources\V1\RiderResource;
 use App\Models\User;
 use App\Services\Security\AuditLogger;
@@ -58,7 +59,29 @@ class RiderController extends Controller
 
         $rider->loadCount(['assignedOrders', 'deliveredOrders']);
 
-        return ApiResponse::success(new RiderResource($rider));
+        $activeOrders = $rider->assignedOrders()
+            ->with(['delivery'])
+            ->whereNotIn('order_status', ['delivered', 'cancelled'])
+            ->latest()
+            ->take(20)
+            ->get();
+
+        $deliveryHistory = $rider->assignedOrders()
+            ->with(['delivery'])
+            ->where(function ($query): void {
+                $query
+                    ->whereIn('order_status', ['delivered', 'cancelled'])
+                    ->orWhereHas('delivery', fn ($query) => $query->whereIn('status', ['delivered', 'failed']));
+            })
+            ->latest()
+            ->take(20)
+            ->get();
+
+        return ApiResponse::success([
+            'rider' => new RiderResource($rider),
+            'active_orders' => OrderResource::collection($activeOrders),
+            'delivery_history' => OrderResource::collection($deliveryHistory),
+        ]);
     }
 
     public function update(AdminRiderUpdateRequest $request, User $rider): JsonResponse

@@ -14,6 +14,7 @@ class CartItem extends Model
         'menu_item_size_id',
         'line_hash',
         'quantity',
+        'item_notes',
     ];
 
     protected function casts(): array

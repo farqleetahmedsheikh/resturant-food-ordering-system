@@ -14,6 +14,7 @@ import type { Href } from 'expo-router';
 type MenuItemCardProps = {
   item: MenuItem;
   detailHref?: Href;
+  variant?: 'default' | 'compact';
   showAddButton?: boolean;
   addDisabled?: boolean;
   addDisabledReason?: string;
@@ -23,12 +24,84 @@ type MenuItemCardProps = {
 export function MenuItemCard({
   item,
   detailHref,
+  variant = 'default',
   showAddButton = false,
   addDisabled = false,
   addDisabledReason,
   onAdd,
 }: MenuItemCardProps) {
   const unavailable = !item.is_available;
+  const image = item.image_url ? (
+    <Image source={{ uri: item.image_url }} style={styles.image} contentFit="cover" />
+  ) : (
+    <AppText variant="h2" color={colors.brand.primary}>
+      {item.name.slice(0, 1).toUpperCase()}
+    </AppText>
+  );
+
+  if (variant === 'compact') {
+    return (
+      <Pressable
+        accessibilityRole={detailHref ? 'button' : undefined}
+        disabled={!detailHref}
+        onPress={() => {
+          if (detailHref) {
+            router.push(detailHref);
+          }
+        }}
+      >
+        <AppCard style={[styles.compactCard, unavailable && styles.unavailableCard]}>
+          <View style={styles.compactImageShell}>
+            {image}
+            {item.is_featured ? (
+              <View style={styles.compactPopularDot}>
+                <AppText variant="caption" color={colors.gold.dark}>
+                  Popular
+                </AppText>
+              </View>
+            ) : null}
+          </View>
+          <View style={styles.compactBody}>
+            <View style={styles.badgeRow}>
+              <AppBadge label={item.category?.name ?? 'Menu'} tone="neutral" />
+              <AppBadge label={unavailable ? 'Unavailable' : 'Available'} tone={unavailable ? 'danger' : 'green'} />
+            </View>
+            <AppText variant="title" numberOfLines={1}>
+              {item.name}
+            </AppText>
+            <AppText color={colors.text.secondary} numberOfLines={2}>
+              {item.description ?? 'Freshly prepared at Arcade Kebab House.'}
+            </AppText>
+            <View style={styles.footer}>
+              <PriceText amount={item.price} />
+              {showAddButton ? (
+                <AppButton
+                  label={unavailable ? 'Sold out' : 'Add'}
+                  disabled={unavailable || addDisabled}
+                  variant={unavailable || addDisabled ? 'secondary' : 'primary'}
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    onAdd?.(item);
+                  }}
+                />
+              ) : detailHref ? (
+                <View style={styles.compactViewPill}>
+                  <AppText variant="caption" color={colors.brand.primary}>
+                    Details
+                  </AppText>
+                </View>
+              ) : null}
+            </View>
+            {addDisabled && addDisabledReason ? (
+              <AppText variant="caption" color={colors.text.secondary}>
+                {addDisabledReason}
+              </AppText>
+            ) : null}
+          </View>
+        </AppCard>
+      </Pressable>
+    );
+  }
 
   return (
     <Pressable
@@ -42,13 +115,7 @@ export function MenuItemCard({
     >
       <AppCard style={styles.card}>
         <View style={styles.imageShell}>
-          {item.image_url ? (
-            <Image source={{ uri: item.image_url }} style={styles.image} contentFit="cover" />
-          ) : (
-            <AppText variant="h2" color={colors.brand.primary}>
-              {item.name.slice(0, 1).toUpperCase()}
-            </AppText>
-          )}
+          {image}
           {item.is_featured ? (
             <View style={styles.floatingBadge}>
               <AppBadge label="Popular" tone="gold" />
@@ -78,6 +145,12 @@ export function MenuItemCard({
                   onAdd?.(item);
                 }}
               />
+            ) : detailHref ? (
+              <View style={styles.viewPill}>
+                <AppText variant="caption" color={colors.brand.primary}>
+                  View details
+                </AppText>
+              </View>
             ) : null}
           </View>
           {addDisabled && addDisabledReason ? (
@@ -96,6 +169,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     padding: 0,
   },
+  compactCard: {
+    minHeight: 132,
+    flexDirection: 'row',
+    gap: spacing.md,
+    padding: spacing.md,
+  },
+  unavailableCard: {
+    opacity: 0.72,
+  },
   imageShell: {
     height: 148,
     alignItems: 'center',
@@ -107,6 +189,28 @@ const styles = StyleSheet.create({
   image: {
     height: '100%',
     width: '100%',
+  },
+  compactImageShell: {
+    width: 86,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.lg,
+    backgroundColor: colors.brand.soft,
+  },
+  compactPopularDot: {
+    position: 'absolute',
+    left: spacing.xs,
+    top: spacing.xs,
+    borderRadius: radius.pill,
+    backgroundColor: colors.gold.soft,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  compactBody: {
+    flex: 1,
+    minWidth: 0,
+    gap: spacing.xs,
   },
   floatingBadge: {
     position: 'absolute',
@@ -127,5 +231,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,
+  },
+  viewPill: {
+    minHeight: 40,
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand.soft,
+    paddingHorizontal: spacing.lg,
+  },
+  compactViewPill: {
+    minHeight: 36,
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand.soft,
+    paddingHorizontal: spacing.md,
   },
 });

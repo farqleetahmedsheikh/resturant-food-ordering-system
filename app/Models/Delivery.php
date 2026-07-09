@@ -14,6 +14,7 @@ class Delivery extends Model
     public const STATUSES = [
         'pending' => 'Pending',
         'assigned' => 'Assigned',
+        'accepted' => 'Accepted by Rider',
         'picked_up' => 'Picked Up',
         'out_for_delivery' => 'Out for Delivery',
         'delivered' => 'Delivered',

@@ -89,6 +89,7 @@ class CheckoutService
                 $order->items()->create([
                     'menu_item_id' => $item['menu_item_id'],
                     'item_name' => $item['name'],
+                    'item_notes' => $item['item_notes'] ?? null,
                     'size_name' => $item['size']['name'] ?? null,
                     'size_price' => $item['size']['price'] ?? null,
                     'addons_snapshot' => $item['addons'],

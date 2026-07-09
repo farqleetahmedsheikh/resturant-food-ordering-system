@@ -1,10 +1,21 @@
 import type { Restaurant } from './restaurant';
 
 export type LocalCartItem = {
+  lineKey: string;
   menuItemId: number;
   name: string;
   imageUrl: string | null;
   unitPrice: number;
+  basePrice: number;
+  sizeId: number | null;
+  sizeName: string | null;
+  addons: {
+    id: number;
+    name: string;
+    type: string | null;
+    price: number;
+  }[];
+  addonsTotal: number;
   quantity: number;
   notes: string;
   isAvailable: boolean;
@@ -20,6 +31,7 @@ export type BackendCartItem = {
   base_price: number;
   addons_total: number;
   line_total: number;
+  item_notes?: string | null;
   size: {
     id: number;
     name: string;
@@ -31,6 +43,13 @@ export type BackendCartItem = {
     type: string | null;
     price: number;
   }[];
+};
+
+export type BackendCartItemPayload = {
+  quantity: number;
+  size_id?: number | null;
+  addon_ids?: number[];
+  item_notes?: string | null;
 };
 
 export type BackendCart = {

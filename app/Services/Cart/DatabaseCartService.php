@@ -41,12 +41,13 @@ class DatabaseCartService
     /**
      * @param  array<int, int|string>  $addonIds
      */
-    public function add(User $user, MenuItem $menuItem, ?int $sizeId, array $addonIds, int $quantity): Cart
+    public function add(User $user, MenuItem $menuItem, ?int $sizeId, array $addonIds, int $quantity, ?string $itemNotes = null): Cart
     {
-        return DB::transaction(function () use ($user, $menuItem, $sizeId, $addonIds, $quantity): Cart {
+        return DB::transaction(function () use ($user, $menuItem, $sizeId, $addonIds, $quantity, $itemNotes): Cart {
             $cart = $this->lockedCart($user);
             $pricing = $this->pricingService->priceMenuSelection($menuItem, $sizeId, $addonIds, $quantity);
-            $lineHash = $this->lineHash($menuItem->id, $pricing['size']?->id, $pricing['addons']->pluck('id')->all());
+            $notes = $this->normalizeNotes($itemNotes);
+            $lineHash = $this->lineHash($menuItem->id, $pricing['size']?->id, $pricing['addons']->pluck('id')->all(), $notes);
 
             $cartItem = CartItem::query()
                 ->where('cart_id', $cart->id)
@@ -63,6 +64,7 @@ class DatabaseCartService
                     'menu_item_size_id' => $pricing['size']?->id,
                     'line_hash' => $lineHash,
                     'quantity' => $quantity,
+                    'item_notes' => $notes,
                 ]);
             }
 
@@ -72,9 +74,9 @@ class DatabaseCartService
         });
     }
 
-    public function update(User $user, CartItem $cartItem, int $quantity): Cart
+    public function update(User $user, CartItem $cartItem, int $quantity, ?string $itemNotes = null): Cart
     {
-        return DB::transaction(function () use ($user, $cartItem, $quantity): Cart {
+        return DB::transaction(function () use ($user, $cartItem, $quantity, $itemNotes): Cart {
             $cart = $this->lockedCart($user);
             $cartItem = CartItem::query()
                 ->where('cart_id', $cart->id)
@@ -94,7 +96,19 @@ class DatabaseCartService
                 $quantity,
             );
 
-            $cartItem->update(['quantity' => $quantity]);
+            $payload = ['quantity' => $quantity];
+
+            if ($itemNotes !== null) {
+                $payload['item_notes'] = $this->normalizeNotes($itemNotes);
+                $payload['line_hash'] = $this->lineHash(
+                    $cartItem->menu_item_id,
+                    $cartItem->menu_item_size_id,
+                    $cartItem->addons->pluck('id')->all(),
+                    $payload['item_notes'],
+                );
+            }
+
+            $cartItem->update($payload);
 
             return $this->freshCart($cart);
         });
@@ -156,6 +170,7 @@ class DatabaseCartService
                 'id' => $cartItem->id,
                 'menu_item_id' => $pricing['menu_item']->id,
                 'name' => $pricing['menu_item']->name,
+                'item_notes' => $cartItem->item_notes,
                 'image_url' => $pricing['menu_item']->image_url,
                 'size' => $pricing['size'] ? [
                     'id' => $pricing['size']->id,
@@ -243,7 +258,7 @@ class DatabaseCartService
     /**
      * @param  array<int, int|string>  $addonIds
      */
-    private function lineHash(int $menuItemId, ?int $sizeId, array $addonIds): string
+    private function lineHash(int $menuItemId, ?int $sizeId, array $addonIds, ?string $itemNotes = null): string
     {
         $normalizedAddonIds = collect($addonIds)->map(fn ($id): int => (int) $id)->sort()->values()->all();
 
@@ -251,6 +266,18 @@ class DatabaseCartService
             'menu_item_id' => $menuItemId,
             'size_id' => $sizeId,
             'addon_ids' => $normalizedAddonIds,
+            'item_notes' => $this->normalizeNotes($itemNotes),
         ]));
+    }
+
+    private function normalizeNotes(?string $notes): ?string
+    {
+        $normalized = trim((string) $notes);
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        return mb_substr($normalized, 0, 500);
     }
 }

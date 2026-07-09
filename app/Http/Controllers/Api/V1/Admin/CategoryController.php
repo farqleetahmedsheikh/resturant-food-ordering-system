@@ -51,6 +51,7 @@ class CategoryController extends Controller
         if ($request->hasFile('image')) {
             $payload['image'] = ImageUpload::store($request->file('image'), 'categories');
         }
+        unset($payload['remove_image']);
 
         $category = Category::create($payload);
         $this->auditLogger->record('category.created', $request->user(), $category, [], $category->toArray());
@@ -70,7 +71,11 @@ class CategoryController extends Controller
 
         if ($request->hasFile('image')) {
             $payload['image'] = ImageUpload::store($request->file('image'), 'categories', $category->image);
+        } elseif ($request->boolean('remove_image')) {
+            ImageUpload::delete($category->image);
+            $payload['image'] = null;
         }
+        unset($payload['remove_image']);
 
         $category->update($payload);
         $this->auditLogger->record('category.updated', $request->user(), $category, $old, $category->fresh()->toArray());

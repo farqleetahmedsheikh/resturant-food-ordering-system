@@ -7,6 +7,16 @@ export type Order = {
     phone: string | null;
     email: string | null;
   };
+  rider?: {
+    id: number;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+    is_active?: boolean;
+    last_known_latitude?: number | null;
+    last_known_longitude?: number | null;
+    last_location_updated_at?: string | null;
+  } | null;
   delivery_address?: string | null;
   delivery_latitude?: number | null;
   delivery_longitude?: number | null;
@@ -37,6 +47,7 @@ export type OrderItem = {
   id: number;
   menu_item_id: number | null;
   item_name: string;
+  item_notes?: string | null;
   size_name?: string | null;
   size_price?: number | null;
   addons?: {

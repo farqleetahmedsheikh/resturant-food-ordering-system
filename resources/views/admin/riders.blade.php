@@ -520,7 +520,7 @@ method_exists($riders, 'items')
                             </div>
 
                             {{-- Actions --}}
-                            <div class="grid grid-cols-[auto_auto_1fr_auto] gap-2 sm:col-span-2 xl:col-span-1 xl:flex xl:justify-end">
+                            <div class="grid grid-cols-[auto_auto_1fr_1fr_auto] gap-2 sm:col-span-2 xl:col-span-1 xl:flex xl:justify-end">
                                 <a
                                     href="mailto:{{ $rider->email }}"
                                     class="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-warm-200 bg-white text-warm-600 transition active:scale-95 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600"
@@ -559,6 +559,13 @@ method_exists($riders, 'items')
                                         </svg>
                                     </a>
                                 @endif
+
+                                <a
+                                    href="{{ route('admin.riders.show', $rider) }}"
+                                    class="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-xs font-black text-brand-600 transition active:scale-[0.98] hover:bg-brand-100 xl:min-w-[90px]"
+                                >
+                                    View
+                                </a>
 
                                 <a
                                     href="{{ route('admin.riders.edit', $rider) }}"

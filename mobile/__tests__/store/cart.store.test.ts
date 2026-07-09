@@ -35,9 +35,29 @@ describe('cart store', () => {
 
   it('prevents invalid quantities below one', () => {
     useCartStore.getState().addItem({ item: menuItem, quantity: 1 });
-    useCartStore.getState().updateQuantity(menuItem.id, 0);
+    const lineKey = useCartStore.getState().items[0].lineKey;
+
+    useCartStore.getState().updateQuantity(lineKey, 0);
 
     expect(useCartStore.getState().items[0].quantity).toBe(1);
+  });
+
+  it('keeps different size and add-on selections as separate lines', () => {
+    useCartStore.getState().addItem({
+      item: menuItem,
+      quantity: 1,
+      size: { id: 1, name: 'Regular', price: 14.5, sort_order: 1, is_active: true },
+      addons: [{ id: 10, name: 'Garlic Sauce', type: 'dip', price: 1.5, sort_order: 1, is_active: true }],
+    });
+    useCartStore.getState().addItem({
+      item: menuItem,
+      quantity: 1,
+      size: { id: 2, name: 'Large', price: 17.5, sort_order: 2, is_active: true },
+      addons: [],
+    });
+
+    expect(useCartStore.getState().items).toHaveLength(2);
+    expect(useCartStore.getState().getSubtotal()).toBe(33.5);
   });
 
   it('persists non-sensitive cart items to AsyncStorage', async () => {

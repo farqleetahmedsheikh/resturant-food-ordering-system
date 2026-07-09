@@ -34,6 +34,33 @@ class AdminRiderController extends Controller
         ]);
     }
 
+    public function show(User $rider): View
+    {
+        $this->ensureRider($rider);
+
+        $activeOrders = $rider->assignedOrders()
+            ->with(['delivery', 'user'])
+            ->whereNotIn('order_status', ['delivered', 'cancelled'])
+            ->latest()
+            ->get();
+
+        $deliveryHistory = $rider->assignedOrders()
+            ->with(['delivery', 'user'])
+            ->where(function ($query): void {
+                $query
+                    ->whereIn('order_status', ['delivered', 'cancelled'])
+                    ->orWhereHas('delivery', fn ($query) => $query->whereIn('status', ['delivered', 'failed']));
+            })
+            ->latest()
+            ->paginate(10);
+
+        return view('admin.rider-show', [
+            'rider' => $rider,
+            'activeOrders' => $activeOrders,
+            'deliveryHistory' => $deliveryHistory,
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([

@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\BusinessRuleException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\AdminOrderStatusUpdateRequest;
+use App\Http\Requests\Api\V1\AssignRiderRequest;
 use App\Models\Delivery;
 use App\Models\Order;
 use App\Models\User;
-use App\Services\Email\OrderEmailService;
+use App\Services\Orders\OrderStatusService;
+use App\Services\Orders\RiderAssignmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AdminOrderController extends Controller
@@ -17,6 +20,11 @@ class AdminOrderController extends Controller
     public function index(Request $request): View
     {
         $status = $request->string('status')->toString();
+        $paymentStatus = $request->string('payment_status')->toString();
+        $riderId = $request->integer('rider_id');
+        $dateFrom = $request->date('date_from');
+        $dateTo = $request->date('date_to');
+        $search = trim($request->string('search')->toString());
 
         $orders = Order::query()
             ->with(['user', 'rider', 'delivery'])
@@ -24,6 +32,25 @@ class AdminOrderController extends Controller
                 $status !== '' && array_key_exists($status, Order::STATUSES),
                 fn ($query) => $query->where('order_status', $status),
             )
+            ->when(
+                $paymentStatus !== '' && array_key_exists($paymentStatus, Order::PAYMENT_STATUSES),
+                fn ($query) => $query->where('payment_status', $paymentStatus),
+            )
+            ->when($riderId > 0, fn ($query) => $query->where('rider_id', $riderId))
+            ->when($dateFrom, fn ($query) => $query->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo, fn ($query) => $query->whereDate('created_at', '<=', $dateTo))
+            ->when($search !== '', function ($query) use ($search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query
+                        ->where('order_number', 'like', '%'.$search.'%')
+                        ->orWhere('customer_name', 'like', '%'.$search.'%')
+                        ->orWhere('customer_phone', 'like', '%'.$search.'%')
+                        ->orWhere('customer_email', 'like', '%'.$search.'%')
+                        ->orWhereHas('user', fn ($query) => $query
+                            ->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%'));
+                });
+            })
             ->latest()
             ->paginate(12)
             ->withQueryString();
@@ -31,7 +58,20 @@ class AdminOrderController extends Controller
         return view('admin.orders', [
             'orders' => $orders,
             'statuses' => Order::STATUSES,
+            'paymentStatuses' => Order::PAYMENT_STATUSES,
             'currentStatus' => $status,
+            'filters' => [
+                'payment_status' => $paymentStatus,
+                'rider_id' => $riderId ?: null,
+                'date_from' => $request->query('date_from'),
+                'date_to' => $request->query('date_to'),
+                'search' => $search,
+            ],
+            'activeRiders' => User::query()
+                ->where('role', 'rider')
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -51,118 +91,47 @@ class AdminOrderController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Order $order, OrderEmailService $orderEmailService): RedirectResponse
+    public function updateStatus(AdminOrderStatusUpdateRequest $request, Order $order, OrderStatusService $orderStatusService): RedirectResponse
     {
-        $validated = $request->validate([
-            'order_status' => ['required', Rule::in(array_keys(Order::STATUSES))],
-        ]);
-
-        if (! $order->canEnterFulfillment() && $validated['order_status'] !== 'cancelled') {
-            return back()->with('status', 'Stripe payment must be confirmed before this order enters fulfilment.');
-        }
-
-        $payload = ['order_status' => $validated['order_status']];
-
-        if ($validated['order_status'] === 'delivered' && $order->payment_method === 'cod') {
-            $payload['payment_status'] = 'paid';
-            $payload['delivered_at'] = $order->delivered_at ?? now();
-        }
-
-        if ($validated['order_status'] === 'delivered') {
-            $payload['delivered_at'] = $order->delivered_at ?? now();
-        }
-
-        if ($validated['order_status'] === 'cancelled' && $order->payment_method === 'cod') {
-            $payload['payment_status'] = 'cancelled';
-        }
-
-        $order->update($payload);
-
-        if ($order->delivery) {
-            if ($validated['order_status'] === 'out_for_delivery') {
-                $order->delivery->update(['status' => 'out_for_delivery']);
-            }
-
-            if ($validated['order_status'] === 'delivered') {
-                $order->delivery->update([
-                    'status' => 'delivered',
-                    'delivered_time' => $order->delivery->delivered_time ?? now(),
-                ]);
-            }
-
-            if ($validated['order_status'] === 'cancelled') {
-                $order->delivery->update(['status' => 'failed']);
-            }
-        }
-
-        $order->refresh()->loadMissing(['items', 'restaurant', 'user', 'rider', 'delivery']);
-
-        if ($validated['order_status'] === 'accepted') {
-            $orderEmailService->sendOrderConfirmed($order);
-        }
-
-        if ($validated['order_status'] === 'delivered') {
-            $orderEmailService->sendOrderDelivered($order);
+        try {
+            $orderStatusService->change(
+                $order,
+                $request->string('order_status')->toString(),
+                $request->user(),
+                $request->input('reason'),
+                ['source' => 'admin_order_detail'],
+            );
+        } catch (BusinessRuleException $exception) {
+            return back()
+                ->withInput()
+                ->with('status', $exception->getMessage());
         }
 
         return back()->with('status', 'Order status updated successfully.');
     }
 
-    public function assignRider(Request $request, Order $order): RedirectResponse
+    public function assignRider(AssignRiderRequest $request, Order $order, RiderAssignmentService $riderAssignmentService): RedirectResponse
     {
-        if (in_array($order->order_status, ['delivered', 'cancelled'], true)) {
-            return back()->with('status', 'Delivered or cancelled orders cannot be assigned.');
+        $rider = User::query()->findOrFail($request->integer('rider_id'));
+
+        try {
+            $riderAssignmentService->assign($order, $rider, $request->user());
+        } catch (BusinessRuleException $exception) {
+            return back()
+                ->withInput()
+                ->with('status', $exception->getMessage());
         }
-
-        if (! $order->canEnterFulfillment()) {
-            return back()->with('status', 'Stripe payment must be confirmed before assigning a rider.');
-        }
-
-        $validated = $request->validate([
-            'rider_id' => [
-                'required',
-                Rule::exists('users', 'id')->where(fn ($query) => $query
-                    ->where('role', 'rider')
-                    ->where('is_active', true)),
-            ],
-        ]);
-
-        $order->update([
-            'rider_id' => $validated['rider_id'],
-            'order_status' => 'assigned_to_rider',
-            'assigned_at' => now(),
-        ]);
-
-        $order->delivery()->updateOrCreate(
-            ['order_id' => $order->id],
-            [
-                'rider_id' => $validated['rider_id'],
-                'status' => 'assigned',
-            ],
-        );
 
         return back()->with('status', 'Rider assigned successfully.');
     }
 
-    public function unassignRider(Order $order): RedirectResponse
+    public function unassignRider(Request $request, Order $order, RiderAssignmentService $riderAssignmentService): RedirectResponse
     {
-        if ($order->order_status === 'delivered') {
-            return back()->with('status', 'Delivered orders cannot be unassigned.');
+        try {
+            $riderAssignmentService->unassign($order, $request->user());
+        } catch (BusinessRuleException $exception) {
+            return back()->with('status', $exception->getMessage());
         }
-
-        $order->update([
-            'rider_id' => null,
-            'order_status' => $order->order_status === 'cancelled' ? 'cancelled' : 'preparing',
-            'assigned_at' => null,
-            'picked_up_at' => null,
-        ]);
-
-        $order->delivery?->update([
-            'rider_id' => null,
-            'status' => 'pending',
-            'pickup_time' => null,
-            'delivered_time' => null,
-        ]);
 
         return back()->with('status', 'Rider unassigned successfully.');
     }

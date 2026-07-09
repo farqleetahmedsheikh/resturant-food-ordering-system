@@ -15,6 +15,7 @@ class CartItemUpdateRequest extends FormRequest
     {
         return [
             'quantity' => ['required', 'integer', 'min:0', 'max:99'],
+            'item_notes' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

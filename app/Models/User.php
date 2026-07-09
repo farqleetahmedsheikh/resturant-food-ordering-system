@@ -16,6 +16,9 @@ class User extends Authenticatable
         'name',
         'email',
         'phone',
+        'last_known_latitude',
+        'last_known_longitude',
+        'last_location_updated_at',
         'password',
         'role',
         'is_active',
@@ -57,6 +60,11 @@ class User extends Authenticatable
         return $this->hasMany(UserDevice::class);
     }
 
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(CustomerAddress::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -66,6 +74,9 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_known_latitude' => 'decimal:7',
+            'last_known_longitude' => 'decimal:7',
+            'last_location_updated_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];

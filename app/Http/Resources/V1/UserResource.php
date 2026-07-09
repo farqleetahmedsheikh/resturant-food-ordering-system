@@ -16,6 +16,9 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'role' => $this->role,
             'is_active' => (bool) $this->is_active,
+            'last_known_latitude' => $this->last_known_latitude !== null ? (float) $this->last_known_latitude : null,
+            'last_known_longitude' => $this->last_known_longitude !== null ? (float) $this->last_known_longitude : null,
+            'last_location_updated_at' => $this->last_location_updated_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
         ];
     }

@@ -7,19 +7,19 @@ type StatusBadgeProps = {
 export function StatusBadge({ status }: StatusBadgeProps) {
   const normalized = status.toLowerCase();
 
-  if (['delivered', 'paid', 'open', 'success'].includes(normalized)) {
+  if (['active', 'delivered', 'paid', 'open', 'success', 'available'].includes(normalized)) {
     return <AppBadge label={status.replaceAll('_', ' ')} tone="green" />;
   }
 
-  if (['cancelled', 'failed', 'inactive'].includes(normalized)) {
+  if (['cancelled', 'failed', 'inactive', 'disabled'].includes(normalized)) {
     return <AppBadge label={status.replaceAll('_', ' ')} tone="danger" />;
   }
 
-  if (['pending', 'preparing'].includes(normalized)) {
+  if (['pending', 'pending_payment', 'preparing', 'ready', 'assigned'].includes(normalized)) {
     return <AppBadge label={status.replaceAll('_', ' ')} tone="gold" />;
   }
 
-  if (['assigned_to_rider', 'out_for_delivery', 'accepted'].includes(normalized)) {
+  if (['accepted', 'confirmed', 'assigned_to_rider', 'picked_up', 'out_for_delivery'].includes(normalized)) {
     return <AppBadge label={status.replaceAll('_', ' ')} tone="info" />;
   }
 

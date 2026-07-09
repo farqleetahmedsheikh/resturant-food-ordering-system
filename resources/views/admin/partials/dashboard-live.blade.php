@@ -41,7 +41,7 @@
                 </div>
             </div>
 
-            <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
                 <article class="rounded-2xl border border-white bg-white/90 px-3 py-3 shadow-sm">
                     <p class="text-[8px] font-black uppercase tracking-[0.12em] text-gold-500">
                         Pending
@@ -69,6 +69,16 @@
 
                     <p class="mt-1 text-2xl font-black text-brand-900">
                         {{ $livePreparingOrders }}
+                    </p>
+                </article>
+
+                <article class="rounded-2xl border border-white bg-white/90 px-3 py-3 shadow-sm">
+                    <p class="text-[8px] font-black uppercase tracking-[0.12em] text-violet-600">
+                        Ready
+                    </p>
+
+                    <p class="mt-1 text-2xl font-black text-violet-900">
+                        {{ $liveReadyOrders }}
                     </p>
                 </article>
 

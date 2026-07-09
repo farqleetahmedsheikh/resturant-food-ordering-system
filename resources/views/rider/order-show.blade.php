@@ -28,11 +28,19 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
         ? preg_replace('/[^0-9+]/', '', $customerPhone)
         : null;
 
+    $mapsQuery = $order->delivery_latitude !== null && $order->delivery_longitude !== null
+        ? number_format((float) $order->delivery_latitude, 7, '.', '') . ',' . number_format((float) $order->delivery_longitude, 7, '.', '')
+        : ($order->delivery_address ?? '');
+
     $mapsUrl = 'https://www.google.com/maps/search/?api=1&query='
-        . rawurlencode($order->delivery_address ?? '');
+        . rawurlencode($mapsQuery);
 
     $assignedAt = $order->assigned_at?->format('M d, Y · h:i A')
         ?? $order->delivery?->created_at?->format('M d, Y · h:i A');
+
+    $acceptedAt = $deliveryStatus === 'accepted'
+        ? $order->delivery?->updated_at?->format('M d, Y · h:i A')
+        : null;
 
     $pickedUpAt = $order->picked_up_at?->format('M d, Y · h:i A')
         ?? $order->delivery?->pickup_time?->format('M d, Y · h:i A');
@@ -45,16 +53,18 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
 
     $currentStep = match ($deliveryStatus) {
         'assigned', 'assigned_to_rider' => 1,
-        'picked_up' => 2,
-        'out_for_delivery' => 3,
-        'delivered' => 4,
+        'accepted' => 2,
+        'picked_up' => 3,
+        'out_for_delivery' => 4,
+        'delivered' => 5,
         default => 1,
     };
 
     $progressPercentage = match ($deliveryStatus) {
         'assigned', 'assigned_to_rider' => 15,
-        'picked_up' => 45,
-        'out_for_delivery' => 75,
+        'accepted' => 30,
+        'picked_up' => 55,
+        'out_for_delivery' => 78,
         'delivered' => 100,
         default => 10,
     };
@@ -70,12 +80,15 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
         $deliveryStatus === 'picked_up' =>
             'The order has been collected from the restaurant. Start the delivery when you are ready to leave.',
 
+        $deliveryStatus === 'accepted' =>
+            'You accepted this delivery. Confirm pickup after collecting the complete order from the restaurant.',
+
         in_array(
             $deliveryStatus,
             ['assigned', 'assigned_to_rider'],
             true
         ) =>
-            'This delivery is assigned to you. Review the order and confirm pickup after collecting it.',
+            'This delivery is assigned to you. Review the details and accept it before pickup.',
 
         default =>
             'Review the delivery details and continue with the next available action.',
@@ -110,6 +123,13 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
             'dot' => 'bg-sky-500',
         ],
 
+        $deliveryStatus === 'accepted' => [
+            'gradient' => 'from-indigo-700 via-indigo-600 to-brand-900',
+            'soft' => 'border-indigo-100 bg-indigo-50',
+            'text' => 'text-indigo-700',
+            'dot' => 'bg-indigo-500',
+        ],
+
         default => [
             'gradient' => 'from-warm-950 via-warm-900 to-brand-900',
             'soft' => 'border-warm-200 bg-brand-50',
@@ -126,6 +146,16 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
             ['assigned', 'assigned_to_rider'],
             true
         ) => [
+            'status' => 'accepted',
+            'label' => 'Accept Delivery',
+            'short_label' => 'Accept',
+            'description' => 'Confirm that you have reviewed the order and will handle this delivery.',
+            'button' => 'bg-brand-500 hover:bg-brand-600 shadow-brand-500/25',
+            'icon_bg' => 'bg-brand-500',
+            'confirmation' => 'Accept this assigned delivery?',
+        ],
+
+        $deliveryStatus === 'accepted' => [
             'status' => 'picked_up',
             'label' => 'Confirm Order Pickup',
             'short_label' => 'Confirm Pickup',
@@ -167,6 +197,11 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
             'title' => 'Assigned',
             'description' => 'Delivery assigned to you.',
             'time' => $assignedAt,
+        ],
+        [
+            'title' => 'Accepted',
+            'description' => 'You accepted the delivery.',
+            'time' => $acceptedAt,
         ],
         [
             'title' => 'Picked Up',
@@ -569,6 +604,13 @@ $deliveryStatus = $order->delivery?->status ?? 'assigned';
                             <span class="mt-1 block text-sm font-semibold leading-6 text-warm-600">
                                 {{ $order->delivery_address }}
                             </span>
+
+                            @if ($order->delivery_latitude !== null && $order->delivery_longitude !== null)
+                                <span class="mt-1 block font-mono text-[11px] font-bold text-warm-500">
+                                    {{ number_format((float) $order->delivery_latitude, 6) }},
+                                    {{ number_format((float) $order->delivery_longitude, 6) }}
+                                </span>
+                            @endif
 
                             <span class="mt-2 inline-flex items-center gap-1.5 text-xs font-black text-brand-600">
                                 Open directions

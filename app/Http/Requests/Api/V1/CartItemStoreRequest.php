@@ -18,6 +18,7 @@ class CartItemStoreRequest extends FormRequest
             'addon_ids' => ['nullable', 'array'],
             'addon_ids.*' => ['integer', 'exists:menu_item_addons,id'],
             'quantity' => ['required', 'integer', 'min:1', 'max:99'],
+            'item_notes' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

@@ -1,16 +1,19 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 export type MobileEnv = {
   apiUrl: string;
   enableAdminMobile: boolean;
   webAdminUrl: string | null;
+  configError: string | null;
 };
 
 const loopbackHost = 'local'.concat('host');
 const loopbackIpPattern = ['127', '0', '0', '1'].join('\\.');
-const placeholderPattern = new RegExp(`YOUR_COMPUTER_LAN_IP|${loopbackHost}|${loopbackIpPattern}`, 'i');
+const placeholderPattern = /YOUR_COMPUTER_LAN_IP/i;
+const loopbackPattern = new RegExp(`${loopbackHost}|${loopbackIpPattern}`, 'i');
 
-export function normalizeApiUrl(value: string | undefined): string {
+export function normalizeApiUrl(value: string | undefined, options: { allowLoopback?: boolean } = {}): string {
   const trimmed = (value ?? '').trim().replace(/\/+$/, '');
 
   if (!trimmed) {
@@ -22,7 +25,17 @@ export function normalizeApiUrl(value: string | undefined): string {
   }
 
   if (placeholderPattern.test(trimmed)) {
-    throw new Error('EXPO_PUBLIC_API_URL must use your computer LAN IP, not a loopback host or the placeholder value.');
+    throw new Error('EXPO_PUBLIC_API_URL must use your computer LAN IP, not the placeholder value.');
+  }
+
+  if (!options.allowLoopback && loopbackPattern.test(trimmed)) {
+    throw new Error('EXPO_PUBLIC_API_URL must use your computer LAN IP for native-device testing. Use EXPO_PUBLIC_WEB_API_URL for localhost web development.');
+  }
+
+  const url = new URL(trimmed);
+
+  if (url.port === '8081') {
+    throw new Error('EXPO_PUBLIC_API_URL points to the Expo dev server port 8081. Use the Laravel API port, usually 8000.');
   }
 
   return trimmed;
@@ -43,26 +56,46 @@ function normalizeOptionalUrl(value: string | undefined): string | null {
 }
 
 export function createEnv(source: NodeJS.ProcessEnv = process.env): MobileEnv {
+  const nativeApiUrl = normalizeApiUrl(source.EXPO_PUBLIC_API_URL);
+  const webApiUrl = source.EXPO_PUBLIC_WEB_API_URL
+    ? normalizeApiUrl(source.EXPO_PUBLIC_WEB_API_URL, { allowLoopback: true })
+    : null;
+
   return {
-    apiUrl: normalizeApiUrl(source.EXPO_PUBLIC_API_URL),
+    apiUrl: Platform.OS === 'web' && webApiUrl ? webApiUrl : nativeApiUrl,
     enableAdminMobile: source.EXPO_PUBLIC_ENABLE_ADMIN_MOBILE === 'true',
     webAdminUrl: normalizeOptionalUrl(source.EXPO_PUBLIC_WEB_ADMIN_URL),
+    configError: null,
   };
 }
 
-export function safeEnv(): MobileEnv {
+export function safeEnv(source: NodeJS.ProcessEnv = process.env): MobileEnv {
   try {
-    return createEnv();
+    return createEnv(source);
   } catch (error) {
     if (__DEV__) {
       return {
         apiUrl: 'http://YOUR_COMPUTER_LAN_IP:8000/api/v1',
         enableAdminMobile: false,
         webAdminUrl: null,
+        configError: error instanceof Error ? error.message : 'Mobile app configuration is invalid.',
       };
     }
 
-    throw error;
+    return {
+      apiUrl: 'https://invalid.arcade-kebab-house.local/api/v1',
+      enableAdminMobile: source.EXPO_PUBLIC_ENABLE_ADMIN_MOBILE === 'true',
+      webAdminUrl: safeOptionalUrl(source.EXPO_PUBLIC_WEB_ADMIN_URL),
+      configError: error instanceof Error ? error.message : 'Mobile app configuration is invalid.',
+    };
+  }
+}
+
+function safeOptionalUrl(value: string | undefined): string | null {
+  try {
+    return normalizeOptionalUrl(value);
+  } catch {
+    return null;
   }
 }
 

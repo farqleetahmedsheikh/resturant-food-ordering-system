@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\MenuItem;
 use App\Models\Order;
+use App\Models\PasswordResetOtp;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -128,6 +129,176 @@ class MobileApiTest extends TestCase
         ]);
     }
 
+    public function test_mobile_cart_supports_size_addons_and_item_notes(): void
+    {
+        $menuItem = $this->createMenuItem(['price' => 12]);
+        $size = $menuItem->sizes()->create([
+            'name' => 'Large',
+            'price' => 15,
+            'is_active' => true,
+        ]);
+        $addon = $menuItem->addons()->create([
+            'name' => 'Garlic Sauce',
+            'type' => 'dip',
+            'price' => 1.5,
+            'is_active' => true,
+        ]);
+        $customer = $this->createUser('customer');
+
+        Sanctum::actingAs($customer, ['customer']);
+
+        $this->postJson('/api/v1/customer/cart/items/'.$menuItem->id, [
+            'quantity' => 2,
+            'size_id' => $size->id,
+            'addon_ids' => [$addon->id],
+            'item_notes' => 'No onion',
+        ])->assertOk()
+            ->assertJsonPath('data.count', 2)
+            ->assertJsonPath('data.subtotal', 33)
+            ->assertJsonPath('data.items.0.size.name', 'Large')
+            ->assertJsonPath('data.items.0.addons.0.name', 'Garlic Sauce')
+            ->assertJsonPath('data.items.0.item_notes', 'No onion');
+
+        $this->withHeader('Idempotency-Key', 'test-checkout-options-001')
+            ->postJson('/api/v1/customer/checkout', [
+                'customer_name' => $customer->name,
+                'customer_phone' => '03001234567',
+                'customer_email' => $customer->email,
+                'delivery_address' => 'Demo delivery address',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.order.items.0.size_name', 'Large')
+            ->assertJsonPath('data.order.items.0.item_notes', 'No onion');
+
+        $this->assertDatabaseHas('order_items', [
+            'item_name' => $menuItem->name,
+            'size_name' => 'Large',
+            'item_notes' => 'No onion',
+            'quantity' => 2,
+        ]);
+    }
+
+    public function test_mobile_password_reset_otp_endpoints_reset_password(): void
+    {
+        $user = $this->createUser('customer', [
+            'email' => 'reset@example.com',
+            'password' => Hash::make('old-password'),
+        ]);
+
+        $this->postJson('/api/v1/auth/password/otp', [
+            'email' => $user->email,
+        ])->assertOk()
+            ->assertJsonPath('success', true);
+
+        PasswordResetOtp::query()->updateOrCreate(
+            ['email' => $user->email],
+            [
+                'otp_hash' => Hash::make('123456'),
+                'attempts' => 0,
+                'expires_at' => now()->addMinutes(10),
+                'verified_at' => null,
+            ],
+        );
+
+        $this->postJson('/api/v1/auth/password/otp/verify', [
+            'email' => $user->email,
+            'otp' => '123456',
+        ])->assertOk()
+            ->assertJsonPath('data.verified', true);
+
+        $this->postJson('/api/v1/auth/password/reset', [
+            'email' => $user->email,
+            'otp' => '123456',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])->assertOk();
+
+        $this->assertTrue(Hash::check('new-password', $user->fresh()->password));
+        $this->assertDatabaseMissing('password_reset_otps', [
+            'email' => $user->email,
+        ]);
+    }
+
+    public function test_customer_can_manage_saved_addresses_and_devices(): void
+    {
+        $customer = $this->createUser('customer');
+
+        Sanctum::actingAs($customer, ['customer']);
+
+        $addressId = $this->postJson('/api/v1/customer/addresses', [
+            'label' => 'Home',
+            'recipient_name' => 'Customer User',
+            'phone' => '03001234567',
+            'address' => '10 Demo Street Sydney NSW',
+            'latitude' => -33.8688,
+            'longitude' => 151.2093,
+            'delivery_notes' => 'Ring bell',
+            'is_default' => true,
+        ])->assertCreated()
+            ->assertJsonPath('data.label', 'Home')
+            ->assertJsonPath('data.is_default', true)
+            ->json('data.id');
+
+        $this->getJson('/api/v1/customer/addresses')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        $this->putJson('/api/v1/customer/addresses/'.$addressId, [
+            'label' => 'Office',
+            'recipient_name' => 'Customer User',
+            'phone' => '03001234567',
+            'address' => '20 Demo Street Sydney NSW',
+            'is_default' => true,
+        ])->assertOk()
+            ->assertJsonPath('data.label', 'Office');
+
+        $deviceId = $this->postJson('/api/v1/devices', [
+            'device_uuid' => 'test-device',
+            'device_name' => 'iPhone Test',
+            'platform' => 'ios',
+            'push_token' => 'ExponentPushToken[test]',
+            'app_version' => '1.0.0',
+        ])->assertOk()
+            ->assertJsonPath('data.device_name', 'iPhone Test')
+            ->json('data.id');
+
+        $this->getJson('/api/v1/devices')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing(['push_token' => 'ExponentPushToken[test]']);
+
+        $this->deleteJson('/api/v1/devices/'.$deviceId)
+            ->assertOk();
+
+        $this->deleteJson('/api/v1/customer/addresses/'.$addressId)
+            ->assertOk();
+    }
+
+    public function test_customer_profile_update_does_not_change_email(): void
+    {
+        $customer = $this->createUser('customer', [
+            'email' => 'locked-email@example.com',
+        ]);
+
+        Sanctum::actingAs($customer, ['customer']);
+
+        $this->putJson('/api/v1/customer/profile', [
+            'name' => 'Updated Customer',
+            'email' => 'changed-email@example.com',
+            'phone' => '0400000000',
+        ])->assertOk()
+            ->assertJsonPath('data.name', 'Updated Customer')
+            ->assertJsonPath('data.email', 'locked-email@example.com')
+            ->assertJsonPath('data.phone', '0400000000');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $customer->id,
+            'name' => 'Updated Customer',
+            'email' => 'locked-email@example.com',
+            'phone' => '0400000000',
+        ]);
+    }
+
     public function test_admin_can_assign_order_and_rider_can_deliver_it(): void
     {
         $admin = $this->createUser('admin');
@@ -150,9 +321,20 @@ class MobileApiTest extends TestCase
 
         Sanctum::actingAs($rider, ['rider']);
 
-        $this->postJson('/api/v1/rider/deliveries/'.$order->id.'/status', [
-            'status' => 'delivered',
-        ])->assertOk()
+        $this->postJson('/api/v1/rider/deliveries/'.$order->id.'/accept')
+            ->assertOk()
+            ->assertJsonPath('data.delivery.status', 'accepted');
+
+        $this->postJson('/api/v1/rider/deliveries/'.$order->id.'/picked-up')
+            ->assertOk()
+            ->assertJsonPath('data.delivery.status', 'picked_up');
+
+        $this->postJson('/api/v1/rider/deliveries/'.$order->id.'/out-for-delivery')
+            ->assertOk()
+            ->assertJsonPath('data.order_status', 'out_for_delivery');
+
+        $this->postJson('/api/v1/rider/deliveries/'.$order->id.'/delivered')
+            ->assertOk()
             ->assertJsonPath('data.order_status', 'delivered')
             ->assertJsonPath('data.payment_status', 'paid');
 
@@ -182,6 +364,39 @@ class MobileApiTest extends TestCase
         $this->getJson('/api/v1/rider/deliveries/'.$order->id)
             ->assertForbidden()
             ->assertJsonPath('success', false);
+    }
+
+    public function test_customer_order_tracking_exposes_assigned_rider_location(): void
+    {
+        $customer = $this->createUser('customer', ['email' => 'tracking-customer@example.com']);
+        $rider = $this->createUser('rider', [
+            'email' => 'tracking-rider@example.com',
+            'last_known_latitude' => -33.8688,
+            'last_known_longitude' => 151.2093,
+            'last_location_updated_at' => now(),
+        ]);
+        $order = $this->createOrder([
+            'user_id' => $customer->id,
+            'rider_id' => $rider->id,
+            'customer_name' => $customer->name,
+            'customer_email' => $customer->email,
+            'order_status' => 'out_for_delivery',
+        ]);
+
+        $order->delivery()->create([
+            'rider_id' => $rider->id,
+            'status' => 'out_for_delivery',
+        ]);
+
+        Sanctum::actingAs($customer, ['customer']);
+
+        $this->getJson('/api/v1/customer/orders/'.$order->id)
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.rider.id', $rider->id)
+            ->assertJsonPath('data.rider.last_known_latitude', -33.8688)
+            ->assertJsonPath('data.rider.last_known_longitude', 151.2093)
+            ->assertJsonPath('data.delivery.status', 'out_for_delivery');
     }
 
     /**
@@ -260,8 +475,9 @@ class MobileApiTest extends TestCase
             'subtotal' => 30,
             'delivery_fee' => 4.99,
             'total' => 34.99,
-            'payment_method' => 'cod',
-            'payment_status' => 'pending',
+            'currency' => 'AUD',
+            'payment_method' => 'stripe',
+            'payment_status' => 'paid',
             'order_status' => 'pending',
         ], $overrides));
     }

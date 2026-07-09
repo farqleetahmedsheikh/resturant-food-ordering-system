@@ -4,7 +4,7 @@ import { login as loginApi, logout as logoutApi, me, register as registerApi } f
 import { registerUnauthorizedHandler } from '@/src/api/client';
 import { normalizeApiError } from '@/src/api/api-error';
 import { clearStoredToken, getStoredToken, storeToken } from './token-storage';
-import type { AuthSession } from '@/src/types/auth';
+import type { AuthSession, AuthUser } from '@/src/types/auth';
 
 type LoginInput = {
   email: string;
@@ -28,6 +28,7 @@ type AuthState = {
   register: (input: RegisterInput) => Promise<AuthSession>;
   logout: () => Promise<void>;
   clearSession: () => Promise<void>;
+  updateUser: (user: AuthUser) => void;
 };
 
 async function persistSession(session: AuthSession): Promise<void> {
@@ -44,7 +45,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
 
   restore: async () => {
-    const token = await getStoredToken();
+    let token: string | null = null;
+
+    try {
+      token = await getStoredToken();
+    } catch {
+      await clearStoredToken().catch(() => undefined);
+      set({
+        status: 'guest',
+        session: null,
+        error: 'Secure session storage was reset. Please login again.',
+      });
+      return;
+    }
 
     if (!token) {
       set({ status: 'guest', session: null, error: null });
@@ -126,6 +139,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   clearSession: async () => {
     await clearStoredToken();
     set({ status: 'guest', session: null, error: null });
+  },
+
+  updateUser: (user) => {
+    const session = get().session;
+
+    if (!session) {
+      return;
+    }
+
+    set({
+      session: {
+        ...session,
+        user,
+      },
+    });
   },
 }));
 

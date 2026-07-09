@@ -27,12 +27,23 @@ class RestaurantController extends Controller
         $restaurant = Restaurant::query()->oldest('id')->firstOrFail();
         $old = $restaurant->toArray();
         $payload = $request->validated();
+        unset($payload['remove_logo'], $payload['remove_cover_image']);
 
         $payload['is_open'] = $request->boolean('is_open', $restaurant->is_open);
         $payload['formatted_address'] = $payload['formatted_address'] ?? $payload['address'] ?? null;
 
+        if ($request->boolean('remove_logo') && ! $request->hasFile('logo')) {
+            ImageUpload::delete($restaurant->logo);
+            $payload['logo'] = null;
+        }
+
         if ($request->hasFile('logo')) {
             $payload['logo'] = ImageUpload::store($request->file('logo'), 'restaurant/logos', $restaurant->logo);
+        }
+
+        if ($request->boolean('remove_cover_image') && ! $request->hasFile('cover_image')) {
+            ImageUpload::delete($restaurant->cover_image);
+            $payload['cover_image'] = null;
         }
 
         if ($request->hasFile('cover_image')) {
