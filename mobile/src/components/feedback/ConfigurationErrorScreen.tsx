@@ -26,7 +26,7 @@ export function ConfigurationErrorScreen({ message }: ConfigurationErrorScreenPr
         </View>
         <AppText variant="caption" color={colors.text.secondary}>
           Rebuild the app after setting EXPO_PUBLIC_API_URL to your Laravel API URL, for example
-          https://your-domain.com/api/v1.
+          http://arcadekebab.com/api/v1.
         </AppText>
       </AppCard>
     </View>

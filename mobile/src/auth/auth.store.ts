@@ -68,7 +68,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = await me();
 
       if (!user.is_active) {
-        await clearStoredToken();
+        await clearStoredToken().catch(() => undefined);
         set({ status: 'guest', session: null, error: 'Your account is inactive.' });
         return;
       }
@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         },
       });
     } catch (error) {
-      await clearStoredToken();
+      await clearStoredToken().catch(() => undefined);
       set({
         status: 'guest',
         session: null,
