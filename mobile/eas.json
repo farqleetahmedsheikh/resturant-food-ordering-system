@@ -5,14 +5,28 @@
   "build": {
     "preview": {
       "distribution": "internal",
+      "developmentClient": false,
       "android": {
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://arcadekebab.com/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://arcadekebab.com/api/v1",
+        "EXPO_PUBLIC_ENABLE_ADMIN_MOBILE": "true"
+      }
+    },
+    "website-apk": {
+      "distribution": "internal",
+      "developmentClient": false,
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://arcadekebab.com/api/v1",
+        "EXPO_PUBLIC_ENABLE_ADMIN_MOBILE": "true"
       }
     },
     "production": {
+      "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
       },
