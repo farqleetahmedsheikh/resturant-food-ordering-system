@@ -9,7 +9,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://arcadekebab.com/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://arcadekebab.com/api/v1"
       }
     },
     "production": {
@@ -17,7 +17,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://arcadekebab.com/api/v1",
+        "EXPO_PUBLIC_API_URL": "https://arcadekebab.com/api/v1",
         "EXPO_PUBLIC_ENABLE_ADMIN_MOBILE": "true"
       }
     }
