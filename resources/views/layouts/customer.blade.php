@@ -98,6 +98,14 @@
                     Security
                 </a>
 
+                <a href="{{ route('privacy') }}" class="rounded-2xl px-4 py-3 text-warm-600 hover:bg-brand-50">
+                    Privacy Policy
+                </a>
+
+                <a href="{{ route('terms') }}" class="rounded-2xl px-4 py-3 text-warm-600 hover:bg-brand-50">
+                    Terms
+                </a>
+
                 <form action="{{ route('logout') }}" method="POST" class="pt-2">
                     @csrf
 
@@ -210,6 +218,22 @@
                     >
                         <x-ui-icon name="shield" class="h-5 w-5 shrink-0" />
                         <span>Security</span>
+                    </a>
+
+                    <a
+                        href="{{ route('privacy') }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 text-warm-600 transition hover:bg-brand-50 hover:text-brand-600"
+                    >
+                        <x-ui-icon name="shield" class="h-5 w-5 shrink-0" />
+                        <span>Privacy Policy</span>
+                    </a>
+
+                    <a
+                        href="{{ route('terms') }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 text-warm-600 transition hover:bg-brand-50 hover:text-brand-600"
+                    >
+                        <x-ui-icon name="receipt" class="h-5 w-5 shrink-0" />
+                        <span>Terms</span>
                     </a>
                 </nav>
 

@@ -14,7 +14,7 @@ export const registerSchema = z
     phone: z.string().trim().optional(),
     password: passwordSchema,
     password_confirmation: z.string().min(8, 'Confirm your password.'),
-    accepted: z.boolean().refine((value) => value, 'Please acknowledge the account terms placeholder.'),
+    accepted: z.boolean().refine((value) => value, 'Please agree to the Terms and Conditions and acknowledge the Privacy Policy.'),
   })
   .refine((value) => value.password === value.password_confirmation, {
     path: ['password_confirmation'],

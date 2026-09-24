@@ -135,6 +135,12 @@
         <p class="text-sm font-semibold leading-6 text-warm-600">
             New accounts are created as <span class="font-black text-brand-600">customers</span> by default. Admin and rider accounts are managed by the restaurant owner.
         </p>
+        <p class="mt-3 text-sm font-semibold leading-6 text-warm-600">
+            By creating an account, you agree to our
+            <a href="{{ route('terms') }}" class="font-black text-brand-600 transition hover:text-brand-800">Terms and Conditions</a>
+            and acknowledge our
+            <a href="{{ route('privacy') }}" class="font-black text-brand-600 transition hover:text-brand-800">Privacy Policy</a>.
+        </p>
     </div>
 
     <button

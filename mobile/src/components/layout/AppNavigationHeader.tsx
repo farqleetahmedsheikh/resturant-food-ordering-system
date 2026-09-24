@@ -280,6 +280,8 @@ function getDrawerLinks(role: string | undefined, cartCount: number): DrawerLink
       { label: 'Orders', href: '/(customer)/(tabs)/orders', icon: appIcons.orders },
       { label: 'Profile', href: '/(customer)/(tabs)/profile', icon: appIcons.profile },
       { label: 'Contact', href: '/(public)/contact', icon: appIcons.contact },
+      { label: 'Privacy Policy', href: '/(public)/privacy', icon: appIcons.privacy },
+      { label: 'Terms', href: '/(public)/terms', icon: appIcons.legal },
     ];
   }
 
@@ -290,6 +292,8 @@ function getDrawerLinks(role: string | undefined, cartCount: number): DrawerLink
       { label: 'Delivery History', href: '/(rider)/(tabs)/history', icon: appIcons.history },
       { label: 'Profile', href: '/(rider)/(tabs)/profile', icon: appIcons.profile },
       { label: 'Contact', href: '/(public)/contact', icon: appIcons.contact },
+      { label: 'Privacy Policy', href: '/(public)/privacy', icon: appIcons.privacy },
+      { label: 'Terms', href: '/(public)/terms', icon: appIcons.legal },
     ];
   }
 
@@ -301,6 +305,8 @@ function getDrawerLinks(role: string | undefined, cartCount: number): DrawerLink
       { label: 'Restaurant', href: '/(admin)/restaurant', icon: appIcons.contact },
       { label: 'Riders', href: '/(admin)/riders', icon: appIcons.riders },
       { label: 'Contact', href: '/(public)/contact', icon: appIcons.contact },
+      { label: 'Privacy Policy', href: '/(public)/privacy', icon: appIcons.privacy },
+      { label: 'Terms', href: '/(public)/terms', icon: appIcons.legal },
     ];
   }
 
@@ -309,6 +315,8 @@ function getDrawerLinks(role: string | undefined, cartCount: number): DrawerLink
     { label: 'Browse Menu', href: '/(public)/menu', icon: appIcons.menu, activePaths: ['/menu', '/item'] },
     { label: 'Cart', href: '/(auth)/login', icon: appIcons.cart, note: cartCount > 0 ? `${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Login' },
     { label: 'Contact', href: '/(public)/contact', icon: appIcons.contact, activePaths: ['/contact'] },
+    { label: 'Privacy Policy', href: '/(public)/privacy', icon: appIcons.privacy, activePaths: ['/privacy'] },
+    { label: 'Terms', href: '/(public)/terms', icon: appIcons.legal, activePaths: ['/terms'] },
     { label: 'Orders', href: '/(auth)/login', icon: appIcons.orders, note: 'Login' },
     { label: 'Login', href: '/(auth)/login', icon: appIcons.login, activePaths: ['/login'] },
     { label: 'Sign up', href: '/(auth)/register', icon: appIcons.signup, activePaths: ['/register'] },

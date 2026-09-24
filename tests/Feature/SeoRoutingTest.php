@@ -23,6 +23,19 @@ class SeoRoutingTest extends TestCase
             ->assertRedirect(route('menu'));
     }
 
+    public function test_public_legal_pages_are_available(): void
+    {
+        $this->get('/privacy-policy')
+            ->assertOk()
+            ->assertSee('Privacy Policy')
+            ->assertSee('We do not sell your personal information.');
+
+        $this->get('/terms-and-conditions')
+            ->assertOk()
+            ->assertSee('Terms and Conditions')
+            ->assertSee('Australian Consumer Law');
+    }
+
     public function test_sitemap_contains_only_public_indexable_urls(): void
     {
         $restaurant = Restaurant::create([
@@ -55,6 +68,8 @@ class SeoRoutingTest extends TestCase
             ->assertSee(route('home'), false)
             ->assertSee(route('menu'), false)
             ->assertSee(route('contact'), false)
+            ->assertSee(route('privacy'), false)
+            ->assertSee(route('terms'), false)
             ->assertSee(route('menu.show', $item), false)
             ->assertDontSee('/cart', false)
             ->assertDontSee('/checkout', false)

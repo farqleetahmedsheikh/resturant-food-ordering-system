@@ -18,6 +18,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::get('/menu/{menuItem:slug}', [MenuController::class, 'show'])->name('menu.show');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::view('/privacy-policy', 'pages.privacy')->name('privacy');
+Route::view('/terms-and-conditions', 'pages.terms')->name('terms');
 
 Route::get('/restaurant/{restaurantSlug}', [SeoController::class, 'redirectRestaurant']);
 Route::get('/restaurant/{restaurantSlug}/menu', [SeoController::class, 'redirectRestaurantMenu']);

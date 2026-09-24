@@ -130,11 +130,19 @@ export default function RegisterScreen() {
           name="accepted"
           render={({ field, fieldState }) => (
             <>
-              <AppCheckbox checked={field.value} onChange={field.onChange} label="I agree to create an Arcade Kebab House customer account." />
+              <AppCheckbox checked={field.value} onChange={field.onChange} label="I agree to the Terms and Conditions and acknowledge the Privacy Policy." />
               {fieldState.error ? <AppText color={colors.semantic.danger}>{fieldState.error.message}</AppText> : null}
             </>
           )}
         />
+        <View style={styles.legalLinks}>
+          <Link href="/(public)/terms">
+            <AppText color={colors.brand.primary}>Terms and Conditions</AppText>
+          </Link>
+          <Link href="/(public)/privacy">
+            <AppText color={colors.brand.primary}>Privacy Policy</AppText>
+          </Link>
+        </View>
         {form.formState.errors.root ? (
           <FeedbackMessage tone="error" message={form.formState.errors.root.message ?? 'Unable to register.'} />
         ) : null}
@@ -200,6 +208,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  legalLinks: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.md,
   },
   pressed: {

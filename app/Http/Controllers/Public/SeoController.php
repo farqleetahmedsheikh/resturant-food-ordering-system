@@ -37,6 +37,16 @@ class SeoController extends Controller
                 'priority' => '0.6',
                 'changefreq' => 'monthly',
             ],
+            [
+                'loc' => route('privacy'),
+                'priority' => '0.4',
+                'changefreq' => 'yearly',
+            ],
+            [
+                'loc' => route('terms'),
+                'priority' => '0.4',
+                'changefreq' => 'yearly',
+            ],
         ]);
 
         MenuItem::query()

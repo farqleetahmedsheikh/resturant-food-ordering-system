@@ -35,6 +35,8 @@ export const appIcons = {
   signup: { ios: 'person.badge.plus', android: 'person_add', web: 'person_add', fallback: 'A' },
   delivery: { ios: 'scooter', android: 'motorcycle', web: 'motorcycle', fallback: 'D' },
   history: { ios: 'clock.fill', android: 'history', web: 'history', fallback: 'H' },
+  legal: { ios: 'doc.text.fill', android: 'description', web: 'description', fallback: 'T' },
+  privacy: { ios: 'lock.shield.fill', android: 'privacy_tip', web: 'privacy_tip', fallback: 'S' },
 } satisfies Record<string, AppIconName>;
 
 export function AppIcon({ name, size = 22, color = colors.brand.primary }: AppIconProps) {

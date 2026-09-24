@@ -358,6 +358,8 @@
                         <a href="{{ route('home') }}" class="transition hover:text-brand-500">Home</a>
                         <a href="{{ route('menu') }}" class="transition hover:text-brand-500">Menu</a>
                         <a href="{{ route('contact') }}" class="transition hover:text-brand-500">Contact</a>
+                        <a href="{{ route('privacy') }}" class="transition hover:text-brand-500">Privacy Policy</a>
+                        <a href="{{ route('terms') }}" class="transition hover:text-brand-500">Terms and Conditions</a>
                     </div>
                 </div>
 
@@ -375,7 +377,10 @@
 
             <div class="mt-10 flex flex-col gap-3 border-t border-warm-200 pt-6 text-sm font-semibold text-warm-500 md:flex-row md:items-center md:justify-between">
                 <p>© {{ date('Y') }} {{ $brandName }} Restaurant. All rights reserved.</p>
-                <p>Built for fast and simple online food ordering.</p>
+                <div class="flex flex-wrap gap-x-4 gap-y-2">
+                    <a href="{{ route('privacy') }}" class="transition hover:text-brand-500">Privacy</a>
+                    <a href="{{ route('terms') }}" class="transition hover:text-brand-500">Terms</a>
+                </div>
             </div>
         </div>
     </footer>
