@@ -473,7 +473,7 @@
                     <aside class="absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-2xl">
                         <div class="flex items-start justify-between border-b border-warm-200 px-6 py-5">
                             <div class="min-w-0">
-                                <p class="{{ $labelClass }}">Edit product assignment</p>
+                                <p class="{{ $labelClass }}">Selected product</p>
                                 <h2 class="mt-1 truncate text-2xl font-black text-warm-950">{{ $selectedProduct->name }}</h2>
                                 <p class="mt-1 text-sm font-semibold text-warm-500">{{ $selectedProduct->category?->name ?? 'Uncategorised' }} · @money($selectedProduct->price)</p>
                             </div>
@@ -498,7 +498,7 @@
                                 <button class="{{ $buttonClass }} mt-5 w-full">Save Product Assignments</button>
                             </form>
                             <div class="mt-8 border-t border-warm-200 pt-6">
-                                <p class="{{ $labelClass }}">Customer preview</p>
+                                <p class="{{ $labelClass }}">Customer Preview</p>
                                 <div class="mt-3 rounded-3xl border border-warm-200 bg-warm-50/60 p-4">
                                     <div class="flex items-center justify-between gap-3"><p class="text-lg font-black text-warm-950">{{ $selectedProduct->name }}</p><p class="font-black text-brand-600">@money($selectedProduct->price)</p></div>
                                     <div class="mt-4 space-y-3">

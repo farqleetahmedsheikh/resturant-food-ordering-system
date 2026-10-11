@@ -54,12 +54,17 @@ class AdminRestaurantSettingsController extends Controller
             'is_open' => ['nullable', 'boolean'],
         ]);
 
+        $formattedAddress = trim((string) ($validated['formatted_address'] ?? ''));
+        if ($formattedAddress === '' || in_array(mb_strtolower($formattedAddress), ['address to be configured', 'not configured yet'], true)) {
+            $formattedAddress = trim((string) ($validated['address'] ?? ''));
+        }
+
         $payload = [
             'name' => $validated['name'],
             'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'address' => $validated['address'] ?? null,
-            'formatted_address' => $validated['formatted_address'] ?? $validated['address'] ?? null,
+            'formatted_address' => $formattedAddress !== '' ? $formattedAddress : null,
             'short_description' => $validated['short_description'] ?? null,
             'opening_time' => $validated['opening_time'] ?? null,
             'closing_time' => $validated['closing_time'] ?? null,

@@ -62,6 +62,20 @@ class Restaurant extends Model
         return mb_strtoupper($initials ?: 'AK');
     }
 
+    public function getDisplayAddressAttribute(): ?string
+    {
+        $formatted = trim((string) $this->formatted_address);
+        $placeholders = ['address to be configured', 'not configured yet'];
+
+        if ($formatted !== '' && ! in_array(mb_strtolower($formatted), $placeholders, true)) {
+            return $formatted;
+        }
+
+        $address = trim((string) $this->address);
+
+        return $address !== '' ? $address : null;
+    }
+
     public function getLogoUrlAttribute(): ?string
     {
         return ImageUpload::url($this->logo);

@@ -30,7 +30,11 @@ class RestaurantController extends Controller
         unset($payload['remove_logo'], $payload['remove_cover_image']);
 
         $payload['is_open'] = $request->boolean('is_open', $restaurant->is_open);
-        $payload['formatted_address'] = $payload['formatted_address'] ?? $payload['address'] ?? null;
+        $formattedAddress = trim((string) ($payload['formatted_address'] ?? ''));
+        if ($formattedAddress === '' || in_array(mb_strtolower($formattedAddress), ['address to be configured', 'not configured yet'], true)) {
+            $formattedAddress = trim((string) ($payload['address'] ?? $restaurant->address ?? ''));
+        }
+        $payload['formatted_address'] = $formattedAddress !== '' ? $formattedAddress : null;
 
         if ($request->boolean('remove_logo') && ! $request->hasFile('logo')) {
             ImageUpload::delete($restaurant->logo);

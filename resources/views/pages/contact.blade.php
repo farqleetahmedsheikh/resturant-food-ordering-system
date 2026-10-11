@@ -4,7 +4,7 @@ $restaurantName = $restaurant?->name ?? 'Arcade Kebab House Restaurant';
 $restaurantInitials = $restaurant?->initials ?? 'AK';
 $phone = $restaurant?->phone;
 $email = $restaurant?->email;
-$address = $restaurant?->formatted_address ?? $restaurant?->address;
+$address = $restaurant?->display_address;
 
     $timingText = $restaurant?->opening_time && $restaurant?->closing_time
         ? $restaurant->opening_time . ' - ' . $restaurant->closing_time
