@@ -368,7 +368,7 @@
                                         @foreach ($addons as $addon)
                                             @php
                                                 $groupAddon = $group->addons->firstWhere('id', $addon->id);
-                                                $addonState = $groupAddon ? ($groupAddon->pivot->is_default ? 'default' : 'optional') : 'none';
+                                                $addonState = $groupAddon ? (($groupAddon->pivot?->is_default ?? false) ? 'default' : 'optional') : 'none';
                                             @endphp
                                             <label class="grid gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-warm-600 ring-1 ring-warm-100 sm:grid-cols-[minmax(0,1fr)_190px] sm:items-center">
                                                 <span class="break-words leading-5">{{ $addon->name }}</span>

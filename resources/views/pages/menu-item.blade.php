@@ -38,13 +38,14 @@ $cartCount = \App\Support\Cart::count();
             'name' => $addon->name,
             'type' => $addon->type,
             'price' => (float) $addon->price,
+            'is_default' => (bool) ($addon->pivot?->is_default ?? false),
         ])->values()->all(),
     ])->values();
 
     $defaultAddonQuantities = $customizationOptions
         ->mapWithKeys(fn ($group) => [
             $group['id'] => collect($group['addons'])
-                ->filter(fn ($addon) => $addon['is_default'])
+                ->filter(fn ($addon) => (bool) ($addon['is_default'] ?? false))
                 ->mapWithKeys(fn ($addon) => [$addon['id'] => 1])
                 ->all(),
         ])
@@ -644,7 +645,7 @@ $cartCount = \App\Support\Cart::count();
                                                             <input type="{{ $group['selection_type'] === 'single' ? 'radio' : 'checkbox' }}" @if ($group['selection_type'] === 'single') name="addon_group_{{ $group['id'] }}" @endif value="{{ $addon['id'] }}" class="h-5 w-5 shrink-0 border-warm-300 text-brand-500 focus:ring-brand-500" @change="setAddonQuantity({{ $group['id'] }}, {{ $addon['id'] }}, $event.target.checked ? 1 : 0)">
                                                             <span class="min-w-0"><span class="block truncate text-sm font-black text-warm-950">{{ $addon['name'] }}</span><span class="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.1em] text-warm-500">{{ ucfirst($addon['type']) }}</span></span>
                                                         </label>
-                                                        <span class="shrink-0 text-sm font-black text-brand-500">{{ $addon['is_default'] ? 'Included' : '+ '.\App\Support\Money::format($addon['price']) }}</span>
+                                                        <span class="shrink-0 text-sm font-black text-brand-500">{{ ($addon['is_default'] ?? false) ? 'Included' : '+ '.\App\Support\Money::format($addon['price']) }}</span>
                                                     </div>
                                                     @if ($group['quantity_limit'] > 1 && $group['selection_type'] !== 'single')
                                                         <div class="mt-3 flex items-center justify-end gap-2" x-show="Number(selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0) > 0" x-cloak>
