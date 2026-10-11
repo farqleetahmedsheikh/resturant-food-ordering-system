@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\MenuItem;
 use App\Models\Restaurant;
 use App\Services\Security\AuditLogger;
+use App\Services\Email\ProductEmailService;
 use App\Support\Api\ApiResponse;
 use App\Support\ImageUpload;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +22,10 @@ use Illuminate\Validation\ValidationException;
 
 class MenuItemController extends Controller
 {
-    public function __construct(private AuditLogger $auditLogger) {}
+    public function __construct(
+        private AuditLogger $auditLogger,
+        private ProductEmailService $productEmailService,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -72,6 +76,7 @@ class MenuItemController extends Controller
         });
 
         $this->auditLogger->record('menu_item.created', $request->user(), $menuItem, [], $menuItem->toArray());
+        $this->productEmailService->sendProductAdded($menuItem->loadMissing('restaurant'));
 
         return ApiResponse::success(new MenuItemResource($menuItem), 'Menu item created successfully.', status: 201);
     }
@@ -102,6 +107,9 @@ class MenuItemController extends Controller
         });
 
         $this->auditLogger->record('menu_item.updated', $request->user(), $menuItem, $old, $menuItem->toArray());
+        if ((string) $old['price'] !== (string) $menuItem->price) {
+            $this->productEmailService->sendPriceChanged($menuItem->loadMissing('restaurant'), (string) $old['price']);
+        }
 
         return ApiResponse::success(new MenuItemResource($menuItem), 'Menu item updated successfully.');
     }

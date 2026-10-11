@@ -11,4 +11,5 @@ Route::middleware('customer')
         Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
         Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders');
         Route::get('/orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{order}/invoice', [CustomerOrderController::class, 'invoice'])->name('orders.invoice');
     });

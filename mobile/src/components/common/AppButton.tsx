@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, PressableProps, StyleSheet, ViewStyle } from 'react-native';
 
 import { AppText } from './AppText';
-import { colors, radius, shadows, spacing } from '@/src/theme';
+import { colors, radius, shadows, spacing, useTheme } from '@/src/theme';
 
 type AppButtonProps = PressableProps & {
   label: string;
@@ -19,7 +19,15 @@ export function AppButton({
   style,
   ...props
 }: AppButtonProps) {
+  const { colors } = useTheme();
   const isDisabled = disabled || loading;
+  const dynamicVariant = variant === 'outline'
+    ? { backgroundColor: colors.surface.card, borderColor: colors.border.strong }
+    : variant === 'secondary'
+      ? { backgroundColor: colors.brand.soft, borderColor: colors.brand.border }
+      : variant === 'danger'
+        ? { backgroundColor: colors.semantic.danger }
+        : { backgroundColor: colors.brand.primary };
 
   return (
     <Pressable
@@ -29,6 +37,7 @@ export function AppButton({
       style={({ pressed }) => [
         styles.base,
         styles[variant],
+        dynamicVariant,
         fullWidth && styles.fullWidth,
         pressed && !isDisabled && styles.pressed,
         isDisabled && styles.disabled,

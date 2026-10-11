@@ -91,6 +91,13 @@ class AdminOrderController extends Controller
         ]);
     }
 
+    public function invoice(Order $order): View
+    {
+        $order->load(['items', 'restaurant', 'user']);
+
+        return view('orders.invoice', compact('order'));
+    }
+
     public function updateStatus(AdminOrderStatusUpdateRequest $request, Order $order, OrderStatusService $orderStatusService): RedirectResponse
     {
         try {

@@ -95,6 +95,10 @@ class DeliveryStatusService
             $this->orderEmailService->sendOrderDelivered($updatedOrder);
         }
 
+        if ($status === 'out_for_delivery') {
+            $this->orderEmailService->sendOrderOutForDelivery($updatedOrder);
+        }
+
         return $updatedOrder;
     }
 

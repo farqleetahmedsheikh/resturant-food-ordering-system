@@ -4,6 +4,7 @@ namespace App\Services\Email;
 
 use App\Mail\OrderConfirmedMail;
 use App\Mail\OrderDeliveredMail;
+use App\Mail\OrderOutForDeliveryMail;
 use App\Mail\OrderPlacedMail;
 use App\Models\Order;
 use Illuminate\Mail\Mailable;
@@ -25,6 +26,11 @@ class OrderEmailService
     public function sendOrderDelivered(Order $order): void
     {
         $this->send($order, new OrderDeliveredMail($this->mailReadyOrder($order)), 'order_delivered');
+    }
+
+    public function sendOrderOutForDelivery(Order $order): void
+    {
+        $this->send($order, new OrderOutForDeliveryMail($this->mailReadyOrder($order)), 'order_out_for_delivery');
     }
 
     private function send(Order $order, Mailable $mailable, string $event): void

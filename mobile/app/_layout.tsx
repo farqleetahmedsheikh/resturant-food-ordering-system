@@ -18,7 +18,6 @@ function hideNativeSplash() {
 
 function RootNavigator() {
   const guards = useRoleGuards();
-
   return (
     <>
       <StatusBar style="dark" />

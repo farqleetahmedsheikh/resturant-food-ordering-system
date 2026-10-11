@@ -47,8 +47,10 @@
             },
             formAction() {
                 return this.drawerMode === 'edit' ? `${this.editActionBase}/${this.addon.id}` : this.createAction;
-            }
+            },
+            assignmentDrawerOpen: @js($section === 'assignments' && (bool) $selectedProduct),
         }"
+        x-on:keydown.escape.window="drawerOpen = false; assignmentDrawerOpen = false"
     >
         <div class="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-warm-200">
             <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -225,10 +227,13 @@
         @endif
 
         @if ($section === 'groups')
-            <section class="grid items-start gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
-                <form method="POST" action="{{ route('admin.addons-upselling.groups.store') }}" class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-warm-200">
+            <section>
+                <form method="POST" action="{{ route('admin.addons-upselling.groups.store') }}" x-cloak x-show="editingGroup === 'create'" class="fixed right-0 top-0 z-[80] flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-white p-5 shadow-2xl" x-transition>
                     @csrf
-                    <h2 class="text-xl font-black text-warm-950">Create Group</h2>
+                    <div class="flex items-center justify-between border-b border-warm-200 pb-5">
+                        <div><p class="text-xs font-black uppercase tracking-[0.18em] text-brand-500">New add-on group</p><h2 class="mt-1 text-2xl font-black text-warm-950">Create Group</h2></div>
+                        <button type="button" x-on:click="editingGroup = null" class="{{ $softButtonClass }}">Close</button>
+                    </div>
                     <div class="mt-5 grid gap-4">
                         <input name="name" placeholder="Choose Your Drink" required class="{{ $fieldClass }}" />
                         <textarea name="description" rows="2" placeholder="Optional description" class="{{ $fieldClass }} min-h-24"></textarea>
@@ -284,27 +289,43 @@
                     </div>
                 </form>
 
+                <div x-cloak x-show="editingGroup === 'create'" x-on:click="editingGroup = null" class="fixed inset-0 z-[70] bg-warm-950/40 backdrop-blur-sm"></div>
+
                 <div class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-warm-200">
-                    <h2 class="text-xl font-black text-warm-950">Add-on Groups</h2>
-                    <p class="text-sm font-semibold text-warm-500">Collapsed summaries keep the page short. Open only the group you need.</p>
-                    <div class="mt-5 grid gap-3 lg:grid-cols-2">
+                    <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                        <div><h2 class="text-xl font-black text-warm-950">Add-on Groups</h2><p class="text-sm font-semibold text-warm-500">Manage reusable selection rules in the same compact directory as your add-on library.</p></div>
+                        <button type="button" x-on:click="editingGroup = 'create'" class="{{ $buttonClass }}">Create Group</button>
+                    </div>
+                    <form method="GET" action="{{ route('admin.addons-upselling.groups.index') }}" class="mt-5 grid gap-3 rounded-3xl border border-warm-200 bg-warm-50/60 p-4 lg:grid-cols-[minmax(0,1fr)_180px_140px_140px]">
+                        <input name="q" value="{{ request('q') }}" placeholder="Search groups..." class="{{ $compactFieldClass }}">
+                        <select name="status" class="{{ $compactFieldClass }}"><option value="">Any status</option><option value="active" @selected(request('status') === 'active')>Active</option><option value="inactive" @selected(request('status') === 'inactive')>Inactive</option></select>
+                        <button class="{{ $darkButtonClass }}">Filter</button>
+                        <a href="{{ route('admin.addons-upselling.groups.index') }}" class="{{ $softButtonClass }}">Reset</a>
+                    </form>
+                    <div class="mt-5 overflow-hidden rounded-3xl border border-warm-200">
+                        <div class="hidden grid-cols-[minmax(0,1.4fr)_140px_150px_130px_120px] gap-4 bg-warm-50 px-5 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-warm-500 lg:grid">
+                            <span>Group</span>
+                            <span>Options</span>
+                            <span>Selection</span>
+                            <span>Status</span>
+                            <span class="text-right">Action</span>
+                        </div>
+                        <div class="divide-y divide-warm-100">
                         @forelse ($groups as $group)
-                            <button type="button" x-on:click="editingGroup = {{ $group->id }}" class="group w-full rounded-3xl border border-warm-200 bg-warm-50/50 p-4 text-left transition hover:border-brand-200 hover:bg-brand-50">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="min-w-0">
-                                        <h3 class="break-words font-black text-warm-950">{{ $group->name }}</h3>
-                                        <p class="mt-1 text-xs font-bold text-warm-500">{{ $group->addons->count() }} add-ons · {{ $group->is_required ? 'Required' : 'Optional' }} · {{ $selectionTypes[$group->selection_type] ?? $group->selection_type }}</p>
-                                    </div>
-                                    <span class="shrink-0 rounded-full px-3 py-1 text-xs font-black {{ $group->is_active ? 'bg-leaf-50 text-leaf-700' : 'bg-warm-100 text-warm-600' }}">{{ $group->is_active ? 'Active' : 'Inactive' }}</span>
+                            <div class="grid gap-4 px-5 py-4 lg:grid-cols-[minmax(0,1.4fr)_140px_150px_130px_120px] lg:items-center">
+                                <div class="min-w-0">
+                                    <p class="break-words text-sm font-black text-warm-950">{{ $group->name }}</p>
+                                    <p class="mt-1 text-xs font-semibold text-warm-500">{{ $group->addons->where('pivot.is_default', true)->count() }} included by default</p>
                                 </div>
-                                <div class="mt-4 flex items-center justify-between border-t border-warm-200 pt-3 text-xs font-black text-brand-600">
-                                    <span>{{ $group->addons->where('pivot.is_default', true)->count() }} included by default</span>
-                                    <span> Edit group →</span>
-                                </div>
-                            </button>
+                                <p class="text-sm font-black text-warm-950">{{ $group->addons->count() }} <span class="text-xs font-semibold text-warm-500">options</span></p>
+                                <p class="text-sm font-bold text-warm-600">{{ $selectionTypes[$group->selection_type] ?? $group->selection_type }} · {{ $group->is_required ? 'Required' : 'Optional' }}</p>
+                                <span class="w-fit rounded-full px-3 py-1 text-xs font-black {{ $group->is_active ? 'bg-leaf-50 text-leaf-700' : 'bg-warm-100 text-warm-600' }}">{{ $group->is_active ? 'Active' : 'Inactive' }}</span>
+                                <button type="button" x-on:click="editingGroup = {{ $group->id }}" class="{{ $softButtonClass }} w-full lg:w-auto">Edit</button>
+                            </div>
                         @empty
-                            <p class="rounded-3xl bg-warm-50 p-8 text-center text-sm font-bold text-warm-500 lg:col-span-2">No groups yet.</p>
+                            <p class="px-5 py-12 text-center text-sm font-bold text-warm-500">No groups yet.</p>
                         @endforelse
+                        </div>
                     </div>
                 </div>
             </section>
@@ -378,90 +399,121 @@
         @endif
 
         @if ($section === 'assignments')
-            <section class="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)_340px]">
-                <aside class="rounded-[2rem] bg-white p-4 shadow-sm ring-1 ring-warm-200">
-                    <form method="GET" action="{{ route('admin.addons-upselling.assignments.index') }}" class="grid gap-3">
-                        <input name="product_q" value="{{ request('product_q') }}" placeholder="Search products..." class="{{ $compactFieldClass }}" />
-                        <button class="{{ $darkButtonClass }}">Search</button>
-                    </form>
-                    <div class="mt-4 max-h-[580px] space-y-2 overflow-y-auto pr-1">
-                        @foreach ($menuItems as $item)
-                            <a href="{{ route('admin.addons-upselling.assignments.index', array_filter(['product_id' => $item->id, 'product_q' => request('product_q')])) }}" class="block rounded-2xl border p-3 transition {{ $selectedProduct?->id === $item->id ? 'border-brand-200 bg-brand-50' : 'border-warm-200 bg-white hover:border-brand-200 hover:bg-brand-50' }}">
-                                <p class="truncate text-sm font-black text-warm-950">{{ $item->name }}</p>
-                                <p class="mt-1 text-xs font-semibold text-warm-500">{{ $item->category?->name ?? 'Uncategorised' }} · @money($item->price)</p>
-                            </a>
-                        @endforeach
+            <section class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-warm-200">
+                <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                    <div>
+                        <p class="{{ $labelClass }}">Assignment directory</p>
+                        <h2 class="mt-1 text-2xl font-black text-warm-950">Product customizations</h2>
+                        <p class="mt-1 text-sm font-semibold text-warm-500">Choose a product to manage its reusable add-on groups.</p>
                     </div>
-                </aside>
-
-                <main class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-warm-200">
-                    @if ($selectedProduct)
-                        <div class="flex flex-col gap-3 border-b border-warm-200 pb-4 md:flex-row md:items-center md:justify-between">
-                            <div>
-                                <p class="text-xs font-black uppercase tracking-[0.18em] text-brand-500">Selected product</p>
-                                <h2 class="mt-1 text-2xl font-black text-warm-950">{{ $selectedProduct->name }}</h2>
-                                <p class="mt-1 text-sm font-semibold text-warm-500">{{ $selectedProduct->category?->name ?? 'Uncategorised' }}</p>
-                            </div>
-                            <span class="rounded-2xl bg-warm-100 px-4 py-2 text-sm font-black text-warm-800">@money($selectedProduct->price)</span>
+                    <div class="grid grid-cols-2 gap-3 text-center sm:grid-cols-3">
+                        <div class="rounded-2xl bg-warm-50 px-4 py-3">
+                            <p class="text-xl font-black text-warm-950">{{ $menuItems->count() }}</p>
+                            <p class="text-[10px] font-black uppercase tracking-[0.12em] text-warm-500">Products</p>
                         </div>
-
-                        <form method="POST" action="{{ route('admin.addons-upselling.assign-product') }}" class="mt-5">
-                            @csrf
-                            <input type="hidden" name="menu_item_id" value="{{ $selectedProduct->id }}" />
-                            <div class="grid gap-3 md:grid-cols-2">
-                                @foreach ($groups as $group)
-                                    <label class="rounded-3xl border border-warm-200 bg-warm-50/50 p-4 transition has-[:checked]:border-brand-200 has-[:checked]:bg-brand-50">
-                                        <div class="flex items-start gap-3">
-                                            <input type="checkbox" name="addon_group_ids[]" value="{{ $group->id }}" @checked($selectedProductGroups->contains('id', $group->id)) class="mt-1 h-4 w-4 rounded border-warm-300 text-brand-500">
-                                            <div class="min-w-0">
-                                                <p class="font-black text-warm-950">{{ $group->name }}</p>
-                                                <p class="mt-1 text-xs font-bold text-warm-500">{{ $group->addons->count() }} add-ons · {{ $group->is_required ? 'Required' : 'Optional' }} · {{ $selectionTypes[$group->selection_type] ?? $group->selection_type }}</p>
-                                                <p class="mt-2 truncate text-xs font-semibold text-warm-500">{{ $group->addons->pluck('name')->take(4)->join(', ') }}</p>
-                                            </div>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                            <button class="{{ $buttonClass }} mt-5">Save Product Assignments</button>
-                        </form>
-                    @else
-                        <div class="rounded-3xl bg-warm-50 p-10 text-center">
-                            <p class="text-xl font-black text-warm-950">No products available</p>
-                            <p class="mt-2 text-sm font-semibold text-warm-500">Create available menu items before assigning add-ons.</p>
+                        <div class="rounded-2xl bg-brand-50 px-4 py-3">
+                            <p class="text-xl font-black text-brand-600">{{ $groups->count() }}</p>
+                            <p class="text-[10px] font-black uppercase tracking-[0.12em] text-brand-700">Groups</p>
                         </div>
-                    @endif
-                </main>
+                        <div class="hidden rounded-2xl bg-leaf-50 px-4 py-3 sm:block">
+                            <p class="text-xl font-black text-leaf-700">{{ $selectedProductGroups->count() }}</p>
+                            <p class="text-[10px] font-black uppercase tracking-[0.12em] text-leaf-700">Assigned</p>
+                        </div>
+                    </div>
+                </div>
 
-                <aside class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-warm-200">
-                    <h2 class="text-xl font-black text-warm-950">Customer Preview</h2>
-                    @if ($selectedProduct)
-                        <div class="mt-4 rounded-3xl border border-warm-200 bg-warm-50/60 p-4">
-                            <p class="text-lg font-black text-warm-950">{{ $selectedProduct->name }}</p>
-                            <p class="mt-1 text-sm font-bold text-brand-600">@money($selectedProduct->price)</p>
-                            <div class="mt-4 space-y-3">
-                                @forelse ($previewGroups as $group)
-                                    <div class="rounded-2xl bg-white p-3 ring-1 ring-warm-100">
-                                        <div class="flex items-center justify-between gap-2">
-                                            <p class="text-sm font-black text-warm-950">{{ $group->name }}</p>
-                                            <span class="text-[11px] font-black uppercase text-warm-500">{{ $group->is_required ? 'Required' : 'Optional' }}</span>
-                                        </div>
-                                        <div class="mt-2 space-y-1.5">
-                                            @foreach ($group->addons->take(4) as $addon)
-                                                <div class="flex items-center justify-between text-xs font-bold text-warm-600">
-                                                    <span>{{ $addon->name }}</span>
-                                                    <span>+ @money($addon->price)</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
+                <form method="GET" action="{{ route('admin.addons-upselling.assignments.index') }}" class="mt-5 grid gap-3 rounded-3xl border border-warm-200 bg-warm-50/60 p-4 md:grid-cols-[minmax(0,1fr)_150px]">
+                    <div>
+                        <label for="assignment-product-search" class="{{ $labelClass }}">Search products</label>
+                        <input id="assignment-product-search" name="product_q" value="{{ request('product_q') }}" placeholder="Search by product name..." class="{{ $compactFieldClass }} mt-2" />
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button class="{{ $darkButtonClass }} flex-1">Search</button>
+                        <a href="{{ route('admin.addons-upselling.assignments.index') }}" class="{{ $softButtonClass }}">Reset</a>
+                    </div>
+                </form>
+
+                <div class="mt-5 overflow-hidden rounded-3xl border border-warm-200">
+                    <div class="hidden grid-cols-[minmax(0,1.4fr)_180px_180px_120px_120px] gap-4 border-b border-warm-200 bg-warm-50 px-5 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-warm-500 md:grid">
+                        <span>Product</span><span>Category</span><span>Assigned groups</span><span>Price</span><span class="text-right">Action</span>
+                    </div>
+                    @forelse ($menuItems as $item)
+                        @php($assignedCount = $item->activeAddonGroups->count())
+                        <div class="grid gap-4 border-b border-warm-100 px-4 py-4 last:border-b-0 md:grid-cols-[minmax(0,1.4fr)_180px_180px_120px_120px] md:items-center md:px-5">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-sm font-black text-brand-600">{{ str($item->name)->substr(0, 1)->upper() }}</span>
+                                <div class="min-w-0">
+                                    <p class="truncate font-black text-warm-950">{{ $item->name }}</p>
+                                    <p class="mt-1 text-xs font-semibold text-warm-500">{{ $assignedCount ? $assignedCount.' group'.($assignedCount === 1 ? '' : 's').' configured' : 'No groups assigned yet' }}</p>
+                                </div>
+                            </div>
+                            <div class="text-sm font-bold text-warm-600">{{ $item->category?->name ?? 'Uncategorised' }}</div>
+                            <div class="flex flex-wrap gap-1.5">
+                                @forelse ($item->activeAddonGroups->take(3) as $group)
+                                    <span class="rounded-full bg-leaf-50 px-2.5 py-1 text-[10px] font-black text-leaf-700">{{ $group->name }}</span>
                                 @empty
-                                    <p class="rounded-2xl bg-white p-4 text-sm font-bold text-warm-500">No customer customizations assigned.</p>
+                                    <span class="text-xs font-semibold text-warm-400">None</span>
                                 @endforelse
+                                @if ($assignedCount > 3)<span class="rounded-full bg-warm-100 px-2.5 py-1 text-[10px] font-black text-warm-600">+{{ $assignedCount - 3 }}</span>@endif
+                            </div>
+                            <div class="font-black text-warm-950">@money($item->price)</div>
+                            <div class="md:text-right">
+                                <a href="{{ route('admin.addons-upselling.assignments.index', array_filter(['product_id' => $item->id, 'product_q' => request('product_q')])) }}" class="{{ $item->id === $selectedProduct?->id ? $buttonClass : $softButtonClass }}">{{ $item->id === $selectedProduct?->id ? 'Editing' : 'Manage' }}</a>
                             </div>
                         </div>
-                    @endif
-                </aside>
+                    @empty
+                        <div class="px-5 py-12 text-center"><p class="text-xl font-black text-warm-950">No products found</p><p class="mt-2 text-sm font-semibold text-warm-500">Create available menu items before assigning add-ons.</p></div>
+                    @endforelse
+                </div>
             </section>
+
+            @if ($selectedProduct)
+                <div x-cloak x-show="assignmentDrawerOpen" x-transition.opacity class="fixed inset-0 z-[80]" aria-modal="true" role="dialog">
+                    <div class="absolute inset-0 bg-warm-950/40 backdrop-blur-sm" x-on:click="assignmentDrawerOpen = false"></div>
+                    <aside class="absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-2xl">
+                        <div class="flex items-start justify-between border-b border-warm-200 px-6 py-5">
+                            <div class="min-w-0">
+                                <p class="{{ $labelClass }}">Edit product assignment</p>
+                                <h2 class="mt-1 truncate text-2xl font-black text-warm-950">{{ $selectedProduct->name }}</h2>
+                                <p class="mt-1 text-sm font-semibold text-warm-500">{{ $selectedProduct->category?->name ?? 'Uncategorised' }} · @money($selectedProduct->price)</p>
+                            </div>
+                            <a href="{{ route('admin.addons-upselling.assignments.index', request()->only('product_q')) }}" class="{{ $softButtonClass }}">Close</a>
+                        </div>
+                        <div class="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+                            <form method="POST" action="{{ route('admin.addons-upselling.assign-product') }}">
+                                @csrf
+                                <input type="hidden" name="menu_item_id" value="{{ $selectedProduct->id }}" />
+                                <div class="flex items-center justify-between gap-3">
+                                    <div><p class="text-lg font-black text-warm-950">Available add-on groups</p><p class="mt-1 text-sm font-semibold text-warm-500">Select the groups customers can see on this product.</p></div>
+                                    <span class="shrink-0 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-black text-brand-700">{{ $selectedProductGroups->count() }} selected</span>
+                                </div>
+                                <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                                    @foreach ($groups as $group)
+                                        <label class="group relative cursor-pointer rounded-2xl border border-warm-200 bg-white p-4 transition hover:border-brand-200 hover:bg-brand-50/50 has-[:checked]:border-brand-300 has-[:checked]:bg-brand-50">
+                                            <input type="checkbox" name="addon_group_ids[]" value="{{ $group->id }}" @checked($selectedProductGroups->contains('id', $group->id)) class="peer absolute right-4 top-4 h-5 w-5 rounded border-warm-300 text-brand-500 focus:ring-brand-200" />
+                                            <div class="pr-8"><p class="font-black text-warm-950">{{ $group->name }}</p><p class="mt-1 text-xs font-bold text-warm-500">{{ $group->addons->count() }} add-ons · {{ $group->is_required ? 'Required' : 'Optional' }} · {{ $selectionTypes[$group->selection_type] ?? $group->selection_type }}</p><p class="mt-3 line-clamp-2 text-xs font-semibold leading-5 text-warm-500">{{ $group->addons->pluck('name')->take(4)->join(', ') ?: 'No add-ons configured' }}</p></div>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <button class="{{ $buttonClass }} mt-5 w-full">Save Product Assignments</button>
+                            </form>
+                            <div class="mt-8 border-t border-warm-200 pt-6">
+                                <p class="{{ $labelClass }}">Customer preview</p>
+                                <div class="mt-3 rounded-3xl border border-warm-200 bg-warm-50/60 p-4">
+                                    <div class="flex items-center justify-between gap-3"><p class="text-lg font-black text-warm-950">{{ $selectedProduct->name }}</p><p class="font-black text-brand-600">@money($selectedProduct->price)</p></div>
+                                    <div class="mt-4 space-y-3">
+                                        @forelse ($previewGroups as $group)
+                                            <div class="rounded-2xl bg-white p-4 ring-1 ring-warm-100"><div class="flex items-center justify-between gap-2"><p class="text-sm font-black text-warm-950">{{ $group->name }}</p><span class="text-[10px] font-black uppercase tracking-[0.12em] text-warm-500">{{ $group->is_required ? 'Required' : 'Optional' }}</span></div><div class="mt-2 space-y-1.5">@foreach ($group->addons->take(5) as $addon)<div class="flex items-center justify-between gap-3 text-xs font-bold text-warm-600"><span class="truncate">{{ $addon->name }}</span><span class="shrink-0">+ @money($addon->price)</span></div>@endforeach</div></div>
+                                        @empty
+                                            <p class="rounded-2xl bg-white p-4 text-sm font-bold text-warm-500">No customer customizations assigned.</p>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            @endif
         @endif
 
         @if ($section === 'rules')

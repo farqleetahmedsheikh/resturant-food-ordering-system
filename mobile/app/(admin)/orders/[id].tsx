@@ -20,6 +20,7 @@ import { SectionTitle } from '@/src/components/common/SectionTitle';
 import { StatusBadge } from '@/src/components/common/StatusBadge';
 import { ErrorState } from '@/src/components/feedback/ErrorState';
 import { FeedbackMessage } from '@/src/components/feedback/FeedbackMessage';
+import { InvoiceActions } from '@/src/components/orders/InvoiceActions';
 import { LoadingScreen } from '@/src/components/feedback/LoadingScreen';
 import { AppHeader } from '@/src/components/layout/AppHeader';
 import { AppScreen } from '@/src/components/layout/AppScreen';
@@ -164,6 +165,8 @@ export default function AdminOrderDetailScreen() {
           ) : null}
         </View>
       </AppCard>
+
+      <InvoiceActions order={order} />
 
       <AppCard style={styles.card}>
         <SectionTitle title="Rider assignment" />

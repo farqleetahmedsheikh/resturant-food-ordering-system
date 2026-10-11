@@ -321,13 +321,13 @@ method_exists($orders, 'items')
         <form
             action="{{ route('admin.orders.index') }}"
             method="GET"
-            class="mt-5 grid gap-3 border-t border-warm-100 pt-5 md:grid-cols-2 xl:grid-cols-[minmax(180px,1.2fr)_150px_180px_140px_140px_auto]"
+            class="mt-5 grid min-w-0 gap-3 border-t border-warm-100 pt-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,.85fr)_minmax(0,1fr)_minmax(0,.85fr)_minmax(0,.85fr)_minmax(0,140px)]"
         >
             @if ($currentStatus)
                 <input type="hidden" name="status" value="{{ $currentStatus }}">
             @endif
 
-            <label class="block">
+            <label class="block min-w-0">
                 <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
                     Search
                 </span>
@@ -341,7 +341,7 @@ method_exists($orders, 'items')
                 >
             </label>
 
-            <label class="block">
+            <label class="block min-w-0">
                 <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
                     Payment
                 </span>
@@ -359,7 +359,7 @@ method_exists($orders, 'items')
                 </select>
             </label>
 
-            <label class="block">
+            <label class="block min-w-0">
                 <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
                     Rider
                 </span>
@@ -377,7 +377,7 @@ method_exists($orders, 'items')
                 </select>
             </label>
 
-            <label class="block">
+            <label class="block min-w-0">
                 <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
                     From
                 </span>
@@ -390,7 +390,7 @@ method_exists($orders, 'items')
                 >
             </label>
 
-            <label class="block">
+            <label class="block min-w-0">
                 <span class="text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">
                     To
                 </span>
@@ -403,17 +403,17 @@ method_exists($orders, 'items')
                 >
             </label>
 
-            <div class="flex items-end gap-2">
+            <div class="grid min-w-0 grid-cols-2 items-end gap-2">
                 <button
                     type="submit"
-                    class="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-warm-950 px-4 py-2 text-sm font-black text-white transition hover:bg-warm-900"
+                    class="inline-flex min-h-11 min-w-0 items-center justify-center rounded-xl bg-warm-950 px-3 py-2 text-sm font-black text-white transition hover:bg-warm-900"
                 >
                     Apply
                 </button>
 
                 <a
                     href="{{ route('admin.orders.index') }}"
-                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-warm-200 bg-white px-4 py-2 text-sm font-black text-warm-600 transition hover:bg-warm-50"
+                    class="inline-flex min-h-11 min-w-0 items-center justify-center rounded-xl border border-warm-200 bg-white px-3 py-2 text-sm font-black text-warm-600 transition hover:bg-warm-50"
                 >
                     Reset
                 </a>

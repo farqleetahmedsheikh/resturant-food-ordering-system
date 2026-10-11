@@ -9,7 +9,7 @@
 <title>{{ isset($title) ? $title . ' | Arcade Kebab House Admin' : 'Arcade Kebab House Admin' }}</title>
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
-<meta name="robots" content="noindex,nofollow">
+    <meta name="robots" content="noindex,nofollow">
 @stack('head')
 
 <style>
@@ -43,6 +43,7 @@
                 </span>
             </a>
 
+            <div class="flex items-center gap-2">
             <button
                 type="button"
                 x-on:click="mobileMenu = ! mobileMenu"
@@ -74,6 +75,7 @@
                     <path stroke-linecap="round" d="m6 6 12 12M18 6 6 18" />
                 </svg>
             </button>
+            </div>
         </div>
     </header>
 
@@ -134,6 +136,14 @@
                         <path d="M9 7h6M9 11h6M9 15h3" />
                     </svg>
                     Orders
+                </a>
+
+                <a
+                    href="{{ route('admin.finance') }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.finance') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16"/><path d="m7 15 3-4 3 2 5-7"/></svg>
+                    Finance
                 </a>
 
                 <a
@@ -304,6 +314,14 @@
                             <path d="M9 7h6M9 11h6M9 15h3" />
                         </svg>
                         Orders
+                    </a>
+
+                    <a
+                        href="{{ route('admin.finance') }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.finance') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16"/><path d="m7 15 3-4 3 2 5-7"/></svg>
+                        Finance
                     </a>
 
                     <a

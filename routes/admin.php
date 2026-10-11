@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminAddonUpsellController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminFinanceController;
 use App\Http\Controllers\Admin\AdminMenuItemController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminRestaurantSettingsController;
@@ -15,11 +16,13 @@ Route::middleware(['auth', 'admin'])
     ->group(function (): void {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/live', [AdminDashboardController::class, 'live'])->name('dashboard.live');
+        Route::get('/finance', [AdminFinanceController::class, 'index'])->name('finance');
         Route::post('/dashboard/orders/{order}/confirm', [AdminDashboardController::class, 'confirmPendingOrder'])->name('dashboard.orders.confirm');
         Route::post('/dashboard/orders/{order}/decline', [AdminDashboardController::class, 'declinePendingOrder'])->name('dashboard.orders.decline');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
         Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.status');
         Route::post('/orders/{order}/assign-rider', [AdminOrderController::class, 'assignRider'])->name('orders.assign-rider');
         Route::delete('/orders/{order}/unassign-rider', [AdminOrderController::class, 'unassignRider'])->name('orders.unassign-rider');

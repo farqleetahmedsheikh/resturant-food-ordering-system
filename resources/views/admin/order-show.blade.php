@@ -158,7 +158,6 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
                 />
             </svg>
         </a>
-
         <div class="min-w-0 text-center">
             <p class="text-sm font-black text-warm-950">
                 Order details
@@ -209,6 +208,8 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
             </p>
         </div>
 
+        <div class="flex flex-wrap items-center justify-end gap-3">
+        <a href="{{ route('admin.orders.invoice', $order) }}" class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-2xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-600">Invoice</a>
         <a
             href="{{ route('admin.orders.index') }}"
             class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-5 py-3 text-sm font-black text-brand-600 shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-50"
@@ -230,6 +231,7 @@ $deliveryStatus = $order->delivery?->status ?? 'pending';
 
             Back to Orders
         </a>
+        </div>
     </header>
 
     {{-- Order Status Hero --}}

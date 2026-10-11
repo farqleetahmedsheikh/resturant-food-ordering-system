@@ -6,11 +6,13 @@ import { ConfigurationErrorScreen } from '@/src/components/feedback/Configuratio
 import { OfflineBanner } from '@/src/components/feedback/OfflineBanner';
 import { AuthBootstrap } from './AuthBootstrap';
 import { QueryProvider } from './QueryProvider';
+import { ThemeProvider } from '@/src/theme';
 
 export function AppProviders({ children }: PropsWithChildren) {
   return (
     <SafeAreaProvider>
-      <QueryProvider>
+      <ThemeProvider>
+        <QueryProvider>
         {env.configError ? (
           <ConfigurationErrorScreen message={env.configError} />
         ) : (
@@ -19,7 +21,8 @@ export function AppProviders({ children }: PropsWithChildren) {
             {children}
           </AuthBootstrap>
         )}
-      </QueryProvider>
+        </QueryProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

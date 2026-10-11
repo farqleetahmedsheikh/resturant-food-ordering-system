@@ -10,6 +10,7 @@ import { PriceText } from '@/src/components/common/PriceText';
 import { SectionTitle } from '@/src/components/common/SectionTitle';
 import { StatusBadge } from '@/src/components/common/StatusBadge';
 import { ErrorState } from '@/src/components/feedback/ErrorState';
+import { InvoiceActions } from '@/src/components/orders/InvoiceActions';
 import { LoadingScreen } from '@/src/components/feedback/LoadingScreen';
 import { AppHeader } from '@/src/components/layout/AppHeader';
 import { AppScreen } from '@/src/components/layout/AppScreen';
@@ -85,6 +86,8 @@ export default function CustomerOrderDetailScreen() {
         <View style={styles.divider} />
         <SummaryRow label="Total" amount={order.total} strong />
       </AppCard>
+
+      <InvoiceActions order={order} />
 
       {order.status_history && order.status_history.length > 0 ? (
         <AppCard style={styles.card}>

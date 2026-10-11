@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Email\AuthEmailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,7 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AuthEmailService $authEmailService): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -33,6 +34,8 @@ class RegisteredUserController extends Controller
             'role' => 'customer',
             'is_active' => true,
         ]);
+
+        $authEmailService->sendAccountCreated($user);
 
         Auth::login($user);
 

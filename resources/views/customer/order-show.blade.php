@@ -294,6 +294,8 @@ $deliveryStatus = $order->delivery?->status;
             </p>
         </div>
 
+        <div class="flex flex-wrap items-center justify-end gap-3">
+        <a href="{{ route('customer.orders.invoice', $order) }}" class="inline-flex min-h-12 items-center justify-center rounded-2xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-600">View invoice</a>
         <a
             href="{{ route('customer.orders') }}"
             class="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-5 py-3 text-sm font-black text-brand-600 shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-50"
@@ -315,6 +317,7 @@ $deliveryStatus = $order->delivery?->status;
 
             Back to Orders
         </a>
+        </div>
     </header>
 
     {{-- Status Hero --}}

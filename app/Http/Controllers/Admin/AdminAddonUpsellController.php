@@ -109,6 +109,9 @@ class AdminAddonUpsellController extends Controller
                 ->when($section === 'addons', fn ($query) => $query->paginate(15)->withQueryString(), fn ($query) => $query->get()),
             'groups' => AddonGroup::query()
                 ->with(['addons', 'menuItems', 'categories'])
+                ->when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q')->toString().'%'))
+                ->when($request->string('status')->toString() === 'active', fn ($query) => $query->where('is_active', true))
+                ->when($request->string('status')->toString() === 'inactive', fn ($query) => $query->where('is_active', false))
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get(),

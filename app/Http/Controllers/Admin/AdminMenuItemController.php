@@ -8,6 +8,7 @@ use App\Models\AddonGroup;
 use App\Models\MenuItemAddon;
 use App\Models\MenuItem;
 use App\Models\Restaurant;
+use App\Services\Email\ProductEmailService;
 use App\Support\ImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,7 +58,7 @@ class AdminMenuItemController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ProductEmailService $productEmailService): RedirectResponse
     {
         $validated = $this->validateMenuItem($request);
 
@@ -70,13 +71,17 @@ class AdminMenuItemController extends Controller
         $validated['is_available'] = $request->boolean('is_available');
         $validated['is_featured'] = $request->boolean('is_featured');
 
-        DB::transaction(function () use ($validated): void {
+        $menuItem = DB::transaction(function () use ($validated): MenuItem {
             $menuItem = MenuItem::create(Arr::except($validated, ['sizes', 'addons', 'addon_group_ids', 'remove_image']));
 
             $this->syncOptions($menuItem, $validated);
             $this->syncAddonGroups($menuItem, $validated['addon_group_ids'] ?? []);
             $this->syncGroupedOptionsToLegacyAddons($menuItem);
+
+            return $menuItem;
         });
+
+        $productEmailService->sendProductAdded($menuItem->fresh(['category', 'restaurant']));
 
         return redirect()->route('admin.menu-items.index')->with('status', 'Menu item created successfully.');
     }
@@ -93,7 +98,7 @@ class AdminMenuItemController extends Controller
         ]);
     }
 
-    public function update(Request $request, MenuItem $menuItem): RedirectResponse
+    public function update(Request $request, MenuItem $menuItem, ProductEmailService $productEmailService): RedirectResponse
     {
         $validated = $this->validateMenuItem($request, $menuItem);
 
@@ -107,14 +112,22 @@ class AdminMenuItemController extends Controller
         $validated['slug'] = $this->uniqueSlug($validated['slug'] ?: str($validated['name'])->slug()->toString(), $menuItem);
         $validated['is_available'] = $request->boolean('is_available');
         $validated['is_featured'] = $request->boolean('is_featured');
+        $previousPrice = (string) $menuItem->price;
 
-        DB::transaction(function () use ($menuItem, $validated): void {
+        $menuItem = DB::transaction(function () use ($menuItem, $validated): MenuItem {
             $menuItem->update(Arr::except($validated, ['sizes', 'addons', 'addon_group_ids', 'remove_image']));
 
             $this->syncOptions($menuItem, $validated);
             $this->syncAddonGroups($menuItem, $validated['addon_group_ids'] ?? []);
             $this->syncGroupedOptionsToLegacyAddons($menuItem);
+
+            return $menuItem;
         });
+
+        $menuItem = $menuItem->fresh(['category', 'restaurant']);
+        if ((string) $menuItem->price !== $previousPrice) {
+            $productEmailService->sendPriceChanged($menuItem, $previousPrice);
+        }
 
         return redirect()->route('admin.menu-items.index')->with('status', 'Menu item updated successfully.');
     }

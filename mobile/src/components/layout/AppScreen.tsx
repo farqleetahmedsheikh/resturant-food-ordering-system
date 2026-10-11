@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/src/auth/auth.store';
 import { AdminQuickActionBar } from './AdminQuickActionBar';
 import { AppNavigationHeader } from './AppNavigationHeader';
-import { colors, spacing } from '@/src/theme';
+import { spacing, useTheme } from '@/src/theme';
 
 type AppScreenProps = PropsWithChildren<{
   scroll?: boolean;
@@ -30,6 +30,7 @@ export function AppScreen({
   onRefresh,
 }: AppScreenProps) {
   const segments = useSegments().map(String);
+  const { colors } = useTheme();
   const user = useAuthStore((state) => state.session?.user ?? null);
   const resolvedHeader = header === undefined ? <AppNavigationHeader /> : header;
   const resolvedFooter = footer ?? (user?.role === 'admin' && segments.includes('(admin)') ? <AdminQuickActionBar /> : null);
@@ -50,7 +51,7 @@ export function AppScreen({
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.surface.page }]}>
       {keyboard ? (
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -74,7 +75,6 @@ export function AppScreen({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.surface.page,
   },
   flex: {
     flex: 1,

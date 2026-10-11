@@ -9,7 +9,7 @@ import { AppText } from '@/src/components/common/AppText';
 import { RestaurantLogo } from '@/src/components/common/RestaurantLogo';
 import { env } from '@/src/config/env';
 import { useCartStore } from '@/src/store/cart.store';
-import { colors, radius, shadows, spacing } from '@/src/theme';
+import { colors, radius, shadows, spacing, useTheme } from '@/src/theme';
 
 type AppNavigationHeaderProps = {
   name?: string | null;
@@ -39,6 +39,7 @@ export function AppNavigationHeader({
   const user = useAuthStore((state) => state.session?.user ?? null);
   const logout = useAuthStore((state) => state.logout);
   const cartCount = useCartStore((state) => state.getItemCount());
+  const { colors } = useTheme();
   const canGoBack = showBack && router.canGoBack();
   const cartHref = getCartHref(user?.role);
   const links = getDrawerLinks(user?.role, cartCount);
@@ -51,7 +52,7 @@ export function AppNavigationHeader({
 
   return (
     <>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface.page, borderBottomColor: colors.border.light }]}>
         <View style={styles.leftControls}>
           {canGoBack ? (
             <IconButton
@@ -83,7 +84,7 @@ export function AppNavigationHeader({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={cartCount > 0 ? `View cart with ${cartCount} items` : 'Open cart'}
-            style={({ pressed }) => [styles.headerCartButton, pressed && styles.pressed]}
+            style={({ pressed }) => [styles.headerCartButton, { backgroundColor: colors.surface.card, borderColor: colors.brand.border }, pressed && styles.pressed]}
           >
             <AppIcon name={appIcons.cart} size={22} />
             {cartCount > 0 ? (
@@ -106,8 +107,8 @@ export function AppNavigationHeader({
             onPress={() => setOpen(false)}
           />
 
-          <View style={styles.drawer}>
-            <View style={styles.drawerTop}>
+          <View style={[styles.drawer, { backgroundColor: colors.surface.page }]}>
+            <View style={[styles.drawerTop, { backgroundColor: colors.surface.card, borderColor: colors.border.light }]}>
               <View style={styles.drawerIdentity}>
                 <RestaurantLogo name={name} logoUrl={logoUrl} initials={initials} size={52} />
                 <View style={styles.drawerTitle}>
@@ -128,7 +129,7 @@ export function AppNavigationHeader({
 
             <ScrollView
               style={styles.drawerScroll}
-              contentContainerStyle={styles.drawerList}
+              contentContainerStyle={[styles.drawerList, { backgroundColor: colors.surface.card, borderColor: colors.border.light }]}
               showsVerticalScrollIndicator={false}
             >
               {links.map((item) => (
@@ -141,12 +142,12 @@ export function AppNavigationHeader({
               ))}
             </ScrollView>
 
-            <View style={styles.drawerFooter}>
+            <View style={[styles.drawerFooter, { borderTopColor: colors.border.light }]}>
               {user ? (
                 <Pressable
                   accessibilityRole="button"
                   onPress={() => void handleLogout()}
-                  style={({ pressed }) => [styles.logoutButton, pressed && styles.pressed]}
+                  style={({ pressed }) => [styles.logoutButton, { backgroundColor: colors.surface.card, borderColor: colors.brand.border }, pressed && styles.pressed]}
                 >
                   <AppIcon name={appIcons.logout} size={22} />
                   <AppText variant="caption" color={colors.brand.primary}>
@@ -154,12 +155,12 @@ export function AppNavigationHeader({
                   </AppText>
                 </Pressable>
               ) : (
-                <View style={styles.guestFooterActions}>
+                  <View style={styles.guestFooterActions}>
                   <Link href="/(auth)/login" asChild>
                     <Pressable
                       accessibilityRole="link"
                       onPress={() => setOpen(false)}
-                      style={({ pressed }) => [styles.footerButton, styles.footerButtonPrimary, pressed && styles.pressed]}
+                      style={({ pressed }) => [styles.footerButton, styles.footerButtonPrimary, { backgroundColor: colors.brand.primary, borderColor: colors.brand.primary }, pressed && styles.pressed]}
                     >
                       <AppIcon name={appIcons.login} size={20} color={colors.text.inverse} />
                       <AppText variant="caption" color={colors.text.inverse}>
@@ -171,7 +172,7 @@ export function AppNavigationHeader({
                     <Pressable
                       accessibilityRole="link"
                       onPress={() => setOpen(false)}
-                      style={({ pressed }) => [styles.footerButton, pressed && styles.pressed]}
+                      style={({ pressed }) => [styles.footerButton, { backgroundColor: colors.surface.card, borderColor: colors.brand.border }, pressed && styles.pressed]}
                     >
                       <AppIcon name={appIcons.signup} size={20} />
                       <AppText variant="caption" color={colors.brand.primary}>
@@ -198,12 +199,14 @@ function IconButton({
   icon: AppIconName;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.iconButton, { backgroundColor: colors.surface.card, borderColor: colors.border.light }, pressed && styles.pressed]}
     >
       <AppIcon name={icon} size={22} />
     </Pressable>
@@ -219,6 +222,8 @@ function DrawerLinkRow({
   active: boolean;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
+
   function handlePress() {
     onPress();
     router.push(item.href);
@@ -231,11 +236,11 @@ function DrawerLinkRow({
       onPress={handlePress}
       style={({ pressed }) => [
         styles.drawerLink,
-        active && styles.drawerLinkActive,
+        { backgroundColor: active ? colors.brand.soft : colors.surface.card },
         pressed && styles.pressed,
       ]}
     >
-      <View style={[styles.drawerIconShell, active && styles.drawerIconShellActive]}>
+      <View style={[styles.drawerIconShell, { backgroundColor: active ? colors.brand.primary : colors.brand.soft, borderColor: active ? colors.brand.primary : colors.brand.border }]}>
         <AppIcon
           name={item.icon}
           size={21}
@@ -246,7 +251,7 @@ function DrawerLinkRow({
         {item.label}
       </AppText>
       {item.note ? (
-        <View style={[styles.drawerMetaPill, active && styles.drawerMetaPillActive]}>
+        <View style={[styles.drawerMetaPill, { backgroundColor: active ? colors.surface.card : colors.surface.muted }]}>
           <AppText
             variant="caption"
             color={active ? colors.brand.primary : colors.text.secondary}

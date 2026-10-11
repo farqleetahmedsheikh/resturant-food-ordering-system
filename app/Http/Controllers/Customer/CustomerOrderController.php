@@ -27,4 +27,13 @@ class CustomerOrderController extends Controller
 
         return view('customer.order-show', compact('order'));
     }
+
+    public function invoice(Order $order): View
+    {
+        abort_unless($order->user_id === request()->user()->id, 403);
+
+        $order->load(['items', 'restaurant']);
+
+        return view('orders.invoice', compact('order'));
+    }
 }

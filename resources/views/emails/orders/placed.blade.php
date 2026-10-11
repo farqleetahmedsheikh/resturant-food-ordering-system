@@ -22,6 +22,9 @@
                                 Order number: {{ $order->order_number }}
                             </div>
                             @include('emails.partials.order-bill')
+                            <p style="margin:18px 0 0;">
+                                <a href="{{ route('customer.orders.invoice', $order) }}" style="display:inline-block;padding:13px 18px;border-radius:12px;background:#E60C1A;color:#FFFFFF;font-family:Arial,sans-serif;font-size:13px;font-weight:800;text-decoration:none;">View invoice</a>
+                            </p>
                             @include('emails.partials.order-details')
                         </td>
                     </tr>

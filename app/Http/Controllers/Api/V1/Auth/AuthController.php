@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Resources\V1\UserResource;
 use App\Models\User;
+use App\Services\Email\AuthEmailService;
 use App\Support\Api\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request): JsonResponse
+    public function register(RegisterRequest $request, AuthEmailService $authEmailService): JsonResponse
     {
         $validated = $request->validated();
 
@@ -27,6 +28,8 @@ class AuthController extends Controller
             'role' => 'customer',
             'is_active' => true,
         ]);
+
+        $authEmailService->sendAccountCreated($user);
 
         return ApiResponse::success(
             $this->tokenPayload($user, $validated['device_name'] ?? null),
