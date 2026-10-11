@@ -224,35 +224,54 @@
         @endif
 
         @if ($section === 'groups')
-            <section class="grid items-start gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
+            <section class="grid items-start gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
                 <form method="POST" action="{{ route('admin.addons-upselling.groups.store') }}" class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-warm-200">
                     @csrf
                     <h2 class="text-xl font-black text-warm-950">Create Group</h2>
                     <div class="mt-5 grid gap-4">
                         <input name="name" placeholder="Choose Your Drink" required class="{{ $fieldClass }}" />
                         <textarea name="description" rows="2" placeholder="Optional description" class="{{ $fieldClass }} min-h-24"></textarea>
-                        <div class="grid grid-cols-2 gap-3">
-                            <select name="selection_type" class="{{ $fieldClass }}">
-                                @foreach ($selectionTypes as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <input name="max_selections" type="number" min="1" placeholder="Max" class="{{ $fieldClass }}" />
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <label class="grid gap-2">
+                                <span class="{{ $labelClass }}">Selection type</span>
+                                <select name="selection_type" class="{{ $fieldClass }}">
+                                    @foreach ($selectionTypes as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="{{ $labelClass }}">Maximum selections</span>
+                                <input name="max_selections" type="number" min="1" placeholder="No limit" class="{{ $fieldClass }}" />
+                            </label>
                         </div>
-                        <div class="grid grid-cols-3 gap-3">
-                            <input name="min_selections" type="number" min="0" value="0" class="{{ $fieldClass }}" />
-                            <input name="quantity_limit" type="number" min="1" value="1" class="{{ $fieldClass }}" />
-                            <input name="sort_order" type="number" min="0" value="0" class="{{ $fieldClass }}" />
+                        <div class="grid gap-3 sm:grid-cols-3">
+                            <label class="grid gap-2">
+                                <span class="{{ $labelClass }}">Minimum selections</span>
+                                <input name="min_selections" type="number" min="0" value="0" class="{{ $fieldClass }}" />
+                                <span class="text-[11px] font-semibold leading-4 text-warm-500">How many customers must choose.</span>
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="{{ $labelClass }}">Quantity per option</span>
+                                <input name="quantity_limit" type="number" min="1" value="1" class="{{ $fieldClass }}" />
+                                <span class="text-[11px] font-semibold leading-4 text-warm-500">Maximum quantity of one option.</span>
+                            </label>
+                            <label class="grid gap-2">
+                                <span class="{{ $labelClass }}">Display position</span>
+                                <input name="sort_order" type="number" min="0" value="0" class="{{ $fieldClass }}" />
+                                <span class="text-[11px] font-semibold leading-4 text-warm-500">Lower numbers appear first.</span>
+                            </label>
                         </div>
-                        <p class="text-xs font-semibold leading-5 text-warm-500">Tick <strong>Default</strong> for ingredients included with the product. Customers can remove them before ordering.</p>
+                        <p class="text-xs font-semibold leading-5 text-warm-500">Choose one status for each add-on. Included options start on the product at no extra charge and customers can remove them before ordering.</p>
                         <div class="max-h-56 overflow-y-auto rounded-2xl border border-warm-200 bg-warm-50/60 p-3">
                             @foreach ($addons as $addon)
-                                <label class="mb-2 flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-sm font-bold text-warm-700 ring-1 ring-warm-100 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
-                                    <span class="min-w-0 truncate">{{ $addon->name }}</span>
-                                    <span class="flex shrink-0 items-center gap-3 text-[10px] font-black uppercase tracking-wide text-warm-500">
-                                        <span class="inline-flex items-center gap-1.5">Included <input type="checkbox" name="default_addon_ids[]" value="{{ $addon->id }}" class="h-4 w-4 rounded border-warm-300 text-leaf-600"></span>
-                                        <input type="checkbox" name="addon_ids[]" value="{{ $addon->id }}" class="h-4 w-4 rounded border-warm-300 text-brand-500">
-                                    </span>
+                                <label class="mb-2 grid gap-2 rounded-xl bg-white px-3 py-2.5 text-sm font-bold text-warm-700 ring-1 ring-warm-100 sm:grid-cols-[minmax(0,1fr)_170px] sm:items-center">
+                                    <span class="break-words leading-5">{{ $addon->name }}</span>
+                                    <select name="addon_options[{{ $addon->id }}]" class="w-full rounded-lg border border-warm-200 bg-white px-2.5 py-2 text-xs font-black text-warm-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
+                                        <option value="none">Not in this group</option>
+                                        <option value="optional">Available option</option>
+                                        <option value="default">Included by default</option>
+                                    </select>
                                 </label>
                             @endforeach
                         </div>
@@ -291,13 +310,20 @@
                                         </select>
                                         <input name="max_selections" type="number" min="1" value="{{ $group->max_selections }}" placeholder="Max" class="{{ $compactFieldClass }}" />
                                     </div>
-                                    <p class="text-xs font-semibold leading-5 text-warm-500">Select the group options and mark which ones are included by default.</p>
-                                    <div class="grid max-h-40 gap-2 overflow-y-auto rounded-2xl border border-warm-200 bg-white p-3 sm:grid-cols-2">
+                                    <p class="text-xs font-semibold leading-5 text-warm-500">Choose one status for each add-on. This controls both whether it belongs to the group and whether it starts included.</p>
+                                    <div class="grid max-h-64 gap-2 overflow-y-auto rounded-2xl border border-warm-200 bg-white p-3">
                                         @foreach ($addons as $addon)
-                                            <label class="flex items-center justify-between gap-2 rounded-xl px-2 py-1.5 text-xs font-bold text-warm-600 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
-                                                <input type="checkbox" name="addon_ids[]" value="{{ $addon->id }}" @checked($group->addons->contains('id', $addon->id)) class="h-4 w-4 rounded border-warm-300 text-brand-500">
-                                                <span class="min-w-0 flex-1 truncate">{{ $addon->name }}</span>
-                                                <span class="inline-flex shrink-0 items-center gap-1 text-[9px] font-black uppercase text-warm-400">Default <input type="checkbox" name="default_addon_ids[]" value="{{ $addon->id }}" @checked($group->addons->firstWhere('id', $addon->id)?->pivot?->is_default) class="h-3.5 w-3.5 rounded border-warm-300 text-leaf-600"></span>
+                                            @php
+                                                $groupAddon = $group->addons->firstWhere('id', $addon->id);
+                                                $addonState = $groupAddon ? ($groupAddon->pivot->is_default ? 'default' : 'optional') : 'none';
+                                            @endphp
+                                            <label class="grid gap-2 rounded-xl px-2 py-2 text-xs font-bold text-warm-600 sm:grid-cols-[minmax(0,1fr)_170px] sm:items-center">
+                                                <span class="break-words leading-5">{{ $addon->name }}</span>
+                                                <select name="addon_options[{{ $addon->id }}]" class="w-full rounded-lg border border-warm-200 bg-white px-2.5 py-2 text-xs font-black text-warm-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
+                                                    <option value="none" @selected($addonState === 'none')>Not in this group</option>
+                                                    <option value="optional" @selected($addonState === 'optional')>Available option</option>
+                                                    <option value="default" @selected($addonState === 'default')>Included by default</option>
+                                                </select>
                                             </label>
                                         @endforeach
                                     </div>

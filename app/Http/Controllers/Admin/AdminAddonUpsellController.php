@@ -177,7 +177,8 @@ class AdminAddonUpsellController extends Controller
         $validated['is_active'] = $request->boolean('is_active', true);
 
         $group = AddonGroup::create($validated);
-        $this->syncGroupAddons($group, $request->input('addon_ids', []), $request->input('default_addon_ids', []));
+        [$addonIds, $defaultAddonIds] = $this->groupAddonSelection($request);
+        $this->syncGroupAddons($group, $addonIds, $defaultAddonIds);
 
         return back()->with('status', 'Add-on group created.');
     }
@@ -188,7 +189,8 @@ class AdminAddonUpsellController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
 
         $group->update($validated);
-        $this->syncGroupAddons($group, $request->input('addon_ids', []), $request->input('default_addon_ids', []));
+        [$addonIds, $defaultAddonIds] = $this->groupAddonSelection($request);
+        $this->syncGroupAddons($group, $addonIds, $defaultAddonIds);
 
         return back()->with('status', 'Add-on group updated.');
     }
@@ -323,7 +325,27 @@ class AdminAddonUpsellController extends Controller
             'addon_ids.*' => ['integer', 'exists:addons,id'],
             'default_addon_ids' => ['nullable', 'array'],
             'default_addon_ids.*' => ['integer', 'exists:addons,id'],
+            'addon_options' => ['nullable', 'array'],
+            'addon_options.*' => [Rule::in(['none', 'optional', 'default'])],
         ]);
+    }
+
+    /**
+     * Accept the compact three-state editor while keeping the old array
+     * payload compatible with bookmarked forms and older admin clients.
+     */
+    private function groupAddonSelection(Request $request): array
+    {
+        if ($request->has('addon_options')) {
+            $options = collect($request->input('addon_options', []));
+
+            return [
+                $options->filter(fn ($state): bool => in_array($state, ['optional', 'default'], true))->keys()->all(),
+                $options->filter(fn ($state): bool => $state === 'default')->keys()->all(),
+            ];
+        }
+
+        return [$request->input('addon_ids', []), $request->input('default_addon_ids', [])];
     }
 
     private function validateRule(Request $request): array
