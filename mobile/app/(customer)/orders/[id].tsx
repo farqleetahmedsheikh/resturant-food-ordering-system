@@ -122,6 +122,12 @@ function OrderItemRow({ item }: { item: OrderItem }) {
             {item.addons.map((addon) => addon.name).join(', ')}
           </AppText>
         ) : null}
+        {item.customizations?.map((group) => (
+          <AppText key={group.group_id ?? group.group_name} color={colors.text.secondary}>
+            {group.group_name}: {group.selected?.map((option) => option.name + (Number(option.quantity ?? 1) > 1 ? ' x' + option.quantity : '')).join(', ') || 'None'}
+            {group.removed && group.removed.length > 0 ? ' - Removed: ' + group.removed.map((option) => option.name).join(', ') : ''}
+          </AppText>
+        ))}
         {item.item_notes ? <AppText color={colors.text.secondary}>Note: {item.item_notes}</AppText> : null}
       </View>
       <PriceText amount={item.total} />

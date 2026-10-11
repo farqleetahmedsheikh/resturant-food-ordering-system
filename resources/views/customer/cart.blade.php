@@ -400,6 +400,15 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                                         </span>
                                                     @endif
                                                 @endif
+                                                @foreach ($item['customizations'] ?? [] as $customization)
+                                                    <div class="basis-full rounded-xl bg-brand-50 px-3 py-2 text-[10px] font-semibold text-brand-700 sm:text-xs">
+                                                        <span class="font-black">{{ $customization['group_name'] ?? 'Customization' }}:</span>
+                                                        {{ collect($customization['selected'] ?? [])->map(fn ($option) => ($option['name'] ?? 'Option').(((int) ($option['quantity'] ?? 1)) > 1 ? ' x'.(int) $option['quantity'] : ''))->implode(', ') ?: 'None' }}
+                                                        @if (! empty($customization['removed']))
+                                                            <span class="font-black text-red-700"> · Removed: {{ collect($customization['removed'])->pluck('name')->implode(', ') }}</span>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
                                             </div>
                                         @endif
 

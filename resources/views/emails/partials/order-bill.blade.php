@@ -14,6 +14,7 @@
     @foreach ($order->items as $item)
         @php
             $addons = collect($item->addons_snapshot ?? []);
+            $customizations = collect($item->customizations_snapshot ?? []);
         @endphp
         <tr>
             <td style="padding:16px 20px;border-bottom:1px solid #E8DED6;">
@@ -32,10 +33,19 @@
                                 &nbsp;•&nbsp; {{ Money::format($item->price) }} each
                             </div>
 
-                            @if ($addons->isNotEmpty())
+                            @if ($customizations->isNotEmpty())
+                                <div style="margin-top:8px;font-family:Arial,sans-serif;font-size:12px;line-height:1.55;color:#6F625B;">
+                                    Customizations:
+                                    {{ $customizations->map(function ($group) {
+                                        $selected = collect($group['selected'] ?? [])->map(fn ($option) => ($option['name'] ?? 'Option').(((int) ($option['quantity'] ?? 1)) > 1 ? ' x'.(int) $option['quantity'] : ''))->implode(', ') ?: 'None';
+                                        $removed = collect($group['removed'] ?? [])->pluck('name')->implode(', ');
+                                        return ($group['group_name'] ?? 'Customization').': '.$selected.($removed !== '' ? ' (Removed: '.$removed.')' : '');
+                                    })->implode('; ') }}
+                                </div>
+                            @elseif ($addons->isNotEmpty())
                                 <div style="margin-top:8px;font-family:Arial,sans-serif;font-size:12px;line-height:1.55;color:#6F625B;">
                                     Extras:
-                                    {{ $addons->map(fn ($addon) => ($addon['name'] ?? 'Addon').' (+'.Money::format($addon['price'] ?? 0).')')->implode(', ') }}
+                                    {{ $addons->map(fn ($addon) => ($addon['name'] ?? 'Addon').(((int) ($addon['quantity'] ?? 1)) > 1 ? ' x'.(int) $addon['quantity'] : '').' (+'.Money::format($addon['price'] ?? 0).')')->implode(', ') }}
                                 </div>
                             @endif
                         </td>

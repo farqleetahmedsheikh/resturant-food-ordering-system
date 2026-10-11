@@ -38,7 +38,9 @@ export async function syncLocalCartToBackend(items: LocalCartItem[]): Promise<Ba
       cart = await addBackendCartItem(item.menuItemId, {
         quantity: item.quantity,
         size_id: item.sizeId,
-        addon_ids: (item.addons ?? []).map((addon) => addon.id),
+        ...(item.addonSelections ? { addon_selections: item.addonSelections } : {
+          addon_ids: (item.addons ?? []).flatMap((addon) => Array.from({ length: Number(addon.quantity ?? 1) }, () => addon.id)),
+        }),
         item_notes: item.notes.trim() || null,
       });
     }

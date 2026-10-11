@@ -17,6 +17,7 @@ class OrderItemResource extends JsonResource
             'size_name' => $this->size_name,
             'size_price' => $this->size_price !== null ? (float) $this->size_price : null,
             'addons' => $this->addons_snapshot ?? [],
+            'customizations' => $this->customizations_snapshot ?? [],
             'addons_total' => (float) $this->addons_total,
             'quantity' => (int) $this->quantity,
             'price' => (float) $this->price,

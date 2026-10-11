@@ -343,6 +343,7 @@ class StripeWebhookService
                 'size_name' => $item['size']['name'] ?? null,
                 'size_price' => $item['size']['price'] ?? null,
                 'addons_snapshot' => $item['addons'],
+                'customizations_snapshot' => $item['customizations'] ?? [],
                 'addons_total' => $item['addons_total'],
                 'quantity' => $item['quantity'],
                 'price' => $item['unit_price'],

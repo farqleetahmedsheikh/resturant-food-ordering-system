@@ -136,7 +136,10 @@ class SessionCartCheckoutService
             $pricing = $this->pricingService->priceMenuSelection(
                 $menuItem,
                 isset($cartItem['size_id']) ? (int) $cartItem['size_id'] : null,
-                collect($cartItem['addons'] ?? [])->pluck('id')->filter()->map(fn ($id): int => (int) $id)->all(),
+                collect($cartItem['addons'] ?? [])
+                    ->mapWithKeys(fn ($addon): array => [(int) ($addon['id'] ?? 0) => max(1, (int) ($addon['quantity'] ?? 1))])
+                    ->filter(fn (int $quantity, int $id): bool => $id > 0 && $quantity > 0)
+                    ->all(),
                 (int) ($cartItem['quantity'] ?? 0),
             );
 
@@ -153,12 +156,14 @@ class SessionCartCheckoutService
                     'name' => $addon->name,
                     'type' => $addon->type,
                     'price' => (float) $addon->price,
+                    'quantity' => (int) ($pricing['addon_quantities'][$addon->id] ?? 1),
                 ])->values()->all(),
                 'quantity' => $pricing['quantity'],
                 'unit_price' => $pricing['unit_price'],
                 'base_price' => $pricing['base_price'],
                 'addons_total' => $pricing['addons_total'],
                 'line_total' => $pricing['line_total'],
+                'customizations' => $cartItem['customizations'] ?? [],
             ];
 
             $subtotal += $pricing['line_total'];

@@ -1014,6 +1014,15 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                                                         {{ collect($item['addons'])->pluck('name')->join(', ') }}
                                                     </p>
                                                 @endif
+                                                @foreach ($item['customizations'] ?? [] as $customization)
+                                                    <p class="mt-1 text-xs font-semibold text-warm-500">
+                                                        <span class="font-black">{{ $customization['group_name'] ?? 'Customization' }}:</span>
+                                                        {{ collect($customization['selected'] ?? [])->map(fn ($option) => ($option['name'] ?? 'Option').(((int) ($option['quantity'] ?? 1)) > 1 ? ' x'.(int) $option['quantity'] : ''))->implode(', ') ?: 'None' }}
+                                                        @if (! empty($customization['removed']))
+                                                            <span class="font-black text-red-600"> · Removed: {{ collect($customization['removed'])->pluck('name')->implode(', ') }}</span>
+                                                        @endif
+                                                    </p>
+                                                @endforeach
                                             </div>
                                         </div>
                                     </div>

@@ -7,6 +7,7 @@ use App\Models\MenuItem;
 use App\Models\Restaurant;
 use App\Services\RestaurantAvailabilityService;
 use App\Services\SmartMenuSuggestionService;
+use App\Services\AddonCatalogService;
 use App\Support\Cart;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,6 +40,8 @@ class CartController extends Controller
             'size_id' => ['nullable', 'integer'],
             'addon_ids' => ['nullable', 'array'],
             'addon_ids.*' => ['integer'],
+            'addon_selections' => ['nullable', 'array'],
+            'addon_selections.*' => ['array'],
         ]);
 
         $size = null;
@@ -56,14 +59,29 @@ class CartController extends Controller
             }
         }
 
-        $addonIds = collect($validated['addon_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values();
+        if (! empty($validated['addon_selections'])) {
+            $addonData = app(AddonCatalogService::class)
+                ->legacyAddonDataForSelections($menuItem, $validated['addon_selections']);
+            $addonQuantities = $addonData['addon_quantities'];
+            $menuItem->unsetRelation('activeAddons')->load('activeAddons');
+        } else {
+            $addonData = ['customization_snapshot' => []];
+            $addonQuantities = collect($validated['addon_ids'] ?? [])
+                ->map(fn ($id): int => (int) $id)
+                ->filter()
+                ->countBy()
+                ->map(fn ($quantity): int => (int) $quantity)
+                ->all();
+        }
+
+        $addonIds = collect(array_keys($addonQuantities));
         $addons = $menuItem->activeAddons->whereIn('id', $addonIds);
 
         if ($addonIds->count() !== $addons->count()) {
             throw ValidationException::withMessages(['addon_ids' => 'One or more selected add-ons are unavailable.']);
         }
 
-        Cart::add($menuItem, 1, $size, $addons);
+        Cart::add($menuItem, 1, $size, $addonQuantities ? $addonQuantities : $addons, $addonData['customization_snapshot']);
 
         return back()->with('status', "{$menuItem->name} added to your cart.");
     }

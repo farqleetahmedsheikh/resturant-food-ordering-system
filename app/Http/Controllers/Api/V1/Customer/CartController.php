@@ -31,9 +31,14 @@ class CartController extends Controller
 
     public function store(CartItemStoreRequest $request, MenuItem $menuItem): JsonResponse
     {
-        $addonIds = $request->filled('addon_selections')
-            ? $this->addonCatalog->legacyAddonIdsForSelections($menuItem, $request->input('addon_selections', []))
-            : $request->input('addon_ids', []);
+        $addonData = ['customization_snapshot' => []];
+
+        if ($request->filled('addon_selections')) {
+            $addonData = $this->addonCatalog->legacyAddonDataForSelections($menuItem, $request->input('addon_selections', []));
+            $addonIds = $addonData['addon_quantities'];
+        } else {
+            $addonIds = $request->input('addon_ids', []);
+        }
 
         $this->cartService->add(
             $request->user(),
@@ -42,6 +47,7 @@ class CartController extends Controller
             $addonIds,
             (int) $request->integer('quantity'),
             $request->input('item_notes'),
+            $addonData['customization_snapshot'],
         );
 
         return $this->cartResponse($request, 'Item added to cart.');

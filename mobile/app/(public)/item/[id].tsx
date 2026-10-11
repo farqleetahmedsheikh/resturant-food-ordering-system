@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { getMenuItem } from '@/src/api/menu.api';
@@ -19,7 +19,8 @@ import { FeedbackMessage } from '@/src/components/feedback/FeedbackMessage';
 import { LoadingScreen } from '@/src/components/feedback/LoadingScreen';
 import { AppScreen } from '@/src/components/layout/AppScreen';
 import { queryKeys } from '@/src/constants/queryKeys';
-import { useCartStore } from '@/src/store/cart.store';
+import { useCartStore, type CartAddon } from '@/src/store/cart.store';
+import type { CustomizationSnapshot } from '@/src/types/cart';
 import { colors, radius, spacing } from '@/src/theme';
 import { formatCurrency } from '@/src/utils/currency';
 import { getRestaurantAvailability } from '@/src/utils/restaurant';
@@ -29,6 +30,7 @@ export default function MenuItemDetailScreen() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
   const [selectedAddonIds, setSelectedAddonIds] = useState<number[]>([]);
+  const [selectedAddonQuantities, setSelectedAddonQuantities] = useState<Record<number, Record<number, number>>>({});
   const [notes, setNotes] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const addItem = useCartStore((state) => state.addItem);
@@ -43,6 +45,18 @@ export default function MenuItemDetailScreen() {
     queryFn: getRestaurant,
   });
 
+  useEffect(() => {
+    const defaults = itemQuery.data?.customization_groups?.reduce<Record<number, Record<number, number>>>((result, group) => {
+      const groupDefaults = (group.addons ?? []).reduce<Record<number, number>>((values, addon) => {
+        if ((addon as typeof addon & { is_default?: boolean }).is_default) values[addon.id] = 1;
+        return values;
+      }, {});
+      if (Object.keys(groupDefaults).length > 0) result[group.id] = groupDefaults;
+      return result;
+    }, {}) ?? {};
+    setSelectedAddonQuantities(defaults);
+  }, [itemQuery.data?.id]);
+
   if (itemQuery.isLoading || restaurantQuery.isLoading) {
     return <LoadingScreen label="Loading item..." />;
   }
@@ -54,10 +68,26 @@ export default function MenuItemDetailScreen() {
   const item = itemQuery.data;
   const sizes = item.sizes ?? [];
   const addons = item.addons ?? [];
+  const groups = item.customization_groups ?? [];
   const selectedSize = sizes.find((size) => size.id === selectedSizeId) ?? sizes[0] ?? null;
-  const selectedAddons = addons.filter((addon) => selectedAddonIds.includes(addon.id));
+  const groupedAddons: CartAddon[] = groups.flatMap((group) => group.addons ?? []).flatMap((addon) => {
+    const quantity = groups.reduce((total, group) => total + Number(selectedAddonQuantities[group.id]?.[addon.id] ?? 0), 0);
+    const isDefault = groups.some((group) => (group.addons ?? []).some((entry) => entry.id === addon.id && (entry as typeof entry & { is_default?: boolean }).is_default));
+    return quantity > 0 ? [{ ...addon, price: isDefault ? 0 : addon.price, quantity }] : [];
+  });
+  const selectedAddons: CartAddon[] = groups.length ? groupedAddons : addons.filter((addon) => selectedAddonIds.includes(addon.id));
   const basePrice = Number(selectedSize?.price ?? item.price);
-  const addonsTotal = selectedAddons.reduce((sum, addon) => sum + Number(addon.price ?? 0), 0);
+  const addonsTotal = selectedAddons.reduce((sum, addon) => sum + Number(addon.price ?? 0) * Number(addon.quantity ?? 1), 0);
+  const customizationSnapshot: CustomizationSnapshot[] = groups.map((group) => ({
+    group_id: group.id,
+    group_name: group.name,
+    selected: (group.addons ?? []).filter((addon) => Number(selectedAddonQuantities[group.id]?.[addon.id] ?? 0) > 0).map((addon) => ({
+      name: addon.name,
+      quantity: Number(selectedAddonQuantities[group.id]?.[addon.id] ?? 1),
+      price: (addon as typeof addon & { is_default?: boolean }).is_default ? 0 : Number(addon.price ?? 0),
+    })),
+    removed: (group.addons ?? []).filter((addon) => Boolean((addon as typeof addon & { is_default?: boolean }).is_default) && Number(selectedAddonQuantities[group.id]?.[addon.id] ?? 0) === 0).map((addon) => ({ name: addon.name, quantity: 0, price: 0 })),
+  }));
   const unitPrice = basePrice + addonsTotal;
   const availability = getRestaurantAvailability(restaurantQuery.data);
   const disabled = !availability.isOpenForOrders || !item.is_available;
@@ -66,7 +96,22 @@ export default function MenuItemDetailScreen() {
     : availability.reason ?? 'Ordering is currently paused.';
 
   function addToCart() {
-    addItem({ item, quantity, size: selectedSize, addons: selectedAddons, notes });
+    for (const group of groups) {
+      const count = Object.values(selectedAddonQuantities[group.id] ?? {}).reduce((sum, value) => sum + Number(value || 0), 0);
+      const minimum = group.is_required ? Math.max(1, group.min_selections) : group.min_selections;
+      const maximum = group.selection_type === 'single' ? 1 : group.max_selections;
+      if (count < minimum || (maximum !== null && count > maximum)) {
+        setMessage(`${group.name}: choose ${minimum === maximum ? minimum : `between ${minimum} and ${maximum ?? 'the allowed number'}`} option(s).`);
+        return;
+      }
+    }
+    const addonSelections = groups.length
+      ? Object.fromEntries(groups.map((group) => [
+        group.id,
+        Object.fromEntries((group.addons ?? []).map((addon) => [addon.id, Number(selectedAddonQuantities[group.id]?.[addon.id] ?? 0)])),
+      ]))
+      : undefined;
+    addItem({ item, quantity, size: selectedSize, addons: selectedAddons, addonSelections, customizations: customizationSnapshot, notes });
     setMessage(`${quantity} x ${item.name} added to cart.`);
   }
 
@@ -74,6 +119,17 @@ export default function MenuItemDetailScreen() {
     setSelectedAddonIds((current) =>
       current.includes(addonId) ? current.filter((id) => id !== addonId) : [...current, addonId],
     );
+  }
+
+  function toggleGroupedAddon(groupId: number, addonId: number) {
+    setSelectedAddonQuantities((current) => {
+      const group = groups.find((entry) => entry.id === groupId);
+      const existing = Number(current[groupId]?.[addonId] ?? 0);
+      if (group?.selection_type === 'single') {
+        return { ...current, [groupId]: { [addonId]: existing > 0 ? 0 : 1 } };
+      }
+      return { ...current, [groupId]: { ...(current[groupId] ?? {}), [addonId]: existing > 0 ? 0 : 1 } };
+    });
   }
 
   return (
@@ -128,7 +184,7 @@ export default function MenuItemDetailScreen() {
           </View>
         ) : null}
 
-        {addons.length > 0 ? (
+        {addons.length > 0 && groups.length === 0 ? (
           <View style={styles.optionGroup}>
             <SectionTitle title="Add extras" subtitle="Optional toppings and sauces" />
             <View style={styles.optionGrid}>
@@ -154,6 +210,24 @@ export default function MenuItemDetailScreen() {
             </View>
           </View>
         ) : null}
+
+        {groups.map((group) => (
+          <View key={group.id} style={styles.optionGroup}>
+            <SectionTitle title={group.name} subtitle={group.description ?? (group.is_required ? 'Required selection' : 'Optional selection')} />
+            <View style={styles.optionGrid}>
+              {(group.addons ?? []).map((addon) => {
+                const selected = Number(selectedAddonQuantities[group.id]?.[addon.id] ?? 0);
+                return (
+                  <Pressable key={addon.id} accessibilityRole={group.selection_type === 'single' ? 'radio' : 'checkbox'} accessibilityState={{ checked: selected > 0 }} disabled={disabled} onPress={() => toggleGroupedAddon(group.id, addon.id)} style={[styles.optionCard, selected > 0 && styles.optionCardActive]}>
+                    <AppText variant="title">{addon.name}</AppText>
+                    <AppText color={selected > 0 ? colors.brand.primary : colors.text.secondary}>+ {formatCurrency(addon.price)}{selected > 1 ? ` x${selected}` : ''}</AppText>
+                    {group.quantity_limit > 1 && selected > 0 ? <View style={styles.quantityRow}><Pressable onPress={() => setSelectedAddonQuantities((current) => ({ ...current, [group.id]: { ...(current[group.id] ?? {}), [addon.id]: Math.max(0, selected - 1) } }))}><AppText color={colors.brand.primary}>-</AppText></Pressable><AppText>{selected}</AppText><Pressable disabled={selected >= group.quantity_limit} onPress={() => setSelectedAddonQuantities((current) => ({ ...current, [group.id]: { ...(current[group.id] ?? {}), [addon.id]: selected + 1 } }))}><AppText color={colors.brand.primary}>+</AppText></Pressable></View> : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ))}
 
         <View style={styles.row}>
           <View style={styles.flex}>
@@ -248,5 +322,11 @@ const styles = StyleSheet.create({
   optionCardActive: {
     borderColor: colors.brand.primary,
     backgroundColor: colors.brand.soft,
+  },
+  quantityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.sm,
   },
 });

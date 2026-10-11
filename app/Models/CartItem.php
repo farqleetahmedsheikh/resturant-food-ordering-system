@@ -15,12 +15,14 @@ class CartItem extends Model
         'line_hash',
         'quantity',
         'item_notes',
+        'customizations_snapshot',
     ];
 
     protected function casts(): array
     {
         return [
             'quantity' => 'integer',
+            'customizations_snapshot' => 'array',
         ];
     }
 
@@ -42,6 +44,7 @@ class CartItem extends Model
     public function addons(): BelongsToMany
     {
         return $this->belongsToMany(MenuItemAddon::class, 'cart_item_addons')
+            ->withPivot('quantity')
             ->withTimestamps()
             ->orderBy('type')
             ->orderBy('sort_order')

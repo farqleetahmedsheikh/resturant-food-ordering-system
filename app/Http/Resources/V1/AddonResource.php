@@ -20,6 +20,7 @@ class AddonResource extends JsonResource
             'sort_order' => (int) $this->sort_order,
             'is_available' => (bool) $this->is_available,
             'is_active' => (bool) $this->is_active,
+            'is_default' => (bool) ($this->pivot?->is_default ?? false),
         ];
     }
 }

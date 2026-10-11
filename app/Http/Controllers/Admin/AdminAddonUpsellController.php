@@ -177,7 +177,7 @@ class AdminAddonUpsellController extends Controller
         $validated['is_active'] = $request->boolean('is_active', true);
 
         $group = AddonGroup::create($validated);
-        $this->syncGroupAddons($group, $request->input('addon_ids', []));
+        $this->syncGroupAddons($group, $request->input('addon_ids', []), $request->input('default_addon_ids', []));
 
         return back()->with('status', 'Add-on group created.');
     }
@@ -188,7 +188,7 @@ class AdminAddonUpsellController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
 
         $group->update($validated);
-        $this->syncGroupAddons($group, $request->input('addon_ids', []));
+        $this->syncGroupAddons($group, $request->input('addon_ids', []), $request->input('default_addon_ids', []));
 
         return back()->with('status', 'Add-on group updated.');
     }
@@ -321,6 +321,8 @@ class AdminAddonUpsellController extends Controller
             'is_active' => ['nullable', 'boolean'],
             'addon_ids' => ['nullable', 'array'],
             'addon_ids.*' => ['integer', 'exists:addons,id'],
+            'default_addon_ids' => ['nullable', 'array'],
+            'default_addon_ids.*' => ['integer', 'exists:addons,id'],
         ]);
     }
 
@@ -342,11 +344,15 @@ class AdminAddonUpsellController extends Controller
         ]);
     }
 
-    private function syncGroupAddons(AddonGroup $group, mixed $addonIds): void
+    private function syncGroupAddons(AddonGroup $group, mixed $addonIds, mixed $defaultAddonIds = []): void
     {
         $ids = collect(is_array($addonIds) ? $addonIds : [])->map(fn ($id): int => (int) $id)->unique();
+        $defaults = collect(is_array($defaultAddonIds) ? $defaultAddonIds : [])
+            ->map(fn ($id): int => (int) $id)
+            ->intersect($ids)
+            ->flip();
         $group->addons()->sync($ids->mapWithKeys(fn (int $id, int $index): array => [
-            $id => ['sort_order' => $index, 'is_default' => false],
+            $id => ['sort_order' => $index, 'is_default' => $defaults->has($id)],
         ])->all());
     }
 

@@ -1,5 +1,12 @@
 import type { Restaurant } from './restaurant';
 
+export type CustomizationSnapshot = {
+  group_id?: number;
+  group_name: string;
+  selected?: { name: string; quantity?: number; price?: number }[];
+  removed?: { name: string; quantity?: number }[];
+};
+
 export type LocalCartItem = {
   lineKey: string;
   menuItemId: number;
@@ -14,8 +21,11 @@ export type LocalCartItem = {
     name: string;
     type: string | null;
     price: number;
+    quantity: number;
   }[];
   addonsTotal: number;
+  addonSelections?: Record<string, Record<string, number>>;
+  customizations?: CustomizationSnapshot[];
   quantity: number;
   notes: string;
   isAvailable: boolean;
@@ -42,6 +52,7 @@ export type BackendCartItem = {
     name: string;
     type: string | null;
     price: number;
+    quantity: number;
   }[];
 };
 
@@ -49,6 +60,7 @@ export type BackendCartItemPayload = {
   quantity: number;
   size_id?: number | null;
   addon_ids?: number[];
+  addon_selections?: Record<string, Record<string, number>>;
   item_notes?: string | null;
 };
 

@@ -39,15 +39,15 @@ class DatabaseCartService
     }
 
     /**
-     * @param  array<int, int|string>  $addonIds
+     * @param  array<int|string, int|string>  $addonIds
      */
-    public function add(User $user, MenuItem $menuItem, ?int $sizeId, array $addonIds, int $quantity, ?string $itemNotes = null): Cart
+    public function add(User $user, MenuItem $menuItem, ?int $sizeId, array $addonIds, int $quantity, ?string $itemNotes = null, array $customizations = []): Cart
     {
-        return DB::transaction(function () use ($user, $menuItem, $sizeId, $addonIds, $quantity, $itemNotes): Cart {
+        return DB::transaction(function () use ($user, $menuItem, $sizeId, $addonIds, $quantity, $itemNotes, $customizations): Cart {
             $cart = $this->lockedCart($user);
             $pricing = $this->pricingService->priceMenuSelection($menuItem, $sizeId, $addonIds, $quantity);
             $notes = $this->normalizeNotes($itemNotes);
-            $lineHash = $this->lineHash($menuItem->id, $pricing['size']?->id, $pricing['addons']->pluck('id')->all(), $notes);
+            $lineHash = $this->lineHash($menuItem->id, $pricing['size']?->id, $pricing['addon_quantities'], $notes);
 
             $cartItem = CartItem::query()
                 ->where('cart_id', $cart->id)
@@ -65,10 +65,13 @@ class DatabaseCartService
                     'line_hash' => $lineHash,
                     'quantity' => $quantity,
                     'item_notes' => $notes,
+                    'customizations_snapshot' => $customizations,
                 ]);
             }
 
-            $cartItem->addons()->sync($pricing['addons']->pluck('id')->all());
+            $cartItem->addons()->sync(collect($pricing['addon_quantities'])
+                ->mapWithKeys(fn ($quantity, $addonId): array => [(int) $addonId => ['quantity' => (int) $quantity]])
+                ->all());
 
             return $this->freshCart($cart);
         });
@@ -92,7 +95,7 @@ class DatabaseCartService
             $this->pricingService->priceMenuSelection(
                 $cartItem->menuItem,
                 $cartItem->menu_item_size_id,
-                $cartItem->addons->pluck('id')->all(),
+                $cartItem->addons->mapWithKeys(fn ($addon): array => [$addon->id => (int) ($addon->pivot->quantity ?? 1)])->all(),
                 $quantity,
             );
 
@@ -103,7 +106,7 @@ class DatabaseCartService
                 $payload['line_hash'] = $this->lineHash(
                     $cartItem->menu_item_id,
                     $cartItem->menu_item_size_id,
-                    $cartItem->addons->pluck('id')->all(),
+                    $cartItem->addons->mapWithKeys(fn ($addon): array => [$addon->id => (int) ($addon->pivot->quantity ?? 1)])->all(),
                     $payload['item_notes'],
                 );
             }
@@ -162,7 +165,7 @@ class DatabaseCartService
             $pricing = $this->pricingService->priceMenuSelection(
                 $cartItem->menuItem,
                 $cartItem->menu_item_size_id,
-                $cartItem->addons->pluck('id')->all(),
+                $cartItem->addons->mapWithKeys(fn ($addon): array => [$addon->id => (int) ($addon->pivot->quantity ?? 1)])->all(),
                 $cartItem->quantity,
             );
 
@@ -182,12 +185,14 @@ class DatabaseCartService
                     'name' => $addon->name,
                     'type' => $addon->type,
                     'price' => (float) $addon->price,
+                    'quantity' => (int) ($pricing['addon_quantities'][$addon->id] ?? 1),
                 ])->values()->all(),
                 'quantity' => $pricing['quantity'],
                 'unit_price' => $pricing['unit_price'],
                 'base_price' => $pricing['base_price'],
                 'addons_total' => $pricing['addons_total'],
                 'line_total' => $pricing['line_total'],
+                'customizations' => $cartItem->customizations_snapshot ?? [],
             ];
 
             $subtotal += $pricing['line_total'];
@@ -256,16 +261,19 @@ class DatabaseCartService
     }
 
     /**
-     * @param  array<int, int|string>  $addonIds
+     * @param  array<int|string, int|string>  $addonIds
      */
     private function lineHash(int $menuItemId, ?int $sizeId, array $addonIds, ?string $itemNotes = null): string
     {
-        $normalizedAddonIds = collect($addonIds)->map(fn ($id): int => (int) $id)->sort()->values()->all();
+        $normalizedAddonIds = collect($addonIds)
+            ->mapWithKeys(fn ($quantity, $id): array => [(int) $id => (int) $quantity])
+            ->sortKeys()
+            ->all();
 
         return hash('sha256', json_encode([
             'menu_item_id' => $menuItemId,
             'size_id' => $sizeId,
-            'addon_ids' => $normalizedAddonIds,
+            'addon_quantities' => $normalizedAddonIds,
             'item_notes' => $this->normalizeNotes($itemNotes),
         ]));
     }

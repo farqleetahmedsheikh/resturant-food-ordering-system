@@ -180,7 +180,7 @@ method_exists($categories, 'items')
                 </div>
             </div>
         </div>
-    </section>
+    </header>
 
     @if ($visibleCategories->isEmpty())
         {{-- Empty State --}}
@@ -233,24 +233,10 @@ method_exists($categories, 'items')
     @else
         {{-- Directory Toolbar --}}
         <section class="mt-5 rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-5">
-            <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                <div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
-                        Category Directory
-                    </p>
-
-                    <h2 class="mt-1 text-lg font-black text-warm-950 sm:text-xl">
-                        Manage menu organization
-                    </h2>
-
-                    <p class="mt-1 text-xs font-semibold text-warm-500">
-                        Search and status filters apply to categories loaded on this page.
-                    </p>
-                </div>
-
-                <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px_auto] xl:min-w-[650px]">
+            <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px_auto]">
                     {{-- Search --}}
                     <div class="relative">
+                        <label class="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">Search Categories</label>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -295,20 +281,23 @@ method_exists($categories, 'items')
                     </div>
 
                     {{-- Status Filter --}}
-                    <select
-                        x-model="status"
-                        class="min-h-12 w-full rounded-xl border border-warm-200 bg-warm-50 px-4 py-3 text-sm font-black text-warm-600 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
-                    >
-                        <option value="all">All statuses</option>
-                        <option value="active">Active only</option>
-                        <option value="inactive">Inactive only</option>
-                    </select>
+                    <div>
+                        <label class="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-warm-500">Status</label>
+                        <select
+                            x-model="status"
+                            class="min-h-12 w-full rounded-xl border border-warm-200 bg-warm-50 px-4 py-3 text-sm font-black text-warm-600 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                        >
+                            <option value="all">All statuses</option>
+                            <option value="active">Active only</option>
+                            <option value="inactive">Inactive only</option>
+                        </select>
+                    </div>
 
                     {{-- Reset --}}
                     <button
                         type="button"
                         x-on:click="resetFilters"
-                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-black text-brand-600 transition active:scale-[0.98] hover:bg-brand-100"
+                        class="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-black text-brand-600 transition active:scale-[0.98] hover:bg-brand-100"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -324,12 +313,22 @@ method_exists($categories, 'items')
 
                         Reset
                     </button>
-                </div>
             </div>
         </section>
 
-        {{-- Responsive Category Grid --}}
-        <section class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {{-- Category Directory --}}
+        <section class="mt-5 overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-3 border-b border-warm-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">Category Directory</p>
+                    <h2 class="mt-1 text-lg font-black text-warm-950 sm:text-xl">Restaurant categories</h2>
+                    <p class="mt-1 text-xs font-semibold text-warm-500">Showing {{ $visibleCategories->count() }} {{ $visibleCategories->count() === 1 ? 'category' : 'categories' }} on this page</p>
+                </div>
+                <a href="{{ route('admin.categories.create') }}" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2 text-xs font-black text-brand-600 transition hover:bg-brand-100 sm:inline-flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-4 w-4"><path stroke-linecap="round" d="M12 5v14M5 12h14" /></svg>
+                    Add Category
+                </a>
+            </div>
             @foreach ($categories as $category)
                 <article
                     x-show="matches(
@@ -338,10 +337,10 @@ method_exists($categories, 'items')
                         @js($category->is_active ? 'active' : 'inactive')
                     )"
                     x-transition.opacity.duration.200ms
-                    class="group flex min-w-0 flex-col overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-900/5 sm:rounded-[1.75rem]"
+                    class="group relative grid min-w-0 gap-4 border-b border-warm-100 bg-white p-4 transition last:border-b-0 hover:bg-brand-50/30 sm:p-5 lg:grid-cols-[150px_minmax(0,1fr)] lg:items-stretch"
                 >
                     {{-- Image --}}
-                    <div class="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream">
+                    <div class="relative h-40 overflow-hidden rounded-[1.25rem] bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream sm:h-32 lg:h-full lg:min-h-[156px]">
                         @if ($category->image_url)
                             <img
                                 src="{{ $category->image_url }}"
@@ -397,19 +396,30 @@ method_exists($categories, 'items')
                     </div>
 
                     {{-- Content --}}
-                    <div class="flex flex-1 flex-col p-4 sm:p-5">
-                        <div class="min-w-0">
-                            <h3 class="truncate text-xl font-black tracking-tight text-warm-950">
-                                {{ $category->name }}
-                            </h3>
+                    <div class="flex min-w-0 flex-col">
+                        <div class="min-w-0 lg:flex lg:items-start lg:justify-between lg:gap-5">
+                            <div class="min-w-0">
+                                <h3 class="break-words text-xl font-black tracking-tight text-warm-950">
+                                    {{ $category->name }}
+                                </h3>
 
-                            <p class="mt-2 line-clamp-2 min-h-12 text-sm font-semibold leading-6 text-warm-600">
-                                {{ $category->description ?: 'No description has been added for this category.' }}
-                            </p>
+                                <p class="mt-1 line-clamp-2 max-w-3xl text-sm font-semibold leading-6 text-warm-500">
+                                    {{ $category->description ?: 'No description has been added for this category.' }}
+                                </p>
+                            </div>
+
+                            <div class="mt-3 flex shrink-0 flex-wrap gap-2 lg:mt-0">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-[9px] font-black text-brand-600">
+                                    {{ $category->menu_items_count }} {{ $category->menu_items_count === 1 ? 'item' : 'items' }}
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-warm-100 px-2.5 py-1 text-[9px] font-black text-warm-600">
+                                    Position #{{ $category->sort_order }}
+                                </span>
+                            </div>
                         </div>
 
                         {{-- Metadata --}}
-                        <div class="mt-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                        <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:max-w-xl">
                             <div class="min-w-0 rounded-xl bg-warm-50 px-3 py-3">
                                 <p class="text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                     URL Slug
@@ -487,7 +497,20 @@ method_exists($categories, 'items')
                         </div>
 
                         {{-- Actions --}}
-                        <div class="mt-auto grid grid-cols-[1fr_auto] gap-2 pt-5">
+                        <div class="mt-4 grid grid-cols-[auto_1fr_auto] gap-2 pt-0 sm:max-w-md lg:max-w-xl">
+                            <a
+                                href="{{ route('menu', ['category' => $category->slug]) }}"
+                                target="_blank"
+                                rel="noopener"
+                                class="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-warm-200 bg-white text-warm-600 transition active:scale-95 hover:border-warm-500 hover:bg-warm-50"
+                                aria-label="Preview {{ $category->name }}"
+                                title="Preview category"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                                    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" />
+                                    <circle cx="12" cy="12" r="2.5" />
+                                </svg>
+                            </a>
                             <a
                                 href="{{ route('admin.categories.edit', $category) }}"
                                 class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.98] hover:bg-brand-600"

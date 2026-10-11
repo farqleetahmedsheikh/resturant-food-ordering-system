@@ -20,8 +20,35 @@ $cartCount = \App\Support\Cart::count();
             'name' => $addon->name,
             'type' => $addon->type,
             'price' => (float) $addon->price,
+            'is_default' => (bool) ($addon->pivot?->is_default ?? false),
         ])
         ->values();
+
+    $customizationOptions = $customizationGroups->map(fn ($group) => [
+        'id' => $group->id,
+        'name' => $group->name,
+        'description' => $group->description,
+        'selection_type' => $group->selection_type,
+        'is_required' => (bool) $group->is_required,
+        'min_selections' => (int) $group->min_selections,
+        'max_selections' => $group->max_selections !== null ? (int) $group->max_selections : null,
+        'quantity_limit' => $group->quantity_limit !== null ? (int) $group->quantity_limit : 1,
+        'addons' => $group->activeAddons->map(fn ($addon) => [
+            'id' => $addon->id,
+            'name' => $addon->name,
+            'type' => $addon->type,
+            'price' => (float) $addon->price,
+        ])->values()->all(),
+    ])->values();
+
+    $defaultAddonQuantities = $customizationOptions
+        ->mapWithKeys(fn ($group) => [
+            $group['id'] => collect($group['addons'])
+                ->filter(fn ($addon) => $addon['is_default'])
+                ->mapWithKeys(fn ($addon) => [$addon['id'] => 1])
+                ->all(),
+        ])
+        ->all();
 
     $selectedSizeId = (string) old(
         'size_id',
@@ -54,8 +81,10 @@ $cartCount = \App\Support\Cart::count();
         basePrice: @js((float) $menuItem->price),
         sizes: @js($sizeOptions->all()),
         addons: @js($addonOptions->all()),
+        groups: @js($customizationOptions->all()),
         selectedSizeId: @js($selectedSizeId),
         selectedAddonIds: @js($selectedAddonIds->all()),
+        selectedAddonQuantities: @js($defaultAddonQuantities),
         submitting: false,
 
         get selectedSize() {
@@ -70,6 +99,26 @@ $cartCount = \App\Support\Cart::count();
             );
         },
 
+        get groupedAddonsTotal() {
+            return this.groups.reduce((total, group) => total + group.addons.reduce((groupTotal, addon) => {
+                return groupTotal + (addon.is_default ? 0 : Number(addon.price || 0)) * Number(this.selectedAddonQuantities[group.id]?.[addon.id] || 0);
+            }, 0), 0);
+        },
+
+        get selectedAddonCount() {
+            if (this.groups.length) {
+                return Object.values(this.selectedAddonQuantities).reduce((total, group) => total + Object.values(group).reduce((sum, quantity) => sum + Number(quantity || 0), 0), 0);
+            }
+            return this.selectedAddonIds.length;
+        },
+
+        setAddonQuantity(groupId, addonId, quantity) {
+            if (! this.selectedAddonQuantities[groupId]) this.selectedAddonQuantities[groupId] = {};
+            const group = this.groups.find(entry => Number(entry.id) === Number(groupId));
+            const limit = Number(group?.quantity_limit || 1);
+            this.selectedAddonQuantities[groupId][addonId] = Math.max(0, Math.min(limit, Number(quantity || 0)));
+        },
+
         get addonsTotal() {
             return this.selectedAddons.reduce(
                 (total, addon) => total + Number(addon.price || 0),
@@ -82,7 +131,7 @@ $cartCount = \App\Support\Cart::count();
                 ? Number(this.selectedSize.price)
                 : Number(this.basePrice);
 
-            return productPrice + this.addonsTotal;
+            return productPrice + (this.groups.length ? this.groupedAddonsTotal : this.addonsTotal);
         },
 
         formatPrice(value) {
@@ -575,8 +624,45 @@ $cartCount = \App\Support\Cart::count();
                             </section>
                         @endif
 
-                        {{-- Add-ons --}}
-                        @if ($addonOptions->isNotEmpty())
+                        {{-- Structured customizations --}}
+                        @if ($customizationOptions->isNotEmpty())
+                            <section class="space-y-5">
+                                @foreach ($customizationOptions as $group)
+                                    <div>
+                                        <div class="flex items-start justify-between gap-4">
+                                            <div>
+                                                <h2 class="text-base font-black text-warm-950">{{ $group['name'] }}</h2>
+                                                <p class="mt-1 text-xs font-semibold text-warm-500">{{ $group['description'] ?: ($group['selection_type'] === 'single' ? 'Choose one option.' : 'Choose as many as you like.') }}</p>
+                                            </div>
+                                            <span class="rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider {{ $group['is_required'] ? 'bg-brand-50 text-brand-600' : 'bg-warm-100 text-warm-500' }}">{{ $group['is_required'] ? 'Required' : 'Optional' }}</span>
+                                        </div>
+                                        <div class="mt-3 space-y-2.5">
+                                            @foreach ($group['addons'] as $addon)
+                                                <div class="rounded-2xl border border-warm-200 bg-white px-4 py-3 transition" x-bind:class="Number(selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0) > 0 ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-100' : ''">
+                                                    <div class="flex items-center justify-between gap-3">
+                                                        <label class="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                                                            <input type="{{ $group['selection_type'] === 'single' ? 'radio' : 'checkbox' }}" @if ($group['selection_type'] === 'single') name="addon_group_{{ $group['id'] }}" @endif value="{{ $addon['id'] }}" class="h-5 w-5 shrink-0 border-warm-300 text-brand-500 focus:ring-brand-500" @change="setAddonQuantity({{ $group['id'] }}, {{ $addon['id'] }}, $event.target.checked ? 1 : 0)">
+                                                            <span class="min-w-0"><span class="block truncate text-sm font-black text-warm-950">{{ $addon['name'] }}</span><span class="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.1em] text-warm-500">{{ ucfirst($addon['type']) }}</span></span>
+                                                        </label>
+                                                        <span class="shrink-0 text-sm font-black text-brand-500">{{ $addon['is_default'] ? 'Included' : '+ '.\App\Support\Money::format($addon['price']) }}</span>
+                                                    </div>
+                                                    @if ($group['quantity_limit'] > 1 && $group['selection_type'] !== 'single')
+                                                        <div class="mt-3 flex items-center justify-end gap-2" x-show="Number(selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0) > 0" x-cloak>
+                                                            <button type="button" class="grid h-8 w-8 place-items-center rounded-lg border border-warm-200 text-lg font-black text-warm-700" @click="setAddonQuantity({{ $group['id'] }}, {{ $addon['id'] }}, Number(selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 1) - 1)">−</button>
+                                                            <span class="min-w-6 text-center text-sm font-black" x-text="selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0"></span>
+                                                            <button type="button" class="grid h-8 w-8 place-items-center rounded-lg border border-warm-200 text-lg font-black text-warm-700" @click="setAddonQuantity({{ $group['id'] }}, {{ $addon['id'] }}, Number(selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0) + 1)">+</button>
+                                                        </div>
+                                                    @endif
+                                                    <input type="hidden" name="addon_selections[{{ $group['id'] }}][{{ $addon['id'] }}]" x-bind:value="selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0">
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                                @error('addon_selections')<p class="text-xs font-semibold text-red-600">{{ $message }}</p>@enderror
+                            </section>
+                        @elseif ($addonOptions->isNotEmpty())
+                            {{-- Legacy add-ons remain available for older menu items. --}}
                             <section>
                                 <div class="flex items-start justify-between gap-4">
                                     <div>
@@ -590,11 +676,11 @@ $cartCount = \App\Support\Cart::count();
                                     </div>
 
                                     <span
-                                        x-show="selectedAddonIds.length > 0"
+                                        x-show="selectedAddonCount > 0"
                                         x-cloak
                                         class="rounded-full bg-brand-50 px-2.5 py-1 text-[9px] font-black text-brand-600"
                                     >
-                                        <span x-text="selectedAddonIds.length"></span>
+                                        <span x-text="selectedAddonCount"></span>
                                         selected
                                     </span>
                                 </div>
@@ -643,7 +729,7 @@ $cartCount = \App\Support\Cart::count();
                         @endif
 
                         {{-- Selected Configuration Summary --}}
-                        @if ($sizeOptions->isNotEmpty() || $addonOptions->isNotEmpty())
+                        @if ($sizeOptions->isNotEmpty() || $addonOptions->isNotEmpty() || $customizationOptions->isNotEmpty())
                             <div class="rounded-2xl border border-warm-200 bg-brand-50 p-4">
                                 <div class="flex items-start justify-between gap-4">
                                     <div>
@@ -659,17 +745,17 @@ $cartCount = \App\Support\Cart::count();
                                         </p>
 
                                         <p
-                                            x-show="selectedAddonIds.length > 0"
+                                            x-show="selectedAddonCount > 0"
                                             x-cloak
                                             class="mt-1 text-xs font-semibold text-warm-600"
                                         >
-                                            <span x-text="selectedAddonIds.length"></span>
-                                            extra<span x-show="selectedAddonIds.length !== 1">s</span>
+                                            <span x-text="selectedAddonCount"></span>
+                                            extra<span x-show="selectedAddonCount !== 1">s</span>
                                             added
                                         </p>
 
                                         <p
-                                            x-show="selectedAddonIds.length === 0"
+                                            x-show="selectedAddonCount === 0"
                                             class="mt-1 text-xs font-semibold text-warm-500"
                                         >
                                             No extras selected

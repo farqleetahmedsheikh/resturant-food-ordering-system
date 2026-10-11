@@ -57,6 +57,12 @@ export type OrderItem = {
     price?: number;
   }[];
   addons_total?: number;
+  customizations?: {
+    group_id?: number;
+    group_name: string;
+    selected?: { name: string; quantity?: number; price?: number }[];
+    removed?: { name: string; quantity?: number }[];
+  }[];
   quantity: number;
   price: number;
   total: number;

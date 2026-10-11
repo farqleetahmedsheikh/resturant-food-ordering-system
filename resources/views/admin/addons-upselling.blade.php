@@ -244,11 +244,15 @@
                             <input name="quantity_limit" type="number" min="1" value="1" class="{{ $fieldClass }}" />
                             <input name="sort_order" type="number" min="0" value="0" class="{{ $fieldClass }}" />
                         </div>
+                        <p class="text-xs font-semibold leading-5 text-warm-500">Tick <strong>Default</strong> for ingredients included with the product. Customers can remove them before ordering.</p>
                         <div class="max-h-56 overflow-y-auto rounded-2xl border border-warm-200 bg-warm-50/60 p-3">
                             @foreach ($addons as $addon)
                                 <label class="mb-2 flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-sm font-bold text-warm-700 ring-1 ring-warm-100 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
-                                    <span>{{ $addon->name }}</span>
-                                    <input type="checkbox" name="addon_ids[]" value="{{ $addon->id }}" class="h-4 w-4 rounded border-warm-300 text-brand-500">
+                                    <span class="min-w-0 truncate">{{ $addon->name }}</span>
+                                    <span class="flex shrink-0 items-center gap-3 text-[10px] font-black uppercase tracking-wide text-warm-500">
+                                        <span class="inline-flex items-center gap-1.5">Included <input type="checkbox" name="default_addon_ids[]" value="{{ $addon->id }}" class="h-4 w-4 rounded border-warm-300 text-leaf-600"></span>
+                                        <input type="checkbox" name="addon_ids[]" value="{{ $addon->id }}" class="h-4 w-4 rounded border-warm-300 text-brand-500">
+                                    </span>
                                 </label>
                             @endforeach
                         </div>
@@ -287,11 +291,13 @@
                                         </select>
                                         <input name="max_selections" type="number" min="1" value="{{ $group->max_selections }}" placeholder="Max" class="{{ $compactFieldClass }}" />
                                     </div>
+                                    <p class="text-xs font-semibold leading-5 text-warm-500">Select the group options and mark which ones are included by default.</p>
                                     <div class="grid max-h-40 gap-2 overflow-y-auto rounded-2xl border border-warm-200 bg-white p-3 sm:grid-cols-2">
                                         @foreach ($addons as $addon)
-                                            <label class="flex items-center gap-2 rounded-xl px-2 py-1.5 text-xs font-bold text-warm-600 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
+                                            <label class="flex items-center justify-between gap-2 rounded-xl px-2 py-1.5 text-xs font-bold text-warm-600 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
                                                 <input type="checkbox" name="addon_ids[]" value="{{ $addon->id }}" @checked($group->addons->contains('id', $addon->id)) class="h-4 w-4 rounded border-warm-300 text-brand-500">
-                                                {{ $addon->name }}
+                                                <span class="min-w-0 flex-1 truncate">{{ $addon->name }}</span>
+                                                <span class="inline-flex shrink-0 items-center gap-1 text-[9px] font-black uppercase text-warm-400">Default <input type="checkbox" name="default_addon_ids[]" value="{{ $addon->id }}" @checked($group->addons->firstWhere('id', $addon->id)?->pivot?->is_default) class="h-3.5 w-3.5 rounded border-warm-300 text-leaf-600"></span>
                                             </label>
                                         @endforeach
                                     </div>

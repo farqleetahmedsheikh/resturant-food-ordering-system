@@ -209,6 +209,12 @@ function CartItemRow({
           <AppText color={colors.text.secondary} numberOfLines={1}>
             {item.sizeName ? `${item.sizeName} · ` : ''}{item.addons.length > 0 ? item.addons.map((addon) => addon.name).join(', ') : 'No add-ons'}
           </AppText>
+          {item.customizations?.map((group) => (
+            <AppText key={group.group_id ?? group.group_name} variant="caption" color={colors.text.secondary} numberOfLines={1}>
+              {group.group_name}: {group.selected?.map((option) => option.name + (Number(option.quantity ?? 1) > 1 ? ' x' + option.quantity : '')).join(', ') || 'None'}
+              {group.removed && group.removed.length > 0 ? ' - Removed: ' + group.removed.map((option) => option.name).join(', ') : ''}
+            </AppText>
+          ))}
           {!item.isAvailable ? (
             <AppText variant="caption" color={colors.semantic.danger}>
               Availability will be checked at checkout.

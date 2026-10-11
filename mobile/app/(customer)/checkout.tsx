@@ -159,6 +159,12 @@ export default function CustomerCheckoutScreen() {
                   {item.addons.length > 0 ? (
                     <AppText color={colors.text.secondary}>{item.addons.map((addon) => addon.name).join(', ')}</AppText>
                   ) : null}
+                  {item.customizations?.map((group) => (
+                    <AppText key={group.group_id ?? group.group_name} color={colors.text.secondary}>
+                      {group.group_name}: {group.selected?.map((option) => option.name + (Number(option.quantity ?? 1) > 1 ? ' x' + option.quantity : '')).join(', ') || 'None'}
+                      {group.removed && group.removed.length > 0 ? ' - Removed: ' + group.removed.map((option) => option.name).join(', ') : ''}
+                    </AppText>
+                  ))}
                   {item.notes.trim() ? <AppText color={colors.text.secondary}>Note: {item.notes.trim()}</AppText> : null}
                 </View>
                 <PriceText amount={item.unitPrice * item.quantity} />

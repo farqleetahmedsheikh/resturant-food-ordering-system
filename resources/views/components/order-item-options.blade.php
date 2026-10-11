@@ -3,13 +3,14 @@
 @php
 $addons = collect($item->addons_snapshot ?? [])
 ->filter(fn ($addon) => ! empty($addon['name']));
+$customizations = collect($item->customizations_snapshot ?? []);
 
 $hasSizePrice = (float) ($item->size_price ?? 0) > 0;
 $hasAddonsPrice = (float) ($item->addons_total ?? 0) > 0;
 
 @endphp
 
-@if ($item->size_name || $addons->isNotEmpty())
+@if ($item->size_name || $addons->isNotEmpty() || $customizations->isNotEmpty())
 <div
 {{ $attributes->class([
 'mt-3 overflow-hidden rounded-2xl border border-warm-200 bg-brand-50/70',
@@ -44,7 +45,35 @@ $hasAddonsPrice = (float) ($item->addons_total ?? 0) > 0;
             </div>
         @endif
 
-        @if ($item->size_name && $addons->isNotEmpty())
+        @if ($item->size_name && ($addons->isNotEmpty() || $customizations->isNotEmpty()))
+            <div class="border-t border-warm-200"></div>
+        @endif
+
+        @if ($customizations->isNotEmpty())
+            <div class="flex items-start gap-3">
+                <div class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white text-brand-500 shadow-sm">
+                    <x-ui-icon name="menu" class="h-4 w-4" />
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] font-black uppercase tracking-[0.16em] text-brand-500">Customizations</p>
+                    <div class="mt-2 space-y-2">
+                        @foreach ($customizations as $customization)
+                            <div class="rounded-xl bg-white px-3 py-2">
+                                <p class="text-xs font-black text-warm-900">{{ $customization['group_name'] ?? 'Customization' }}</p>
+                                <p class="mt-1 text-[11px] font-semibold text-warm-600">
+                                    {{ collect($customization['selected'] ?? [])->map(fn ($option) => ($option['name'] ?? 'Option').(((int) ($option['quantity'] ?? 1)) > 1 ? ' x'.(int) $option['quantity'] : ''))->implode(', ') ?: 'None' }}
+                                </p>
+                                @if (! empty($customization['removed']))
+                                    <p class="mt-1 text-[11px] font-bold text-red-600">Removed: {{ collect($customization['removed'])->pluck('name')->implode(', ') }}</p>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if ($customizations->isNotEmpty() && $addons->isNotEmpty())
             <div class="border-t border-warm-200"></div>
         @endif
 

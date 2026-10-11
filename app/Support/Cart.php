@@ -21,16 +21,16 @@ class Cart
     }
 
     /**
-     * @param  iterable<int, MenuItemAddon>  $addons
+     * @param  iterable<int|string, MenuItemAddon|int|string>  $addons
      */
-    public static function add(MenuItem $menuItem, int $quantity = 1, ?MenuItemSize $size = null, iterable $addons = []): void
+    public static function add(MenuItem $menuItem, int $quantity = 1, ?MenuItemSize $size = null, iterable $addons = [], array $customizations = []): void
     {
         $items = self::items();
-        $selectedAddons = collect($addons)->sortBy('id')->values();
-        $addonIds = $selectedAddons->pluck('id')->map(fn ($id) => (int) $id)->all();
-        $key = self::lineKey($menuItem->id, $size?->id, $addonIds);
+        $addonQuantities = self::normalizeAddonQuantities($addons);
+        $selectedAddons = $menuItem->activeAddons->whereIn('id', array_keys($addonQuantities))->sortBy('id')->values();
+        $key = self::lineKey($menuItem->id, $size?->id, $addonQuantities);
         $basePrice = round((float) ($size?->price ?? $menuItem->price), 2);
-        $addonsTotal = round($selectedAddons->sum(fn (MenuItemAddon $addon): float => (float) $addon->price), 2);
+        $addonsTotal = round($selectedAddons->sum(fn (MenuItemAddon $addon): float => (float) $addon->price * ($addonQuantities[$addon->id] ?? 1)), 2);
         $unitPrice = round($basePrice + $addonsTotal, 2);
 
         if (isset($items[$key])) {
@@ -53,8 +53,10 @@ class Cart
                     'name' => $addon->name,
                     'type' => $addon->type,
                     'price' => (float) $addon->price,
+                    'quantity' => (int) ($addonQuantities[$addon->id] ?? 1),
                 ])->all(),
                 'addons_total' => $addonsTotal,
+                'customizations' => $customizations,
             ];
         }
 
@@ -171,6 +173,7 @@ class Cart
                 'size_price' => isset($item['size_price']) ? (float) $item['size_price'] : null,
                 'addons' => $addons->all(),
                 'addons_total' => $addonsTotal,
+                'customizations' => $item['customizations'] ?? [],
                 'total' => round($price * $quantity, 2),
             ];
         }
@@ -189,18 +192,18 @@ class Cart
      */
     private static function lineKey(int $menuItemId, ?int $sizeId = null, array $addonIds = []): string
     {
-        sort($addonIds);
+        ksort($addonIds);
 
         return md5(json_encode([
             'menu_item_id' => $menuItemId,
             'size_id' => $sizeId,
-            'addon_ids' => $addonIds,
+            'addon_quantities' => $addonIds,
         ], JSON_THROW_ON_ERROR));
     }
 
     /**
      * @param  mixed  $addons
-     * @return Collection<int, array{id: int|null, name: string, type: string|null, price: float}>
+     * @return Collection<int, array{id: int|null, name: string, type: string|null, price: float, quantity: int}>
      */
     private static function normalizeAddons(mixed $addons): Collection
     {
@@ -210,7 +213,36 @@ class Cart
                 'name' => (string) ($addon['name'] ?? 'Add-on'),
                 'type' => $addon['type'] ?? null,
                 'price' => round((float) ($addon['price'] ?? 0), 2),
+                'quantity' => max(1, (int) ($addon['quantity'] ?? 1)),
             ])
             ->values();
+    }
+
+    /** @return array<int, int> */
+    private static function normalizeAddonQuantities(iterable $addons): array
+    {
+        $values = is_array($addons) ? $addons : collect($addons)->all();
+
+        if (array_is_list($values)) {
+            return collect($values)
+                ->map(function ($addon): array {
+                    $id = $addon instanceof MenuItemAddon ? $addon->id : (int) $addon;
+                    return [$id, $addon instanceof MenuItemAddon ? 1 : 1];
+                })
+                ->filter(fn (array $pair): bool => $pair[0] > 0)
+                ->groupBy(fn (array $pair): int => $pair[0])
+                ->map(fn ($pairs): int => $pairs->sum(fn (array $pair): int => $pair[1]))
+                ->all();
+        }
+
+        return collect($values)
+            ->mapWithKeys(function ($quantity, $id): array {
+                if ($quantity instanceof MenuItemAddon) {
+                    return [(int) $quantity->id => 1];
+                }
+                return [(int) $id => max(1, (int) $quantity)];
+            })
+            ->filter(fn (int $quantity, int $id): bool => $id > 0 && $quantity > 0)
+            ->all();
     }
 }

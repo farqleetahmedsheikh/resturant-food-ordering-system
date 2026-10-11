@@ -8,6 +8,7 @@ use App\Models\MenuItem;
 use App\Models\Restaurant;
 use App\Services\RestaurantAvailabilityService;
 use App\Services\SmartMenuSuggestionService;
+use App\Services\AddonCatalogService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -104,6 +105,7 @@ class MenuController extends Controller
         abort_unless($menuItem->is_available && (! $menuItem->category || $menuItem->category->is_active), 404);
 
         $menuItem->load(['category', 'activeSizes', 'activeAddons']);
+        $customizationGroups = app(AddonCatalogService::class)->groupsForMenuItem($menuItem);
         $relatedItems = MenuItem::query()
             ->with('category')
             ->where('is_available', true)
@@ -119,6 +121,6 @@ class MenuController extends Controller
         $availabilityStatus = $availability->status($restaurant);
         $suggestions = app(SmartMenuSuggestionService::class)->forItem($menuItem);
 
-        return view('pages.menu-item', compact('restaurant', 'availabilityStatus', 'menuItem', 'relatedItems', 'suggestions'));
+        return view('pages.menu-item', compact('restaurant', 'availabilityStatus', 'menuItem', 'relatedItems', 'suggestions', 'customizationGroups'));
     }
 }

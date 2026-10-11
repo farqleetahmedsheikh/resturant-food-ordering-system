@@ -50,6 +50,7 @@ export type MenuItemCustomizationGroup = {
     sort_order: number;
     is_available: boolean;
     is_active: boolean;
+    is_default?: boolean;
   }[];
 };
 

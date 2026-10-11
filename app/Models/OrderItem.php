@@ -19,6 +19,7 @@ class OrderItem extends Model
         'size_name',
         'size_price',
         'addons_snapshot',
+        'customizations_snapshot',
         'addons_total',
         'quantity',
         'price',
@@ -31,6 +32,7 @@ class OrderItem extends Model
             'price' => 'decimal:2',
             'size_price' => 'decimal:2',
             'addons_snapshot' => 'array',
+            'customizations_snapshot' => 'array',
             'addons_total' => 'decimal:2',
             'total' => 'decimal:2',
         ];
