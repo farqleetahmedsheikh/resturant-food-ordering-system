@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\BusinessRuleException;
+use App\Models\AddonGroup;
 use App\Models\MenuItem;
 use App\Models\MenuItemAddon;
 use App\Models\MenuItemSize;
@@ -31,7 +32,13 @@ class PricingService
             throw new BusinessRuleException('Quantity must be between 1 and '.self::MAX_QUANTITY.'.');
         }
 
-        $menuItem->loadMissing(['category', 'activeSizes', 'activeAddons']);
+        $menuItem->loadMissing([
+            'category.activeAddonGroups.activeAddons',
+            'restaurant.globalAddonGroups.activeAddons',
+            'activeAddonGroups.activeAddons',
+            'activeSizes',
+            'activeAddons',
+        ]);
 
         if (! $menuItem->is_available || ($menuItem->category && ! $menuItem->category->is_active)) {
             throw new BusinessRuleException('This menu item is currently unavailable.');
@@ -65,6 +72,8 @@ class PricingService
             throw new BusinessRuleException('One or more add-ons are unavailable for this menu item.');
         }
 
+        $this->validateGroupedAddonRules($menuItem, $addons);
+
         $basePrice = round((float) ($size?->price ?? $menuItem->price), 2);
         $addonsTotal = round((float) $addons->sum(fn (MenuItemAddon $addon): float => (float) $addon->price), 2);
         $unitPrice = round($basePrice + $addonsTotal, 2);
@@ -79,5 +88,50 @@ class PricingService
             'unit_price' => $unitPrice,
             'line_total' => round($unitPrice * $quantity, 2),
         ];
+    }
+
+    /**
+     * @param  Collection<int, MenuItemAddon>  $addons
+     */
+    private function validateGroupedAddonRules(MenuItem $menuItem, Collection $addons): void
+    {
+        $groups = collect()
+            ->concat($menuItem->activeAddonGroups)
+            ->concat($menuItem->category?->activeAddonGroups ?? [])
+            ->concat($menuItem->restaurant?->globalAddonGroups->where('pivot.is_active', true) ?? [])
+            ->filter(fn (AddonGroup $group): bool => $group->activeAddons->isNotEmpty())
+            ->unique('id');
+
+        if ($groups->isEmpty()) {
+            return;
+        }
+
+        $selectedKeys = $addons
+            ->map(fn (MenuItemAddon $addon): string => $this->addonKey($addon->name, (float) $addon->price))
+            ->values();
+
+        foreach ($groups as $group) {
+            $groupKeys = $group->activeAddons
+                ->map(fn ($addon): string => $this->addonKey($addon->name, (float) $addon->price));
+
+            $count = $selectedKeys->intersect($groupKeys)->count();
+            $minimum = $group->is_required ? max(1, (int) $group->min_selections) : (int) $group->min_selections;
+            $maximum = $group->selection_type === 'single'
+                ? 1
+                : ($group->max_selections !== null ? (int) $group->max_selections : null);
+
+            if ($count < $minimum) {
+                throw new BusinessRuleException("Please select at least {$minimum} option(s) from {$group->name}.");
+            }
+
+            if ($maximum !== null && $count > $maximum) {
+                throw new BusinessRuleException("Please select no more than {$maximum} option(s) from {$group->name}.");
+            }
+        }
+    }
+
+    private function addonKey(string $name, float $price): string
+    {
+        return mb_strtolower(trim($name)).'|'.number_format($price, 2, '.', '');
     }
 }

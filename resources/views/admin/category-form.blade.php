@@ -37,11 +37,6 @@ $isCreateMode = $mode === 'create';
         $category->is_active ?? true
     );
 
-    $initialRestaurant = old(
-        'restaurant_id',
-        $category->restaurant_id ?? ''
-    );
-
     $initialRemoveImage = (bool) old('remove_image', false);
 @endphp
 
@@ -364,81 +359,6 @@ $isCreateMode = $mode === 'create';
                 </div>
 
                 <div class="space-y-5 p-4 sm:p-6">
-                    {{-- Restaurant --}}
-                    <div>
-                        <div class="flex items-center justify-between gap-3">
-                            <label
-                                for="restaurant_id"
-                                class="text-sm font-black text-warm-900"
-                            >
-                                Restaurant
-                            </label>
-
-                            <span class="text-[10px] font-bold text-warm-500">
-                                Optional
-                            </span>
-                        </div>
-
-                        <div class="relative mt-2">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-500"
-                            >
-                                <path d="M3 10h18" />
-                                <path d="m5 10 1-6h12l1 6" />
-                                <path d="M5 10v10h14V10" />
-                                <path d="M9 20v-6h6v6" />
-                            </svg>
-
-                            <select
-                                id="restaurant_id"
-                                name="restaurant_id"
-                                class="min-h-12 w-full appearance-none rounded-xl border bg-warm-50 py-3 pl-12 pr-11 text-sm font-semibold text-warm-900 outline-none transition focus:bg-white focus:ring-4 focus:ring-brand-100 @error('restaurant_id') border-red-300 focus:border-red-400 @else border-warm-200 focus:border-brand-500 @enderror"
-                            >
-                                <option value="">No restaurant</option>
-
-                                @foreach ($restaurants as $restaurant)
-                                    <option
-                                        value="{{ $restaurant->id }}"
-                                        @selected($initialRestaurant == $restaurant->id)
-                                    >
-                                        {{ $restaurant->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-500"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="m6 9 6 6 6-6"
-                                />
-                            </svg>
-                        </div>
-
-                        <p class="mt-2 text-xs font-semibold leading-5 text-warm-500">
-                            Associate the category with a restaurant, or leave it unassigned.
-                        </p>
-
-                        @error('restaurant_id')
-                            <p class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
-                                <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
                     <div class="grid gap-5 md:grid-cols-2">
                         {{-- Name --}}
                         <div>

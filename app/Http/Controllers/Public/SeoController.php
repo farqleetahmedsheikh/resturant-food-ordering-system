@@ -50,13 +50,14 @@ class SeoController extends Controller
         ]);
 
         MenuItem::query()
+            ->with('category')
             ->where('is_available', true)
             ->orderByDesc('updated_at')
             ->limit(100)
-            ->get(['slug', 'updated_at'])
+            ->get(['slug', 'category_id', 'updated_at'])
             ->each(function (MenuItem $item) use ($urls): void {
                 $urls->push([
-                    'loc' => route('menu.show', $item),
+                    'loc' => $item->public_url,
                     'priority' => '0.7',
                     'changefreq' => 'weekly',
                     'lastmod' => $item->updated_at?->toAtomString(),

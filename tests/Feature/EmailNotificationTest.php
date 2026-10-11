@@ -7,6 +7,7 @@ use App\Mail\OrderDeliveredMail;
 use App\Mail\OrderPlacedMail;
 use App\Mail\PasswordResetOtpMail;
 use App\Models\Order;
+use App\Models\PendingStripeCheckout;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,20 +60,23 @@ class EmailNotificationTest extends TestCase
 
         Mail::assertNotSent(OrderPlacedMail::class);
 
-        $order = Order::firstOrFail();
+        $this->assertDatabaseCount('orders', 0);
+
+        $pendingCheckout = PendingStripeCheckout::firstOrFail();
         $payload = $this->eventPayload('evt_email_checkout_completed', 'checkout.session.completed', [
-            'id' => $order->stripe_checkout_session_id,
+            'id' => $pendingCheckout->stripe_checkout_session_id,
             'object' => 'checkout.session',
             'payment_status' => 'paid',
             'payment_intent' => 'pi_test_email_checkout',
-            'client_reference_id' => (string) $order->id,
+            'client_reference_id' => 'pending_checkout:'.$pendingCheckout->id,
             'metadata' => [
-                'order_id' => (string) $order->id,
+                'pending_checkout_id' => (string) $pendingCheckout->id,
             ],
         ]);
 
         $this->postStripeWebhook($payload)->assertOk();
 
+        $this->assertDatabaseCount('orders', 1);
         Mail::assertSent(OrderPlacedMail::class, fn (OrderPlacedMail $mail) => $mail->order->items->contains('item_name', 'Chicken Kebab'));
     }
 

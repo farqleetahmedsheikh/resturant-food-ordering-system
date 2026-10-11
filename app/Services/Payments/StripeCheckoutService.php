@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use App\Contracts\Payments\StripeCheckoutGateway;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\PendingStripeCheckout;
 use App\Support\Money;
 use Illuminate\Support\Str;
 
@@ -73,6 +74,35 @@ class StripeCheckoutService
         return $session;
     }
 
+    public function createForPendingCheckout(PendingStripeCheckout $pendingCheckout): StripeCheckoutSessionData
+    {
+        $this->assertReadyForCheckout();
+
+        $pendingCheckout->loadMissing(['user']);
+
+        $session = $this->gateway->createCheckoutSession([
+            'mode' => 'payment',
+            'payment_method_types' => ['card'],
+            'client_reference_id' => 'pending_checkout:'.$pendingCheckout->id,
+            'customer_email' => $pendingCheckout->customer_payload['customer_email'] ?? $pendingCheckout->user?->email,
+            'success_url' => (string) config('services.stripe.success_url'),
+            'cancel_url' => (string) config('services.stripe.cancel_url'),
+            'line_items' => $this->lineItemsFromSummary($pendingCheckout->summary, $pendingCheckout->currency),
+            'metadata' => $this->pendingMetadata($pendingCheckout),
+            'payment_intent_data' => [
+                'metadata' => $this->pendingMetadata($pendingCheckout),
+            ],
+        ]);
+
+        $pendingCheckout->forceFill([
+            'status' => PendingStripeCheckout::STATUS_SESSION_CREATED,
+            'stripe_checkout_session_id' => $session->id,
+            'stripe_payment_status' => 'unpaid',
+        ])->save();
+
+        return $session;
+    }
+
     /**
      * @return array<int, array<string, mixed>>
      */
@@ -120,6 +150,57 @@ class StripeCheckoutService
     }
 
     /**
+     * @param  array<string, mixed>  $summary
+     * @return array<int, array<string, mixed>>
+     */
+    private function lineItemsFromSummary(array $summary, string $currency): array
+    {
+        $items = collect($summary['items'] ?? [])
+            ->map(fn (array $item): array => [
+                'price_data' => [
+                    'currency' => strtolower($currency ?: 'AUD'),
+                    'unit_amount' => Money::toCents((float) ($item['unit_price'] ?? 0)),
+                    'product_data' => [
+                        'name' => Str::limit($this->summaryLineItemName($item), 120, ''),
+                    ],
+                ],
+                'quantity' => (int) ($item['quantity'] ?? 1),
+            ])
+            ->values()
+            ->all();
+
+        if (Money::toCents((float) ($summary['delivery_fee'] ?? 0)) > 0) {
+            $items[] = [
+                'price_data' => [
+                    'currency' => strtolower($currency ?: 'AUD'),
+                    'unit_amount' => Money::toCents((float) $summary['delivery_fee']),
+                    'product_data' => [
+                        'name' => 'Delivery fee',
+                    ],
+                ],
+                'quantity' => 1,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     */
+    private function summaryLineItemName(array $item): string
+    {
+        $name = (string) ($item['name'] ?? 'Menu item');
+        $sizeName = $item['size']['name'] ?? null;
+
+        if ($sizeName) {
+            $name .= ' - '.$sizeName;
+        }
+
+        return $name;
+    }
+
+    /**
      * @return array<string, string>
      */
     private function metadata(Order $order): array
@@ -127,6 +208,18 @@ class StripeCheckoutService
         return [
             'order_id' => (string) $order->id,
             'order_number' => (string) $order->order_number,
+            'environment' => (string) config('services.stripe.mode', 'sandbox'),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function pendingMetadata(PendingStripeCheckout $pendingCheckout): array
+    {
+        return [
+            'pending_checkout_id' => (string) $pendingCheckout->id,
+            'source' => (string) $pendingCheckout->source,
             'environment' => (string) config('services.stripe.mode', 'sandbox'),
         ];
     }

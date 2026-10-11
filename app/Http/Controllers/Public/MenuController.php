@@ -10,6 +10,7 @@ use App\Services\RestaurantAvailabilityService;
 use App\Services\SmartMenuSuggestionService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class MenuController extends Controller
 {
@@ -80,12 +81,29 @@ class MenuController extends Controller
         return view('pages.menu', compact('restaurant', 'availabilityStatus', 'categories', 'featuredItems', 'menuItems', 'selectedCategory', 'search', 'sort'));
     }
 
-    public function show(MenuItem $menuItem, RestaurantAvailabilityService $availability): View
+    public function show(Category $category, MenuItem $menuItem, RestaurantAvailabilityService $availability): View
+    {
+        abort_unless($menuItem->category_id === $category->id, 404);
+        return $this->renderMenuItem($menuItem, $availability);
+    }
+
+    public function showLegacy(MenuItem $menuItem, RestaurantAvailabilityService $availability): View|RedirectResponse
+    {
+        if ($menuItem->category) {
+            return redirect()->route('menu.show', [
+                'category' => $menuItem->category,
+                'menuItem' => $menuItem,
+            ], 301);
+        }
+
+        return $this->renderMenuItem($menuItem, $availability);
+    }
+
+    private function renderMenuItem(MenuItem $menuItem, RestaurantAvailabilityService $availability): View
     {
         abort_unless($menuItem->is_available && (! $menuItem->category || $menuItem->category->is_active), 404);
 
         $menuItem->load(['category', 'activeSizes', 'activeAddons']);
-
         $relatedItems = MenuItem::query()
             ->with('category')
             ->where('is_available', true)
@@ -97,7 +115,6 @@ class MenuController extends Controller
             ->when($menuItem->category_id, fn ($query) => $query->where('category_id', $menuItem->category_id))
             ->take(3)
             ->get();
-
         $restaurant = Restaurant::current();
         $availabilityStatus = $availability->status($restaurant);
         $suggestions = app(SmartMenuSuggestionService::class)->forItem($menuItem);

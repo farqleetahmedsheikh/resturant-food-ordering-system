@@ -888,7 +888,7 @@ $isOpen = (bool) ($availabilityStatus['is_open'] ?? $restaurant?->is_open ?? tru
                             <div class="space-y-3 border-t border-warm-200 p-4 sm:grid sm:grid-cols-2 sm:gap-3 sm:space-y-0">
                                 @foreach ($suggestedItems as $suggestion)
                                     <a
-                                        href="{{ route('menu.show', $suggestion) }}"
+                                        href="{{ $suggestion->public_url }}"
                                         class="flex items-center gap-3 rounded-xl border border-warm-100 bg-warm-50 p-3 transition active:scale-[0.99] hover:border-brand-200 hover:bg-brand-50"
                                     >
                                         <span class="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-brand-100 to-food-cream">

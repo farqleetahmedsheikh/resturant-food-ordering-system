@@ -111,6 +111,19 @@ $cartCount = \App\Support\Cart::count();
                     Menu
                 </a>
 
+                @if ($menuItem->category)
+                    <span class="text-warm-300">/</span>
+
+                    <a
+                        href="{{ route('menu', ['category' => $menuItem->category->slug]) }}"
+                        class="inline-flex max-w-sm items-center gap-1.5 truncate transition hover:text-brand-500"
+                        title="Browse {{ $menuItem->category->name }}"
+                    >
+                        <span>{{ $menuItem->category->name }}</span>
+                        <span class="font-mono text-xs font-semibold text-warm-400">({{ $menuItem->category->slug }})</span>
+                    </a>
+                @endif
+
                 <span class="text-warm-300">/</span>
 
                 <span class="max-w-sm truncate text-warm-900">
@@ -198,9 +211,20 @@ $cartCount = \App\Support\Cart::count();
                         {{-- Product Badges --}}
                         <div class="absolute bottom-5 left-4 right-4 flex items-end justify-between gap-3 text-white sm:left-6 sm:right-6 lg:bottom-7">
                             <div class="min-w-0">
-                                <span class="inline-flex max-w-full truncate rounded-full border border-white/25 bg-warm-950/40 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.13em] backdrop-blur-md sm:text-xs">
-                                    {{ $menuItem->category?->name ?? 'Arcade Kebab House Menu' }}
-                                </span>
+                                @if ($menuItem->category)
+                                    <a
+                                        href="{{ route('menu', ['category' => $menuItem->category->slug]) }}"
+                                        class="inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-white/25 bg-warm-950/40 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.13em] backdrop-blur-md transition hover:bg-warm-950/60 sm:text-xs"
+                                        title="Browse {{ $menuItem->category->name }}"
+                                    >
+                                        <span class="truncate">{{ $menuItem->category->name }}</span>
+                                        <span class="font-mono text-[8px] font-semibold normal-case tracking-normal text-white/70 sm:text-[10px]">/{{ $menuItem->category->slug }}</span>
+                                    </a>
+                                @else
+                                    <span class="inline-flex max-w-full truncate rounded-full border border-white/25 bg-warm-950/40 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.13em] backdrop-blur-md sm:text-xs">
+                                        Arcade Kebab House Menu
+                                    </span>
+                                @endif
 
                                 @if ($menuItem->preparation_time)
                                     <p class="mt-2 text-xs font-bold text-white/90">
@@ -262,9 +286,20 @@ $cartCount = \App\Support\Cart::count();
                     {{-- Product Header --}}
                     <header>
                         <div class="flex items-center justify-between gap-3">
-                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
-                                {{ $menuItem->category?->name ?? 'Arcade Kebab House Menu' }}
-                            </p>
+                            @if ($menuItem->category)
+                                <a
+                                    href="{{ route('menu', ['category' => $menuItem->category->slug]) }}"
+                                    class="inline-flex max-w-full items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 transition hover:text-brand-700 sm:text-xs"
+                                    title="Browse {{ $menuItem->category->name }}"
+                                >
+                                    <span class="truncate">{{ $menuItem->category->name }}</span>
+                                    <span class="font-mono text-[9px] font-semibold normal-case tracking-normal text-warm-400">/{{ $menuItem->category->slug }}</span>
+                                </a>
+                            @else
+                                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
+                                    Arcade Kebab House Menu
+                                </p>
+                            @endif
 
                             <span
                                 @class([
@@ -756,7 +791,7 @@ $cartCount = \App\Support\Cart::count();
 
                         <article class="flex items-center gap-3 rounded-2xl border border-warm-200 bg-white p-3 shadow-sm lg:block lg:overflow-hidden lg:p-0">
                             <a
-                                href="{{ route('menu.show', $suggestion) }}"
+                                href="{{ $suggestion->public_url }}"
                                 class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50 lg:block lg:h-auto lg:w-auto lg:rounded-none"
                             >
                                 <div class="grid h-full w-full place-items-center lg:aspect-[4/3]">
@@ -777,7 +812,7 @@ $cartCount = \App\Support\Cart::count();
 
                             <div class="min-w-0 flex-1 lg:p-4">
                                 <a
-                                    href="{{ route('menu.show', $suggestion) }}"
+                                    href="{{ $suggestion->public_url }}"
                                     class="line-clamp-1 text-sm font-black text-warm-950 hover:text-brand-600 lg:text-base"
                                 >
                                     {{ $suggestion->name }}
@@ -790,7 +825,7 @@ $cartCount = \App\Support\Cart::count();
                                 <div class="mt-2">
                                     @if ($suggestionCustomizable)
                                         <a
-                                            href="{{ route('menu.show', $suggestion) }}"
+                                            href="{{ $suggestion->public_url }}"
                                             class="inline-flex min-h-9 items-center justify-center rounded-lg bg-brand-50 px-3 py-2 text-[10px] font-black text-brand-600 transition active:scale-[0.97]"
                                         >
                                             Customize
@@ -856,7 +891,7 @@ $cartCount = \App\Support\Cart::count();
                 <div class="mt-5 grid gap-3 lg:grid-cols-3">
                     @foreach ($relatedItems as $item)
                         <a
-                            href="{{ route('menu.show', $item) }}"
+                            href="{{ $item->public_url }}"
                             class="group flex items-center gap-3 rounded-2xl border border-warm-200 bg-white p-3 shadow-sm transition active:scale-[0.99] lg:block lg:overflow-hidden lg:p-0"
                         >
                             <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50 lg:h-auto lg:w-auto lg:rounded-none">

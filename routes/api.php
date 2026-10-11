@@ -30,6 +30,7 @@ Route::prefix('v1')->middleware('request.id')->group(function (): void {
         Route::get('/categories', [PublicCategoryController::class, 'index']);
         Route::get('/menu-items', [PublicMenuItemController::class, 'index']);
         Route::get('/menu-items/{menuItem}', [PublicMenuItemController::class, 'show']);
+        Route::get('/menu-items/{menuItem}/customizations', [PublicMenuItemController::class, 'customizations']);
     });
 
     Route::prefix('auth')->middleware('throttle:api-auth')->group(function (): void {
@@ -64,6 +65,7 @@ Route::prefix('v1')->middleware('request.id')->group(function (): void {
                 Route::put('/cart/items/{cartItem}', [CustomerCartController::class, 'update']);
                 Route::delete('/cart/items/{cartItem}', [CustomerCartController::class, 'destroy']);
                 Route::delete('/cart', [CustomerCartController::class, 'clear']);
+                Route::get('/cart/recommendations', [CustomerCartController::class, 'recommendations']);
 
                 Route::post('/checkout', [CustomerCheckoutController::class, 'store'])->middleware('throttle:api-checkout');
                 Route::get('/orders', [CustomerOrderController::class, 'index']);

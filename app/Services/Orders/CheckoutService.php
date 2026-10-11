@@ -4,7 +4,7 @@ namespace App\Services\Orders;
 
 use App\Exceptions\BusinessRuleException;
 use App\Models\IdempotencyKey;
-use App\Models\Order;
+use App\Models\PendingStripeCheckout;
 use App\Models\User;
 use App\Services\Cart\DatabaseCartService;
 use App\Services\Payments\StripeCheckoutService;
@@ -32,22 +32,22 @@ class CheckoutService
 
         $requestHash = hash('sha256', json_encode($payload));
 
-        $isNewOrder = false;
+        $isNewCheckout = false;
         $claimedIdempotency = null;
-        $cartToConvert = null;
 
-        $order = DB::transaction(function () use ($user, $payload, $idempotencyKey, $requestHash, $request, &$isNewOrder, &$claimedIdempotency, &$cartToConvert): Order {
+        $pendingCheckout = DB::transaction(function () use ($user, $payload, $idempotencyKey, $requestHash, $request, &$isNewCheckout, &$claimedIdempotency): PendingStripeCheckout {
             $idempotency = $this->claimIdempotencyKey($user, $idempotencyKey, $requestHash, $request);
             $claimedIdempotency = $idempotency;
 
-            if ($idempotency?->order_id) {
-                return Order::query()
-                    ->with(['items', 'user', 'rider', 'delivery', 'statusHistories'])
-                    ->findOrFail($idempotency->order_id);
+            if ($idempotency?->response_body) {
+                $pendingCheckoutId = (int) ($idempotency->response_body['pending_checkout_id'] ?? 0);
+
+                if ($pendingCheckoutId > 0) {
+                    return PendingStripeCheckout::query()->findOrFail($pendingCheckoutId);
+                }
             }
 
             $cart = $this->cartService->get($user);
-            $cartToConvert = $cart;
             $summary = $this->cartService->summary($cart);
             $restaurant = $summary['restaurant'];
 
@@ -65,64 +65,39 @@ class CheckoutService
                 throw new BusinessRuleException('Minimum order amount is '.Money::format($summary['minimum_order_amount']).'.');
             }
 
-            $order = Order::create([
+            $pendingCheckout = PendingStripeCheckout::create([
                 'user_id' => $user->id,
                 'restaurant_id' => $restaurant?->id,
-                'order_number' => $this->generateOrderNumber(),
-                'customer_name' => $payload['customer_name'],
-                'customer_phone' => $payload['customer_phone'],
-                'customer_email' => $payload['customer_email'] ?? null,
-                'delivery_address' => $payload['delivery_address'],
-                'delivery_latitude' => $payload['delivery_latitude'] ?? null,
-                'delivery_longitude' => $payload['delivery_longitude'] ?? null,
-                'order_notes' => $payload['order_notes'] ?? null,
-                'subtotal' => $summary['subtotal'],
-                'delivery_fee' => $summary['delivery_fee'],
-                'total' => $summary['total'],
+                'cart_id' => $cart->id,
+                'source' => 'mobile_api',
+                'status' => PendingStripeCheckout::STATUS_CREATED,
+                'customer_payload' => [
+                    'customer_name' => $payload['customer_name'],
+                    'customer_phone' => $payload['customer_phone'],
+                    'customer_email' => $payload['customer_email'] ?? null,
+                    'delivery_address' => $payload['delivery_address'],
+                    'delivery_latitude' => $payload['delivery_latitude'] ?? null,
+                    'delivery_longitude' => $payload['delivery_longitude'] ?? null,
+                    'order_notes' => $payload['order_notes'] ?? null,
+                ],
+                'summary' => $this->checkoutSummarySnapshot($summary),
                 'currency' => 'AUD',
-                'payment_method' => 'stripe',
-                'payment_status' => 'pending',
-                'order_status' => 'pending_payment',
-            ]);
-
-            foreach ($summary['items'] as $item) {
-                $order->items()->create([
-                    'menu_item_id' => $item['menu_item_id'],
-                    'item_name' => $item['name'],
-                    'item_notes' => $item['item_notes'] ?? null,
-                    'size_name' => $item['size']['name'] ?? null,
-                    'size_price' => $item['size']['price'] ?? null,
-                    'addons_snapshot' => $item['addons'],
-                    'addons_total' => $item['addons_total'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['unit_price'],
-                    'total' => $item['line_total'],
-                ]);
-            }
-
-            $order->statusHistories()->create([
-                'previous_status' => null,
-                'new_status' => 'pending_payment',
-                'changed_by_user_id' => $user->id,
-                'changed_by_role' => $user->role,
-                'reason' => 'Stripe Checkout session requested',
-                'metadata' => ['source' => 'mobile_api'],
+                'total' => $summary['total'],
             ]);
 
             $idempotency?->update([
                 'response_code' => 201,
-                'response_body' => ['order_id' => $order->id],
-                'order_id' => $order->id,
+                'response_body' => ['pending_checkout_id' => $pendingCheckout->id],
             ]);
 
-            $this->auditLogger->record('order.created', $user, $order, [], ['total' => $order->total], $request);
+            $this->auditLogger->record('checkout.session_requested', $user, $pendingCheckout, [], ['total' => $pendingCheckout->total], $request);
 
-            $isNewOrder = true;
+            $isNewCheckout = true;
 
-            return $order->load(['items', 'user', 'rider', 'delivery', 'statusHistories']);
+            return $pendingCheckout;
         });
 
-        if (! $isNewOrder) {
+        if (! $isNewCheckout) {
             $responseBody = $claimedIdempotency?->response_body ?? [];
             $checkoutUrl = (string) ($responseBody['checkout_url'] ?? '');
 
@@ -131,30 +106,28 @@ class CheckoutService
             }
 
             return new CheckoutResult(
-                $order,
+                null,
                 $checkoutUrl,
-                (string) ($responseBody['stripe_checkout_session_id'] ?? $order->stripe_checkout_session_id),
+                (string) ($responseBody['stripe_checkout_session_id'] ?? $pendingCheckout->stripe_checkout_session_id),
+                $pendingCheckout,
             );
         }
 
-        $session = $this->stripeCheckoutService->createForOrder($order);
-
-        if ($cartToConvert) {
-            $this->cartService->markConverted($cartToConvert);
-        }
+        $session = $this->stripeCheckoutService->createForPendingCheckout($pendingCheckout);
 
         $claimedIdempotency?->update([
             'response_body' => [
-                'order_id' => $order->id,
+                'pending_checkout_id' => $pendingCheckout->id,
                 'checkout_url' => $session->url,
                 'stripe_checkout_session_id' => $session->id,
             ],
         ]);
 
         return new CheckoutResult(
-            $order->refresh()->load(['items', 'user', 'rider', 'delivery', 'statusHistories']),
+            null,
             $session->url,
             $session->id,
+            $pendingCheckout->refresh(),
         );
     }
 
@@ -188,12 +161,15 @@ class CheckoutService
         ]);
     }
 
-    private function generateOrderNumber(): string
+    /**
+     * @param  array<string, mixed>  $summary
+     * @return array<string, mixed>
+     */
+    private function checkoutSummarySnapshot(array $summary): array
     {
-        do {
-            $orderNumber = 'ORD-'.now()->format('Ymd').'-'.str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
-        } while (Order::where('order_number', $orderNumber)->exists());
+        unset($summary['restaurant']);
 
-        return $orderNumber;
+        return $summary;
     }
+
 }

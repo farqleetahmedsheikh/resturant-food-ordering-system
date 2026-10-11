@@ -131,6 +131,10 @@ $isCreateMode = $mode === 'create';
     );
 
     $initialRemoveImage = (bool) old('remove_image', false);
+
+    $initialAddonGroupIds = collect(
+        old('addon_group_ids', $menuItem->addonGroups?->pluck('id')->all() ?? [])
+    )->map(fn ($id): int => (int) $id)->values()->all();
 @endphp
 
 <div
@@ -152,6 +156,7 @@ $isCreateMode = $mode === 'create';
         featured: {{ $initialFeatured ? 'true' : 'false' }},
         sizes: @js($sizeRows),
         addons: @js($addonRows),
+        addonGroupIds: @js($initialAddonGroupIds),
         submitting: false,
 
         slugify(value) {
@@ -512,78 +517,8 @@ $isCreateMode = $mode === 'create';
 
                 <div class="space-y-5 p-4 sm:p-6">
                     <div class="grid gap-5 md:grid-cols-2">
-                        {{-- Restaurant --}}
-                        <div>
-                            <div class="flex items-center justify-between gap-3">
-                                <label
-                                    for="restaurant_id"
-                                    class="text-sm font-black text-warm-900"
-                                >
-                                    Restaurant
-                                </label>
-
-                                <span class="text-[10px] font-bold text-warm-500">
-                                    Optional
-                                </span>
-                            </div>
-
-                            <div class="relative mt-2">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-500"
-                                >
-                                    <path d="M3 10h18" />
-                                    <path d="m5 10 1-6h12l1 6" />
-                                    <path d="M5 10v10h14V10" />
-                                </svg>
-
-                                <select
-                                    id="restaurant_id"
-                                    name="restaurant_id"
-                                    class="min-h-12 w-full appearance-none rounded-xl border bg-warm-50 py-3 pl-12 pr-11 text-sm font-semibold text-warm-900 outline-none transition focus:bg-white focus:ring-4 focus:ring-brand-100 @error('restaurant_id') border-red-300 focus:border-red-400 @else border-warm-200 focus:border-brand-500 @enderror"
-                                >
-                                    <option value="">No restaurant</option>
-
-                                    @foreach ($restaurants as $restaurant)
-                                        <option
-                                            value="{{ $restaurant->id }}"
-                                            @selected(old('restaurant_id', $menuItem->restaurant_id ?? '') == $restaurant->id)
-                                        >
-                                            {{ $restaurant->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-500"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="m6 9 6 6 6-6"
-                                    />
-                                </svg>
-                            </div>
-
-                            @error('restaurant_id')
-                                <p class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-red-600">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
-                                    {{ $message }}
-                                </p>
-                            @enderror
-                        </div>
-
                         {{-- Category --}}
-                        <div>
+                        <div class="md:col-span-2">
                             <div class="flex items-center justify-between gap-3">
                                 <label
                                     for="category_id"
@@ -1028,9 +963,13 @@ $isCreateMode = $mode === 'create';
                                 for="sort_order"
                                 class="block text-sm font-black text-warm-900"
                             >
-                                Display Position
+                                Menu Order
                                 <span class="text-red-500">*</span>
                             </label>
+
+                            <p class="mt-1 text-xs font-semibold leading-5 text-warm-500">
+                                Lower numbers appear first in the menu. Use 0 for the first item.
+                            </p>
 
                             <input
                                 id="sort_order"
@@ -1258,6 +1197,72 @@ $isCreateMode = $mode === 'create';
                     </div>
                 </div>
 
+                <div class="border-b border-warm-200 p-4 sm:p-6">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <h3 class="text-base font-black text-warm-950">
+                                Reusable customization groups
+                            </h3>
+
+                            <p class="mt-1 max-w-2xl text-xs font-semibold leading-5 text-warm-500">
+                                Select groups from your Add-ons Library. Customers will choose the individual options when they add this item to their order.
+                            </p>
+                        </div>
+
+                        <a
+                            href="{{ route('admin.addons-upselling.groups.index') }}"
+                            class="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3.5 py-2 text-xs font-black text-brand-600 transition hover:bg-brand-100"
+                        >
+                            Manage groups
+                        </a>
+                    </div>
+
+                    @if ($addonGroups->isEmpty())
+                        <div class="mt-4 rounded-2xl border border-dashed border-warm-300 bg-warm-50 px-5 py-5">
+                            <p class="text-sm font-black text-warm-900">No reusable groups yet</p>
+                            <p class="mt-1 text-xs font-semibold leading-5 text-warm-500">
+                                Create a group such as “Burger Extras” or “Choose Your Drink” before assigning it here.
+                            </p>
+                        </div>
+                    @else
+                        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                            @foreach ($addonGroups as $group)
+                                <label
+                                    class="flex cursor-pointer items-start gap-3 rounded-2xl border border-warm-200 bg-warm-50 p-4 transition hover:border-brand-200 hover:bg-brand-50"
+                                    x-bind:class="addonGroupIds.includes({{ $group->id }}) ? 'border-brand-300 bg-brand-50 ring-2 ring-brand-100' : ''"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        name="addon_group_ids[]"
+                                        x-bind:value="{{ $group->id }}"
+                                        x-model="addonGroupIds"
+                                        class="mt-0.5 h-4 w-4 rounded border-warm-300 text-brand-500 focus:ring-brand-500"
+                                    >
+
+                                    <span class="min-w-0">
+                                        <span class="flex flex-wrap items-center gap-2">
+                                            <span class="text-sm font-black text-warm-950">{{ $group->name }}</span>
+                                            @if ($group->is_required)
+                                                <span class="rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-red-600">Required</span>
+                                            @endif
+                                        </span>
+                                        <span class="mt-1 block text-xs font-semibold leading-5 text-warm-500">
+                                            {{ $group->activeAddons->pluck('name')->join(', ') }}
+                                        </span>
+                                        <span class="mt-2 block text-[10px] font-black uppercase tracking-[0.1em] text-brand-600">
+                                            {{ $group->selection_type === 'single' ? 'Choose one' : 'Choose multiple' }}
+                                        </span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @error('addon_group_ids')
+                        <p class="mt-3 text-sm font-semibold text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <div class="grid gap-5 p-4 sm:p-6 2xl:grid-cols-2">
                     {{-- Sizes --}}
                     <div class="rounded-[1.5rem] border border-warm-200 bg-warm-50 p-4 sm:p-5">
@@ -1453,11 +1458,11 @@ $isCreateMode = $mode === 'create';
                         <div class="flex items-start justify-between gap-4">
                             <div>
                                 <h3 class="text-base font-black text-warm-950">
-                                    Add-ons and Extras
+                                    Legacy Extras
                                 </h3>
 
                                 <p class="mt-1 text-xs font-semibold leading-5 text-warm-500">
-                                    Additional paid selections shown during ordering.
+                                    Optional one-off extras kept for older menu items. Use reusable groups above for new customizations.
                                 </p>
                             </div>
 

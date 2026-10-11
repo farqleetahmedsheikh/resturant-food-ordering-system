@@ -4,7 +4,7 @@ namespace App\Services\Orders;
 
 use App\Exceptions\BusinessRuleException;
 use App\Models\MenuItem;
-use App\Models\Order;
+use App\Models\PendingStripeCheckout;
 use App\Models\Restaurant;
 use App\Models\User;
 use App\Services\Payments\StripeCheckoutService;
@@ -56,59 +56,34 @@ class SessionCartCheckoutService
             throw new BusinessRuleException('Your cart total changed. Please review your cart before payment.');
         }
 
-        $order = DB::transaction(function () use ($user, $payload, $restaurant, $summary): Order {
-            $order = Order::create([
+        $pendingCheckout = DB::transaction(function () use ($user, $payload, $restaurant, $summary): PendingStripeCheckout {
+            return PendingStripeCheckout::create([
                 'user_id' => $user->id,
                 'restaurant_id' => $restaurant->id,
-                'order_number' => $this->generateOrderNumber(),
-                'customer_name' => $payload['customer_name'],
-                'customer_phone' => $payload['customer_phone'],
-                'customer_email' => $payload['customer_email'] ?? null,
-                'delivery_address' => $payload['delivery_address'],
-                'delivery_latitude' => $payload['delivery_latitude'] ?? null,
-                'delivery_longitude' => $payload['delivery_longitude'] ?? null,
-                'order_notes' => $payload['order_notes'] ?? null,
-                'subtotal' => $summary['subtotal'],
-                'delivery_fee' => $summary['delivery_fee'],
-                'total' => $summary['total'],
+                'source' => 'website',
+                'status' => PendingStripeCheckout::STATUS_CREATED,
+                'customer_payload' => [
+                    'customer_name' => $payload['customer_name'],
+                    'customer_phone' => $payload['customer_phone'],
+                    'customer_email' => $payload['customer_email'] ?? null,
+                    'delivery_address' => $payload['delivery_address'],
+                    'delivery_latitude' => $payload['delivery_latitude'] ?? null,
+                    'delivery_longitude' => $payload['delivery_longitude'] ?? null,
+                    'order_notes' => $payload['order_notes'] ?? null,
+                ],
+                'summary' => $this->checkoutSummarySnapshot($summary),
                 'currency' => $summary['currency'],
-                'payment_method' => 'stripe',
-                'payment_status' => 'pending',
-                'order_status' => 'pending_payment',
+                'total' => $summary['total'],
             ]);
-
-            foreach ($summary['items'] as $item) {
-                $order->items()->create([
-                    'menu_item_id' => $item['menu_item_id'],
-                    'item_name' => $item['name'],
-                    'size_name' => $item['size']['name'] ?? null,
-                    'size_price' => $item['size']['price'] ?? null,
-                    'addons_snapshot' => $item['addons'],
-                    'addons_total' => $item['addons_total'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['unit_price'],
-                    'total' => $item['line_total'],
-                ]);
-            }
-
-            $order->statusHistories()->create([
-                'previous_status' => null,
-                'new_status' => 'pending_payment',
-                'changed_by_user_id' => $user->id,
-                'changed_by_role' => $user->role,
-                'reason' => 'Stripe Checkout session requested',
-                'metadata' => ['source' => 'website'],
-            ]);
-
-            return $order->load(['items', 'user', 'rider', 'delivery', 'statusHistories']);
         });
 
-        $session = $this->stripeCheckoutService->createForOrder($order);
+        $session = $this->stripeCheckoutService->createForPendingCheckout($pendingCheckout);
 
         return new CheckoutResult(
-            $order->refresh()->load(['items', 'user', 'rider', 'delivery', 'statusHistories']),
+            null,
             $session->url,
             $session->id,
+            $pendingCheckout->refresh(),
         );
     }
 
@@ -205,12 +180,15 @@ class SessionCartCheckoutService
         ];
     }
 
-    private function generateOrderNumber(): string
+    /**
+     * @param  array<string, mixed>  $summary
+     * @return array<string, mixed>
+     */
+    private function checkoutSummarySnapshot(array $summary): array
     {
-        do {
-            $orderNumber = 'ORD-'.now()->format('Ymd').'-'.str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
-        } while (Order::where('order_number', $orderNumber)->exists());
+        unset($summary['restaurant']);
 
-        return $orderNumber;
+        return $summary;
     }
+
 }

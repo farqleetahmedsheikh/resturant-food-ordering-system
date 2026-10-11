@@ -603,7 +603,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
 
                                         <article class="flex min-w-[260px] snap-start items-center gap-3 rounded-2xl border border-warm-100 bg-warm-50 p-3 sm:min-w-0">
                                             <a
-                                                href="{{ route('menu.show', $suggestion) }}"
+                                                href="{{ $suggestion->public_url }}"
                                                 class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-brand-100 to-food-cream"
                                             >
                                                 @if ($suggestion->image_url)
@@ -622,7 +622,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
 
                                             <div class="min-w-0 flex-1">
                                                 <a
-                                                    href="{{ route('menu.show', $suggestion) }}"
+                                                    href="{{ $suggestion->public_url }}"
                                                     class="line-clamp-1 text-sm font-black text-warm-950 hover:text-brand-600"
                                                 >
                                                     {{ $suggestion->name }}
@@ -636,7 +636,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                             @if ($suggestionAvailable)
                                                 @if ($suggestionCustomizable)
                                                     <a
-                                                        href="{{ route('menu.show', $suggestion) }}"
+                                                        href="{{ $suggestion->public_url }}"
                                                         class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white shadow-sm transition active:scale-95 hover:bg-brand-600"
                                                         aria-label="Customize {{ $suggestion->name }}"
                                                     >

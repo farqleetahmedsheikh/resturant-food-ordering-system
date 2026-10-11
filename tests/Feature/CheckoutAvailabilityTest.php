@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\MenuItem;
-use App\Models\Order;
+use App\Models\PendingStripeCheckout;
 use App\Models\Restaurant;
 use App\Models\User;
 use App\Support\Cart;
@@ -70,14 +70,14 @@ class CheckoutAvailabilityTest extends TestCase
             ]))
             ->assertRedirect('https://checkout.stripe.test/session');
 
-        $order = Order::firstOrFail();
+        $pendingCheckout = PendingStripeCheckout::firstOrFail();
+        $payload = $pendingCheckout->customer_payload;
 
-        $this->assertSame('-33.8688000', $order->delivery_latitude);
-        $this->assertSame('151.2093000', $order->delivery_longitude);
-        $this->assertSame('stripe', $order->payment_method);
-        $this->assertSame('pending', $order->payment_status);
-        $this->assertSame('pending_payment', $order->order_status);
-        $this->assertSame('cs_test_checkout_session', $order->stripe_checkout_session_id);
+        $this->assertSame('-33.8688000', $payload['delivery_latitude']);
+        $this->assertSame('151.2093000', $payload['delivery_longitude']);
+        $this->assertSame(PendingStripeCheckout::STATUS_SESSION_CREATED, $pendingCheckout->status);
+        $this->assertSame('cs_test_checkout_session', $pendingCheckout->stripe_checkout_session_id);
+        $this->assertDatabaseCount('orders', 0);
     }
 
     public function test_checkout_rejects_invalid_delivery_coordinates(): void

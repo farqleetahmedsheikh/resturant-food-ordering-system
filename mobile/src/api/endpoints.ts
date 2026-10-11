@@ -15,6 +15,7 @@ export const endpoints = {
     profile: '/customer/profile',
     addresses: '/customer/addresses',
     cart: '/customer/cart',
+    cartRecommendations: '/customer/cart/recommendations',
     orders: '/customer/orders',
     checkout: '/customer/checkout',
   },

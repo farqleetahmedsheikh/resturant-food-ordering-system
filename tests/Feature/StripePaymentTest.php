@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\MenuItem;
 use App\Models\Order;
+use App\Models\PendingStripeCheckout;
 use App\Models\Restaurant;
 use App\Models\User;
 use App\Support\Cart;
@@ -60,6 +61,48 @@ class StripePaymentTest extends TestCase
             ->assertSessionHasErrors('payment');
 
         $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_checkout_creates_pending_stripe_checkout_but_no_order_until_webhook_confirms_payment(): void
+    {
+        $customer = $this->user('customer');
+        $menuItem = $this->menuItem(['price' => 14.50]);
+
+        $this->actingAs($customer)
+            ->post(route('cart.add', $menuItem));
+
+        $this->actingAs($customer)
+            ->post(route('checkout.store'), $this->checkoutPayload($customer))
+            ->assertRedirect('https://checkout.stripe.test/session');
+
+        $this->assertDatabaseCount('orders', 0);
+
+        $pendingCheckout = PendingStripeCheckout::firstOrFail();
+        $this->assertSame(PendingStripeCheckout::STATUS_SESSION_CREATED, $pendingCheckout->status);
+        $this->assertSame('cs_test_checkout_session', $pendingCheckout->stripe_checkout_session_id);
+
+        $payload = $this->eventPayload('evt_pending_checkout_paid', 'checkout.session.completed', [
+            'id' => $pendingCheckout->stripe_checkout_session_id,
+            'object' => 'checkout.session',
+            'payment_status' => 'paid',
+            'payment_intent' => 'pi_test_pending_checkout_paid',
+            'client_reference_id' => 'pending_checkout:'.$pendingCheckout->id,
+            'metadata' => [
+                'pending_checkout_id' => (string) $pendingCheckout->id,
+            ],
+        ]);
+
+        $this->postStripeWebhook($payload)->assertOk();
+        $this->postStripeWebhook($payload)->assertOk();
+
+        $this->assertDatabaseCount('orders', 1);
+        $order = Order::firstOrFail();
+
+        $this->assertSame('paid', $order->payment_status);
+        $this->assertSame('pending', $order->order_status);
+        $this->assertSame('pi_test_pending_checkout_paid', $order->stripe_payment_intent_id);
+        $this->assertSame($pendingCheckout->id, $order->fresh()->statusHistories()->first()?->metadata['pending_checkout_id'] ?? null);
+        $this->assertDatabaseCount('stripe_events', 1);
     }
 
     public function test_success_and_cancel_urls_do_not_mark_order_paid(): void

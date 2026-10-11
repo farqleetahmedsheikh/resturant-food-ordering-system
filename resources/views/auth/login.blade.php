@@ -51,7 +51,7 @@
         @enderror
     </div>
 
-    <div>
+    <div x-data="{ showPassword: false }">
         <div class="flex items-center justify-between gap-3">
             <label for="password" class="block text-sm font-black text-warm-900">
                 Password
@@ -62,14 +62,35 @@
             </a>
         </div>
 
-        <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            placeholder="Enter your password"
-            class="mt-2 w-full rounded-2xl border border-warm-200 bg-white px-4 py-3 text-sm font-semibold text-warm-900 shadow-sm outline-none transition placeholder:text-warm-500 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-        >
+        <div class="relative mt-2">
+            <input
+                id="password"
+                name="password"
+                x-bind:type="showPassword ? 'text' : 'password'"
+                type="password"
+                required
+                autocomplete="current-password"
+                placeholder="Enter your password"
+                class="w-full rounded-2xl border border-warm-200 bg-white px-4 py-3 pr-12 text-sm font-semibold text-warm-900 shadow-sm outline-none transition placeholder:text-warm-500 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
+            >
+
+            <button
+                type="button"
+                x-on:click="showPassword = ! showPassword"
+                x-bind:aria-label="showPassword ? 'Hide password' : 'Show password'"
+                x-bind:title="showPassword ? 'Hide password' : 'Show password'"
+                class="absolute inset-y-0 right-0 grid w-12 place-items-center text-warm-500 transition hover:text-brand-600 focus:outline-none focus:ring-4 focus:ring-inset focus:ring-brand-100"
+            >
+                <svg x-show="! showPassword" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                    <circle cx="12" cy="12" r="2.5" />
+                </svg>
+                <svg x-cloak x-show="showPassword" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a18.5 18.5 0 0 1-3.1 3.8M6.2 6.7C3.7 8.4 2.5 12 2.5 12s3.5 6 9.5 6c1.5 0 2.8-.3 4-.8" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+                </svg>
+            </button>
+        </div>
 
         @error('password')
             <p class="mt-2 text-sm font-semibold text-red-600">

@@ -52,98 +52,22 @@ method_exists($categories, 'items')
     }"
     class="space-y-5 pb-24 sm:space-y-6 lg:pb-8"
 >
-    {{-- Mobile Header --}}
-    <header class="lg:hidden">
-        <div class="flex items-start justify-between gap-4">
+    {{-- Page Header and Overview --}}
+    <header class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-warm-950 via-warm-900 to-brand-900 p-5 text-white shadow-xl shadow-warm-950/20 sm:p-7 lg:rounded-[2rem] lg:p-8">
+        <div class="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-28 left-10 h-72 w-72 rounded-full bg-red-500/20 blur-3xl"></div>
+
+        <div class="relative grid gap-7 xl:grid-cols-[minmax(0,1fr)_460px] xl:items-center">
             <div class="min-w-0">
-                <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
-                    Menu Management
-                </p>
-
-                <h1 class="mt-1 text-2xl font-black tracking-tight text-warm-950">
-                    Categories
-                </h1>
-
-                <p class="mt-1 text-sm font-semibold text-warm-500">
-                    Organize your restaurant menu.
-                </p>
-            </div>
-
-            <a
-                href="{{ route('admin.categories.create') }}"
-                class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-500 text-white shadow-lg shadow-brand-500/25 transition active:scale-95"
-                aria-label="Add category"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    class="h-5 w-5"
-                >
-                    <path
-                        stroke-linecap="round"
-                        d="M12 5v14M5 12h14"
-                    />
-                </svg>
-            </a>
-        </div>
-    </header>
-
-    {{-- Desktop Header --}}
-    <header class="hidden items-end justify-between gap-8 lg:flex">
-        <div>
-            <p class="text-xs font-black uppercase tracking-[0.2em] text-brand-500">
-                Menu Management
-            </p>
-
-            <h1 class="mt-2 text-4xl font-black tracking-tight text-warm-950">
-                Categories
-            </h1>
-
-            <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-warm-600">
-                Organize menu items, control public visibility, manage category images, and define display order.
-            </p>
-        </div>
-
-        <a
-            href="{{ route('admin.categories.create') }}"
-            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-xl"
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                class="h-5 w-5"
-            >
-                <path
-                    stroke-linecap="round"
-                    d="M12 5v14M5 12h14"
-                />
-            </svg>
-
-            Add Category
-        </a>
-    </header>
-
-    {{-- Overview --}}
-    <section class="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 p-5 text-white shadow-xl shadow-brand-900/15 sm:p-7 lg:rounded-[2rem] lg:p-8">
-        <div class="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/20 blur-3xl"></div>
-        <div class="pointer-events-none absolute -bottom-28 left-8 h-64 w-64 rounded-full bg-gold-200/20 blur-3xl"></div>
-
-        <div class="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
-            <div class="min-w-0">
-                <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] backdrop-blur">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.14em] backdrop-blur">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2"
-                        class="h-3.5 w-3.5"
+                        class="h-3.5 w-3.5 text-brand-200"
                     >
                         <rect x="3" y="3" width="7" height="7" rx="1" />
                         <rect x="14" y="3" width="7" height="7" rx="1" />
@@ -151,60 +75,108 @@ method_exists($categories, 'items')
                         <rect x="14" y="14" width="7" height="7" rx="1" />
                     </svg>
 
-                    Category directory
-                </span>
+                    Menu Management
+                    </span>
 
-                <h2 class="mt-4 text-2xl font-black tracking-tight sm:text-4xl">
-                    {{ $categoryCount }}
-                    {{ $categoryCount === 1 ? 'menu category' : 'menu categories' }}
-                </h2>
+                    <span class="rounded-full bg-brand-500 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.12em]">
+                        {{ $categoryCount }}
+                        {{ $categoryCount === 1 ? 'category' : 'categories' }}
+                    </span>
+                </div>
 
-                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-brand-50">
-                    Well-organized categories help customers discover meals quickly and make menu management easier.
+                <h1 class="mt-4 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+                    Categories
+                </h1>
+
+                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-warm-300 sm:text-base sm:leading-7">
+                    Organize menu items, control public visibility, manage category images, and define menu order.
                 </p>
+
+                <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <a
+                        href="{{ route('admin.categories.create') }}"
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-950/30 transition active:scale-[0.98] hover:-translate-y-0.5 hover:bg-brand-600 sm:rounded-2xl"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-5 w-5">
+                            <path stroke-linecap="round" d="M12 5v14M5 12h14" />
+                        </svg>
+                        Add Category
+                    </a>
+
+                    <a
+                        href="{{ route('home') }}"
+                        target="_blank"
+                        rel="noopener"
+                        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-black text-white backdrop-blur transition active:scale-[0.98] hover:bg-white/20 sm:rounded-2xl"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+                            <path d="m3 11 9-8 9 8" />
+                            <path d="M5 10v10h14V10" />
+                        </svg>
+                        View Customer Menu
+                    </a>
+                </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-2 sm:gap-3 xl:min-w-[470px]">
-                <div class="rounded-xl border border-white/20 bg-white/15 px-3 py-3 backdrop-blur sm:rounded-2xl sm:px-4 sm:py-4">
-                    <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/70 sm:text-[10px]">
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-2">
+                <div class="rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur sm:rounded-2xl">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/55 sm:text-[10px]">
                         Active
-                    </p>
+                            </p>
 
-                    <p class="mt-1 text-xl font-black sm:text-2xl">
-                        {{ $activeCategoriesOnPage }}
-                    </p>
+                            <p class="mt-1 text-2xl font-black text-leaf-500">
+                                {{ $activeCategoriesOnPage }}
+                            </p>
+                        </div>
 
-                    <p class="mt-0.5 hidden text-[9px] font-semibold text-white/60 sm:block">
-                        This page
-                    </p>
+                        <span class="mt-1 h-2.5 w-2.5 rounded-full bg-leaf-500"></span>
+                    </div>
+                    <p class="mt-1 text-[9px] font-semibold text-white/45">On this page</p>
                 </div>
 
-                <div class="rounded-xl border border-white/20 bg-white/15 px-3 py-3 backdrop-blur sm:rounded-2xl sm:px-4 sm:py-4">
-                    <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/70 sm:text-[10px]">
+                <div class="rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur sm:rounded-2xl">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/55 sm:text-[10px]">
                         Inactive
-                    </p>
+                            </p>
 
-                    <p class="mt-1 text-xl font-black sm:text-2xl">
-                        {{ $inactiveCategoriesOnPage }}
-                    </p>
+                            <p class="mt-1 text-2xl font-black text-red-300">
+                                {{ $inactiveCategoriesOnPage }}
+                            </p>
+                        </div>
 
-                    <p class="mt-0.5 hidden text-[9px] font-semibold text-white/60 sm:block">
-                        This page
-                    </p>
+                        <span class="mt-1 h-2.5 w-2.5 rounded-full bg-red-400"></span>
+                    </div>
+                    <p class="mt-1 text-[9px] font-semibold text-white/45">On this page</p>
                 </div>
 
-                <div class="rounded-xl border border-white/20 bg-white/15 px-3 py-3 backdrop-blur sm:rounded-2xl sm:px-4 sm:py-4">
-                    <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/70 sm:text-[10px]">
+                <div class="rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur sm:rounded-2xl">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/55 sm:text-[10px]">
                         Menu Items
-                    </p>
+                            </p>
 
-                    <p class="mt-1 text-xl font-black sm:text-2xl">
-                        {{ $menuItemsOnPage }}
-                    </p>
+                            <p class="mt-1 text-2xl font-black text-brand-200">
+                                {{ $menuItemsOnPage }}
+                            </p>
+                        </div>
 
-                    <p class="mt-0.5 hidden text-[9px] font-semibold text-white/60 sm:block">
-                        This page
-                    </p>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 text-brand-200">
+                            <path d="M4 4h16v16H4z" />
+                            <path d="M8 8h8M8 12h8M8 16h5" />
+                        </svg>
+                    </div>
+                    <p class="mt-1 text-[9px] font-semibold text-white/45">Across these categories</p>
+                </div>
+
+                <div class="rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur sm:rounded-2xl">
+                    <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/55 sm:text-[10px]">Menu Order</p>
+                    <p class="mt-1 text-2xl font-black">{{ $categoryCount }}</p>
+                    <p class="mt-1 text-[9px] font-semibold text-white/45">Categories sorted by position</p>
                 </div>
             </div>
         </div>
@@ -260,7 +232,7 @@ method_exists($categories, 'items')
         </section>
     @else
         {{-- Directory Toolbar --}}
-        <section class="rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-5">
+        <section class="mt-5 rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm sm:p-5">
             <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div>
                     <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
@@ -357,7 +329,7 @@ method_exists($categories, 'items')
         </section>
 
         {{-- Responsive Category Grid --}}
-        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <section class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($categories as $category)
                 <article
                     x-show="matches(

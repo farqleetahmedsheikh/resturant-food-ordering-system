@@ -5,6 +5,7 @@ export const queryKeys = {
   customerOrders: ['customer', 'orders'] as const,
   customerOrder: (id: string | number | undefined) => ['customer', 'orders', id] as const,
   customerAddresses: ['customer', 'addresses'] as const,
+  cartRecommendations: (signature: string) => ['customer', 'cart', 'recommendations', signature] as const,
   devices: ['devices'] as const,
   riderDeliveries: ['rider', 'deliveries'] as const,
   riderDelivery: (id: string | number | undefined) => ['rider', 'deliveries', id] as const,

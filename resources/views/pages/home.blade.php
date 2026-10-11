@@ -465,7 +465,7 @@ $cartCount = \App\Support\Cart::count();
 
                         <article class="group flex min-w-[78vw] max-w-[310px] snap-start flex-col overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm sm:min-w-[300px] lg:min-w-0 lg:max-w-none lg:rounded-[1.75rem] lg:transition lg:hover:-translate-y-1 lg:hover:shadow-2xl lg:hover:shadow-brand-900/10">
                             <a
-                                href="{{ route('menu.show', $item) }}"
+                                href="{{ $item->public_url }}"
                                 class="block"
                             >
                                 <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream">
@@ -507,7 +507,7 @@ $cartCount = \App\Support\Cart::count();
                                 </p>
 
                                 <a
-                                    href="{{ route('menu.show', $item) }}"
+                                    href="{{ $item->public_url }}"
                                     class="mt-1 line-clamp-1 text-lg font-black tracking-tight text-warm-950 hover:text-brand-600 sm:text-xl"
                                 >
                                     {{ $item->name }}
@@ -530,7 +530,7 @@ $cartCount = \App\Support\Cart::count();
 
                                     @if ($isCustomizable)
                                         <a
-                                            href="{{ route('menu.show', $item) }}"
+                                            href="{{ $item->public_url }}"
                                             class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-500 px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-brand-500/20 transition active:scale-[0.97] hover:bg-brand-600 sm:rounded-2xl sm:text-sm"
                                         >
                                             Customize
@@ -611,7 +611,7 @@ $cartCount = \App\Support\Cart::count();
 
                     <article class="group flex min-w-0 flex-col overflow-hidden rounded-[1.25rem] border border-warm-200 bg-white shadow-sm sm:rounded-[1.75rem] lg:transition lg:hover:-translate-y-1 lg:hover:shadow-2xl lg:hover:shadow-brand-900/10">
                         <a
-                            href="{{ route('menu.show', $item) }}"
+                            href="{{ $item->public_url }}"
                             class="block"
                         >
                             <div class="relative aspect-square overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream sm:aspect-[4/3]">
@@ -649,7 +649,7 @@ $cartCount = \App\Support\Cart::count();
 
                         <div class="flex flex-1 flex-col p-3 sm:p-5 lg:p-6">
                             <a
-                                href="{{ route('menu.show', $item) }}"
+                                href="{{ $item->public_url }}"
                                 class="line-clamp-2 text-sm font-black leading-5 tracking-tight text-warm-950 hover:text-brand-600 sm:text-xl sm:leading-7"
                             >
                                 {{ $item->name }}
@@ -672,7 +672,7 @@ $cartCount = \App\Support\Cart::count();
                                     @if ($isAvailable)
                                         @if ($isCustomizable)
                                             <a
-                                                href="{{ route('menu.show', $item) }}"
+                                                href="{{ $item->public_url }}"
                                                 class="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-brand-500 px-2 py-2 text-[10px] font-black text-white shadow-md shadow-brand-500/15 transition active:scale-[0.97] hover:bg-brand-600 sm:min-h-11 sm:w-auto sm:rounded-xl sm:px-4 sm:text-sm"
                                             >
                                                 Customize

@@ -38,6 +38,62 @@ class AdminRiderOperationsTest extends TestCase
         $this->actingAs($admin)->get(route('rider.dashboard'))->assertForbidden();
     }
 
+    public function test_addons_upselling_admin_module_uses_focused_subpages(): void
+    {
+        $restaurant = $this->restaurant();
+        $category = Category::create([
+            'restaurant_id' => $restaurant->id,
+            'name' => 'Kebabs',
+            'slug' => 'addons-kebabs',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+        MenuItem::create([
+            'restaurant_id' => $restaurant->id,
+            'category_id' => $category->id,
+            'name' => 'Chicken Kebab',
+            'slug' => 'addons-chicken-kebab',
+            'description' => 'Fresh chicken kebab.',
+            'price' => 14.90,
+            'is_available' => true,
+            'sort_order' => 1,
+        ]);
+        $admin = $this->user('admin', 'admin-addons@example.com');
+
+        $this->actingAs($admin)
+            ->get(route('admin.addons-upselling.index'))
+            ->assertOk()
+            ->assertSee('Module health')
+            ->assertDontSee('Search add-ons...');
+
+        $this->actingAs($admin)
+            ->get(route('admin.addons-upselling.addons.index'))
+            ->assertOk()
+            ->assertSee('Create Add-on')
+            ->assertSee('Search add-ons...')
+            ->assertDontSee('Rule Wizard');
+
+        $this->actingAs($admin)
+            ->get(route('admin.addons-upselling.groups.index'))
+            ->assertOk()
+            ->assertSee('Create Group')
+            ->assertDontSee('Selected product');
+
+        $this->actingAs($admin)
+            ->get(route('admin.addons-upselling.assignments.index'))
+            ->assertOk()
+            ->assertSee('Selected product')
+            ->assertSee('Customer Preview')
+            ->assertDontSee('Rule Wizard');
+
+        $this->actingAs($admin)
+            ->get(route('admin.addons-upselling.rules.index'))
+            ->assertOk()
+            ->assertSee('Rule Wizard')
+            ->assertSee('Save Rule')
+            ->assertDontSee('Search add-ons...');
+    }
+
     public function test_admin_can_filter_update_and_assign_orders_through_safe_flow(): void
     {
         Mail::fake();
@@ -259,7 +315,7 @@ class AdminRiderOperationsTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->get(route('menu.show', $item))
+        $this->get($item->public_url)
             ->assertOk()
             ->assertSee('$13.90')
             ->assertSee('$15.90')

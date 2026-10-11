@@ -6,6 +6,7 @@ use App\Support\ImageUpload;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MenuItem extends Model
@@ -47,6 +48,18 @@ class MenuItem extends Model
         return ImageUpload::url($this->image);
     }
 
+    public function getPublicUrlAttribute(): string
+    {
+        if ($this->category?->slug) {
+            return route('menu.show', [
+                'category' => $this->category,
+                'menuItem' => $this,
+            ]);
+        }
+
+        return route('menu.show.legacy', $this);
+    }
+
     public function restaurant(): BelongsTo
     {
         return $this->belongsTo(Restaurant::class);
@@ -80,5 +93,22 @@ class MenuItem extends Model
     public function activeAddons(): HasMany
     {
         return $this->addons()->where('is_active', true);
+    }
+
+    public function addonGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(AddonGroup::class, 'product_addon_groups')
+            ->withPivot(['sort_order', 'is_active'])
+            ->withTimestamps()
+            ->orderBy('product_addon_groups.sort_order')
+            ->orderBy('addon_groups.sort_order')
+            ->orderBy('addon_groups.name');
+    }
+
+    public function activeAddonGroups(): BelongsToMany
+    {
+        return $this->addonGroups()
+            ->where('addon_groups.is_active', true)
+            ->where('product_addon_groups.is_active', true);
     }
 }

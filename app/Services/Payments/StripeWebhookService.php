@@ -2,7 +2,9 @@
 
 namespace App\Services\Payments;
 
+use App\Models\Cart;
 use App\Models\Order;
+use App\Models\PendingStripeCheckout;
 use App\Models\StripeEvent;
 use App\Services\Email\OrderEmailService;
 use Illuminate\Support\Facades\DB;
@@ -92,6 +94,12 @@ class StripeWebhookService
 
     private function handleCheckoutSessionCompleted(StripeObject $session): ?Order
     {
+        $pendingCheckout = $this->findPendingCheckoutFromCheckoutSession($session);
+
+        if ($pendingCheckout) {
+            return $this->createOrderFromPaidPendingCheckout($pendingCheckout, $session);
+        }
+
         $order = $this->findOrderFromCheckoutSession($session);
 
         if (! $order) {
@@ -154,6 +162,22 @@ class StripeWebhookService
 
     private function handleCheckoutSessionExpired(StripeObject $session): ?Order
     {
+        $pendingCheckout = $this->findPendingCheckoutFromCheckoutSession($session);
+
+        if ($pendingCheckout) {
+            $pendingCheckout = PendingStripeCheckout::query()->lockForUpdate()->findOrFail($pendingCheckout->id);
+
+            if (! $pendingCheckout->order_id) {
+                $pendingCheckout->update([
+                    'status' => PendingStripeCheckout::STATUS_EXPIRED,
+                    'stripe_payment_status' => 'expired',
+                    'expired_at' => $pendingCheckout->expired_at ?? now(),
+                ]);
+            }
+
+            return null;
+        }
+
         $order = $this->findOrderFromCheckoutSession($session);
 
         if (! $order) {
@@ -190,6 +214,25 @@ class StripeWebhookService
 
     private function handlePaymentIntentFailed(StripeObject $paymentIntent): ?Order
     {
+        $pendingCheckout = $this->findPendingCheckoutFromPaymentIntent($paymentIntent);
+
+        if ($pendingCheckout) {
+            $pendingCheckout = PendingStripeCheckout::query()->lockForUpdate()->findOrFail($pendingCheckout->id);
+            $failure = $this->value($paymentIntent, 'last_payment_error');
+
+            if (! $pendingCheckout->order_id) {
+                $pendingCheckout->update([
+                    'status' => PendingStripeCheckout::STATUS_FAILED,
+                    'stripe_payment_intent_id' => (string) ($this->value($paymentIntent, 'id') ?? $pendingCheckout->stripe_payment_intent_id),
+                    'stripe_payment_status' => (string) ($this->value($paymentIntent, 'status') ?? 'failed'),
+                    'failed_at' => $pendingCheckout->failed_at ?? now(),
+                    'failure_reason' => Str::limit((string) ($this->value($failure, 'message') ?? 'Payment failed.'), 1000, ''),
+                ]);
+            }
+
+            return null;
+        }
+
         $order = $this->findOrderFromPaymentIntent($paymentIntent);
 
         if (! $order) {
@@ -245,6 +288,142 @@ class StripeWebhookService
         return $orderId !== '' ? Order::query()->find($orderId) : null;
     }
 
+    private function createOrderFromPaidPendingCheckout(PendingStripeCheckout $pendingCheckout, StripeObject $session): ?Order
+    {
+        $paymentStatus = (string) ($this->value($session, 'payment_status') ?? '');
+        $paymentIntentId = $this->stripeId($this->value($session, 'payment_intent'));
+
+        $pendingCheckout = PendingStripeCheckout::query()->lockForUpdate()->findOrFail($pendingCheckout->id);
+
+        $pendingCheckout->update([
+            'stripe_payment_status' => $paymentStatus ?: $pendingCheckout->stripe_payment_status,
+            'stripe_payment_intent_id' => $paymentIntentId ?: $pendingCheckout->stripe_payment_intent_id,
+        ]);
+
+        if (! in_array($paymentStatus, ['paid', 'no_payment_required'], true)) {
+            return null;
+        }
+
+        if ($pendingCheckout->order_id) {
+            return null;
+        }
+
+        $summary = $pendingCheckout->summary;
+        $customer = $pendingCheckout->customer_payload;
+
+        $order = Order::create([
+            'user_id' => $pendingCheckout->user_id,
+            'restaurant_id' => $pendingCheckout->restaurant_id,
+            'order_number' => $this->generateOrderNumber(),
+            'customer_name' => $customer['customer_name'],
+            'customer_phone' => $customer['customer_phone'],
+            'customer_email' => $customer['customer_email'] ?? null,
+            'delivery_address' => $customer['delivery_address'],
+            'delivery_latitude' => $customer['delivery_latitude'] ?? null,
+            'delivery_longitude' => $customer['delivery_longitude'] ?? null,
+            'order_notes' => $customer['order_notes'] ?? null,
+            'subtotal' => $summary['subtotal'],
+            'delivery_fee' => $summary['delivery_fee'],
+            'total' => $summary['total'],
+            'currency' => $pendingCheckout->currency ?: ($summary['currency'] ?? 'AUD'),
+            'payment_method' => 'stripe',
+            'payment_status' => 'paid',
+            'stripe_checkout_session_id' => $pendingCheckout->stripe_checkout_session_id,
+            'stripe_payment_intent_id' => $pendingCheckout->stripe_payment_intent_id,
+            'stripe_payment_status' => $paymentStatus ?: 'paid',
+            'paid_at' => $pendingCheckout->paid_at ?? now(),
+            'order_status' => 'pending',
+        ]);
+
+        foreach ($summary['items'] as $item) {
+            $order->items()->create([
+                'menu_item_id' => $item['menu_item_id'],
+                'item_name' => $item['name'],
+                'item_notes' => $item['item_notes'] ?? null,
+                'size_name' => $item['size']['name'] ?? null,
+                'size_price' => $item['size']['price'] ?? null,
+                'addons_snapshot' => $item['addons'],
+                'addons_total' => $item['addons_total'],
+                'quantity' => $item['quantity'],
+                'price' => $item['unit_price'],
+                'total' => $item['line_total'],
+            ]);
+        }
+
+        $order->statusHistories()->create([
+            'previous_status' => null,
+            'new_status' => 'pending',
+            'changed_by_user_id' => null,
+            'changed_by_role' => 'stripe',
+            'reason' => 'Stripe payment confirmed',
+            'metadata' => [
+                'pending_checkout_id' => $pendingCheckout->id,
+                'checkout_session_id' => $pendingCheckout->stripe_checkout_session_id,
+                'payment_intent_id' => $pendingCheckout->stripe_payment_intent_id,
+                'source' => $pendingCheckout->source,
+            ],
+        ]);
+
+        $pendingCheckout->update([
+            'status' => PendingStripeCheckout::STATUS_ORDER_CREATED,
+            'order_id' => $order->id,
+            'paid_at' => $pendingCheckout->paid_at ?? now(),
+        ]);
+
+        if ($pendingCheckout->cart_id) {
+            Cart::query()
+                ->whereKey($pendingCheckout->cart_id)
+                ->where('status', Cart::STATUS_ACTIVE)
+                ->update([
+                    'status' => Cart::STATUS_CONVERTED,
+                    'active_cart_key' => null,
+                    'updated_at' => now(),
+                ]);
+        }
+
+        return $order;
+    }
+
+    private function findPendingCheckoutFromCheckoutSession(StripeObject $session): ?PendingStripeCheckout
+    {
+        $sessionId = (string) ($this->value($session, 'id') ?? '');
+
+        $pendingCheckout = PendingStripeCheckout::query()
+            ->where('stripe_checkout_session_id', $sessionId)
+            ->first();
+
+        if ($pendingCheckout) {
+            return $pendingCheckout;
+        }
+
+        $pendingCheckoutId = $this->metadataValue($session, 'pending_checkout_id');
+
+        if ($pendingCheckoutId === '') {
+            $clientReference = (string) ($this->value($session, 'client_reference_id') ?? '');
+
+            if (str_starts_with($clientReference, 'pending_checkout:')) {
+                $pendingCheckoutId = substr($clientReference, strlen('pending_checkout:'));
+            }
+        }
+
+        return $pendingCheckoutId !== '' ? PendingStripeCheckout::query()->find($pendingCheckoutId) : null;
+    }
+
+    private function findPendingCheckoutFromPaymentIntent(StripeObject $paymentIntent): ?PendingStripeCheckout
+    {
+        $pendingCheckoutId = $this->metadataValue($paymentIntent, 'pending_checkout_id');
+
+        if ($pendingCheckoutId !== '') {
+            return PendingStripeCheckout::query()->find($pendingCheckoutId);
+        }
+
+        $paymentIntentId = (string) ($this->value($paymentIntent, 'id') ?? '');
+
+        return $paymentIntentId !== ''
+            ? PendingStripeCheckout::query()->where('stripe_payment_intent_id', $paymentIntentId)->first()
+            : null;
+    }
+
     private function findOrderFromPaymentIntent(StripeObject $paymentIntent): ?Order
     {
         $paymentIntentId = (string) ($this->value($paymentIntent, 'id') ?? '');
@@ -264,6 +443,12 @@ class StripeWebhookService
 
     private function orderIdForEventObject(StripeObject $object): ?int
     {
+        $pendingCheckoutId = $this->metadataValue($object, 'pending_checkout_id');
+
+        if ($pendingCheckoutId !== '') {
+            return PendingStripeCheckout::query()->find($pendingCheckoutId)?->order_id;
+        }
+
         $orderId = $this->metadataValue($object, 'order_id');
 
         if ($orderId === '') {
@@ -308,5 +493,14 @@ class StripeWebhookService
         }
 
         return null;
+    }
+
+    private function generateOrderNumber(): string
+    {
+        do {
+            $orderNumber = 'ORD-'.now()->format('Ymd').'-'.str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        } while (Order::where('order_number', $orderNumber)->exists());
+
+        return $orderNumber;
     }
 }

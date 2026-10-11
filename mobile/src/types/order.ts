@@ -83,8 +83,9 @@ export type CheckoutPayload = {
 };
 
 export type CheckoutResult = {
-  order_id: number;
+  order_id: number | null;
+  pending_checkout_id?: number | null;
   checkout_url: string;
   stripe_checkout_session_id: string;
-  order: Order;
+  order: Order | null;
 };

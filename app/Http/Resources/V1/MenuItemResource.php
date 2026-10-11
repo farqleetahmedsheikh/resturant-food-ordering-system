@@ -9,6 +9,10 @@ class MenuItemResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $customizationGroups = $this->relationLoaded('customizationGroups')
+            ? AddonGroupResource::collection($this->customizationGroups)
+            : $this->whenLoaded('activeAddonGroups', fn () => AddonGroupResource::collection($this->activeAddonGroups));
+
         return [
             'id' => $this->id,
             'restaurant_id' => $this->restaurant_id,
@@ -27,6 +31,7 @@ class MenuItemResource extends JsonResource
             'sort_order' => (int) $this->sort_order,
             'sizes' => MenuItemSizeResource::collection($this->whenLoaded('activeSizes')),
             'addons' => MenuItemAddonResource::collection($this->whenLoaded('activeAddons')),
+            'customization_groups' => $customizationGroups,
         ];
     }
 }

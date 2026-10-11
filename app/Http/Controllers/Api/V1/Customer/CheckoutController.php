@@ -23,10 +23,11 @@ class CheckoutController extends Controller
         );
 
         return ApiResponse::success([
-            'order_id' => $result->order->id,
+            'order_id' => $result->order?->id,
+            'pending_checkout_id' => $result->pendingCheckout?->id,
             'checkout_url' => $result->checkoutUrl,
             'stripe_checkout_session_id' => $result->stripeCheckoutSessionId,
-            'order' => new OrderResource($result->order),
+            'order' => $result->order ? new OrderResource($result->order) : null,
         ], 'Stripe Checkout session created.', status: 201);
     }
 }

@@ -70,7 +70,7 @@ class SeoRoutingTest extends TestCase
             ->assertSee(route('contact'), false)
             ->assertSee(route('privacy'), false)
             ->assertSee(route('terms'), false)
-            ->assertSee(route('menu.show', $item), false)
+            ->assertSee($item->public_url, false)
             ->assertDontSee('/cart', false)
             ->assertDontSee('/checkout', false)
             ->assertDontSee('/admin', false)

@@ -158,6 +158,17 @@
                 </a>
 
                 <a
+                    href="{{ route('admin.addons-upselling.index') }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.addons-upselling*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14" />
+                        <path d="M4 7h4M16 7h4M4 17h4M16 17h4" />
+                    </svg>
+                    Add-ons & Upselling
+                </a>
+
+                <a
                     href="{{ route('admin.riders.index') }}"
                     class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.riders*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                 >
@@ -317,6 +328,17 @@
                     </a>
 
                     <a
+                        href="{{ route('admin.addons-upselling.index') }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.addons-upselling*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14" />
+                            <path d="M4 7h4M16 7h4M4 17h4M16 17h4" />
+                        </svg>
+                        Add-ons & Upselling
+                    </a>
+
+                    <a
                         href="{{ route('admin.riders.index') }}"
                         class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.riders*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                     >
@@ -440,11 +462,11 @@
             </a>
 
             <a
-                href="{{ route('admin.menu-items.index') }}"
-                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.menu-items*') || request()->routeIs('admin.categories*') ? 'bg-brand-50 text-brand-600' : 'text-warm-500 hover:bg-brand-50 hover:text-brand-600' }}"
+                href="{{ route('admin.addons-upselling.index') }}"
+                class="flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-black transition {{ request()->routeIs('admin.addons-upselling*') ? 'bg-brand-50 text-brand-600' : 'text-warm-500 hover:bg-brand-50 hover:text-brand-600' }}"
             >
-                <x-ui-icon name="menu" class="h-5 w-5" />
-                Menu
+                <x-ui-icon name="plus" class="h-5 w-5" />
+                Add-ons
             </a>
         </div>
     </nav>

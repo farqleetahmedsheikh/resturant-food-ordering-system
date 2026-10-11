@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
-Route::get('/menu/{menuItem:slug}', [MenuController::class, 'show'])->name('menu.show');
+Route::get('/menu/{category:slug}/{menuItem:slug}', [MenuController::class, 'show'])->name('menu.show');
+Route::get('/menu/{menuItem:slug}', [MenuController::class, 'showLegacy'])->name('menu.show.legacy');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::view('/privacy-policy', 'pages.privacy')->name('privacy');
 Route::view('/terms-and-conditions', 'pages.terms')->name('terms');

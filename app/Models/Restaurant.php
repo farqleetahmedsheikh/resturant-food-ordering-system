@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\ImageUpload;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Restaurant extends Model
@@ -84,5 +85,30 @@ class Restaurant extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function addons(): HasMany
+    {
+        return $this->hasMany(Addon::class);
+    }
+
+    public function addonGroups(): HasMany
+    {
+        return $this->hasMany(AddonGroup::class);
+    }
+
+    public function globalAddonGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(AddonGroup::class, 'global_addon_groups')
+            ->withPivot(['sort_order', 'is_active'])
+            ->withTimestamps()
+            ->orderBy('global_addon_groups.sort_order')
+            ->orderBy('addon_groups.sort_order')
+            ->orderBy('addon_groups.name');
+    }
+
+    public function upsellRules(): HasMany
+    {
+        return $this->hasMany(UpsellRule::class);
     }
 }

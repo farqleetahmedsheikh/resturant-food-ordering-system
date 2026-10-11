@@ -6,16 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\CartItemStoreRequest;
 use App\Http\Requests\Api\V1\CartItemUpdateRequest;
 use App\Http\Resources\V1\CartResource;
+use App\Http\Resources\V1\MenuItemResource;
 use App\Models\CartItem;
 use App\Models\MenuItem;
 use App\Services\Cart\DatabaseCartService;
+use App\Services\AddonCatalogService;
+use App\Services\UpsellRecommendationService;
 use App\Support\Api\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function __construct(private DatabaseCartService $cartService) {}
+    public function __construct(
+        private DatabaseCartService $cartService,
+        private AddonCatalogService $addonCatalog,
+        private UpsellRecommendationService $recommendations,
+    ) {}
 
     public function show(Request $request): JsonResponse
     {
@@ -24,11 +31,15 @@ class CartController extends Controller
 
     public function store(CartItemStoreRequest $request, MenuItem $menuItem): JsonResponse
     {
+        $addonIds = $request->filled('addon_selections')
+            ? $this->addonCatalog->legacyAddonIdsForSelections($menuItem, $request->input('addon_selections', []))
+            : $request->input('addon_ids', []);
+
         $this->cartService->add(
             $request->user(),
             $menuItem,
             $request->integer('size_id') ?: null,
-            $request->input('addon_ids', []),
+            $addonIds,
             (int) $request->integer('quantity'),
             $request->input('item_notes'),
         );
@@ -55,6 +66,20 @@ class CartController extends Controller
         $this->cartService->clear($request->user());
 
         return $this->cartResponse($request, 'Cart cleared successfully.');
+    }
+
+    public function recommendations(Request $request): JsonResponse
+    {
+        $cart = $this->cartService->get($request->user());
+        $summary = $this->cartService->summary($cart);
+
+        return ApiResponse::success(
+            MenuItemResource::collection($this->recommendations->forSummary(
+                $summary['items'],
+                $request->string('placement', 'cart')->toString(),
+                min(max((int) $request->integer('limit', 6), 1), 12),
+            ))->resolve(),
+        );
     }
 
     private function cartResponse(Request $request, string $message = 'OK'): JsonResponse

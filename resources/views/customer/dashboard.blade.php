@@ -253,7 +253,7 @@ $user = auth()->user();
                                 </span>
                             </div>
 
-                            <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                            <div class="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
                                 <div class="min-w-0">
                                     <p class="text-[9px] font-black uppercase tracking-[0.16em] text-white/70">
                                         Order number
@@ -261,7 +261,7 @@ $user = auth()->user();
 
                                     <a
                                         href="{{ route('customer.orders.show', $latestOrder) }}"
-                                        class="mt-1 block break-all text-xl font-black tracking-tight transition hover:text-brand-50 sm:text-2xl"
+                                        class="mt-1 block break-words text-xl font-black tracking-tight transition hover:text-brand-50 sm:text-2xl"
                                     >
                                         {{ $latestOrder->order_number }}
                                     </a>
@@ -275,14 +275,14 @@ $user = auth()->user();
                                     </p>
                                 </div>
 
-                                <div class="grid grid-cols-3 gap-2 lg:min-w-[300px]">
+                                <div class="grid grid-cols-3 gap-2 xl:min-w-[300px]">
                                     <div class="rounded-xl border border-white/20 bg-white/15 px-3 py-3 backdrop-blur">
                                         <p class="text-[8px] font-black uppercase tracking-[0.1em] text-white/70">
                                             Total
                                         </p>
 
                                         <p class="mt-1 truncate text-sm font-black">
-                                            ((float) ($latestOrder->total ?? 0))
+                                            @money($latestOrder->total ?? 0)
                                         </p>
                                     </div>
 

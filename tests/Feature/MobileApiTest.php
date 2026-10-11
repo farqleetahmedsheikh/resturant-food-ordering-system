@@ -3,10 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Addon;
+use App\Models\AddonGroup;
 use App\Models\MenuItem;
 use App\Models\Order;
+use App\Models\PendingStripeCheckout;
 use App\Models\PasswordResetOtp;
 use App\Models\Restaurant;
+use App\Models\UpsellRule;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -88,6 +92,84 @@ class MobileApiTest extends TestCase
             ->assertJsonPath('data.is_available', false);
     }
 
+    public function test_customer_cart_accepts_grouped_addon_selections_and_enforces_required_groups(): void
+    {
+        $menuItem = $this->createMenuItem(['name' => 'Zinger Burger', 'slug' => 'zinger-burger', 'price' => 650]);
+        $addon = Addon::create([
+            'restaurant_id' => $menuItem->restaurant_id,
+            'name' => 'Extra Cheese',
+            'type' => 'customization',
+            'price' => 100,
+            'is_available' => true,
+            'is_active' => true,
+        ]);
+        $group = AddonGroup::create([
+            'restaurant_id' => $menuItem->restaurant_id,
+            'name' => 'Burger Extras',
+            'selection_type' => 'single',
+            'is_required' => true,
+            'min_selections' => 1,
+            'max_selections' => 1,
+            'quantity_limit' => 1,
+            'is_active' => true,
+        ]);
+        $group->addons()->sync([$addon->id => ['sort_order' => 0, 'is_default' => false]]);
+        $menuItem->addonGroups()->sync([$group->id => ['sort_order' => 0, 'is_active' => true]]);
+
+        Sanctum::actingAs($this->createUser('customer'), ['customer']);
+
+        $this->postJson('/api/v1/customer/cart/items/'.$menuItem->id, [
+            'quantity' => 1,
+            'addon_selections' => [],
+        ])->assertStatus(422);
+
+        $this->postJson('/api/v1/customer/cart/items/'.$menuItem->id, [
+            'quantity' => 1,
+            'addon_selections' => [
+                ['group_id' => $group->id, 'addon_ids' => [$addon->id]],
+            ],
+        ])->assertOk()
+            ->assertJsonPath('data.subtotal', 750)
+            ->assertJsonPath('data.items.0.addons.0.name', 'Extra Cheese');
+    }
+
+    public function test_cart_recommendations_use_configured_upsell_rules(): void
+    {
+        $burger = $this->createMenuItem(['name' => 'Zinger Burger', 'slug' => 'zinger-burger', 'price' => 650]);
+        $drink = MenuItem::create([
+            'restaurant_id' => $burger->restaurant_id,
+            'category_id' => $burger->category_id,
+            'name' => 'Coca-Cola',
+            'slug' => 'coca-cola',
+            'price' => 150,
+            'is_featured' => false,
+            'is_available' => true,
+            'sort_order' => 2,
+        ]);
+
+        $rule = UpsellRule::create([
+            'restaurant_id' => $burger->restaurant_id,
+            'name' => 'Burger meal',
+            'trigger_type' => 'product',
+            'trigger_config' => ['product_ids' => [$burger->id]],
+            'placement' => 'cart',
+            'priority' => 10,
+            'max_recommendations' => 4,
+            'is_active' => true,
+        ]);
+        $rule->products()->sync([$drink->id => ['sort_order' => 0]]);
+
+        Sanctum::actingAs($this->createUser('customer'), ['customer']);
+
+        $this->postJson('/api/v1/customer/cart/items/'.$burger->id, [
+            'quantity' => 1,
+        ])->assertOk();
+
+        $this->getJson('/api/v1/customer/cart/recommendations?placement=cart')
+            ->assertOk()
+            ->assertJsonPath('data.0.name', 'Coca-Cola');
+    }
+
     public function test_customer_can_checkout_with_database_cart_and_idempotency_key(): void
     {
         $menuItem = $this->createMenuItem(['price' => 12]);
@@ -113,19 +195,19 @@ class MobileApiTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.checkout_url', 'https://checkout.stripe.test/session')
             ->assertJsonPath('data.stripe_checkout_session_id', 'cs_test_checkout_session')
-            ->assertJsonPath('data.order.order_status', 'pending_payment')
-            ->assertJsonPath('data.order.payment_method', 'stripe')
-            ->assertJsonPath('data.order.payment_status', 'pending')
-            ->assertJsonPath('data.order.total', 28.99);
+            ->assertJsonPath('data.order_id', null)
+            ->assertJsonPath('data.order', null);
 
         $this->withHeader('Idempotency-Key', 'test-checkout-001')
             ->postJson('/api/v1/customer/checkout', $payload)
             ->assertCreated();
 
-        $this->assertDatabaseCount('orders', 1);
-        $this->assertDatabaseHas('order_items', [
-            'item_name' => $menuItem->name,
-            'quantity' => 2,
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('pending_stripe_checkouts', 1);
+        $this->assertDatabaseHas('pending_stripe_checkouts', [
+            'stripe_checkout_session_id' => 'cs_test_checkout_session',
+            'status' => PendingStripeCheckout::STATUS_SESSION_CREATED,
+            'total' => 28.99,
         ]);
     }
 
@@ -167,8 +249,26 @@ class MobileApiTest extends TestCase
                 'delivery_address' => 'Demo delivery address',
             ])
             ->assertCreated()
-            ->assertJsonPath('data.order.items.0.size_name', 'Large')
-            ->assertJsonPath('data.order.items.0.item_notes', 'No onion');
+            ->assertJsonPath('data.order', null);
+
+        $pendingCheckout = PendingStripeCheckout::firstOrFail();
+        $pendingItem = $pendingCheckout->summary['items'][0];
+
+        $this->assertSame('Large', $pendingItem['size']['name']);
+        $this->assertSame('No onion', $pendingItem['item_notes']);
+
+        $payload = $this->eventPayload('evt_mobile_options_paid', 'checkout.session.completed', [
+            'id' => $pendingCheckout->stripe_checkout_session_id,
+            'object' => 'checkout.session',
+            'payment_status' => 'paid',
+            'payment_intent' => 'pi_test_mobile_options',
+            'client_reference_id' => 'pending_checkout:'.$pendingCheckout->id,
+            'metadata' => [
+                'pending_checkout_id' => (string) $pendingCheckout->id,
+            ],
+        ]);
+
+        $this->postStripeWebhook($payload)->assertOk();
 
         $this->assertDatabaseHas('order_items', [
             'item_name' => $menuItem->name,
@@ -480,5 +580,32 @@ class MobileApiTest extends TestCase
             'payment_status' => 'paid',
             'order_status' => 'pending',
         ], $overrides));
+    }
+
+    /**
+     * @param  array<string, mixed>  $object
+     */
+    private function eventPayload(string $eventId, string $type, array $object): string
+    {
+        return json_encode([
+            'id' => $eventId,
+            'object' => 'event',
+            'type' => $type,
+            'data' => [
+                'object' => $object,
+            ],
+        ], JSON_THROW_ON_ERROR);
+    }
+
+    private function postStripeWebhook(string $payload)
+    {
+        $timestamp = time();
+        $secret = (string) config('services.stripe.webhook_secret');
+        $signature = hash_hmac('sha256', $timestamp.'.'.$payload, $secret);
+
+        return $this->call('POST', route('stripe.webhook'), [], [], [], [
+            'HTTP_STRIPE_SIGNATURE' => 't='.$timestamp.',v1='.$signature,
+            'CONTENT_TYPE' => 'application/json',
+        ], $payload);
     }
 }

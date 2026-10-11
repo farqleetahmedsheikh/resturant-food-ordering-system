@@ -114,7 +114,7 @@ export default function CustomerCheckoutScreen() {
       );
 
       await Linking.openURL(result.checkout_url);
-      router.replace(`/(customer)/orders/${result.order_id}`);
+      router.replace('/(customer)/(tabs)/orders');
     } catch (error) {
       const normalized = normalizeApiError(error);
       Object.entries(normalized.validationErrors).forEach(([field, messages]) => {

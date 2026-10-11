@@ -29,7 +29,6 @@ class AdminCategoryController extends Controller
     {
         return view('admin.category-form', [
             'category' => new Category(['is_active' => true, 'sort_order' => 0]),
-            'restaurants' => Restaurant::orderBy('name')->get(),
             'mode' => 'create',
         ]);
     }
@@ -43,6 +42,7 @@ class AdminCategoryController extends Controller
         }
 
         $validated['slug'] = $this->uniqueSlug($validated['slug'] ?: str($validated['name'])->slug()->toString());
+        $validated['restaurant_id'] = Restaurant::current()?->id;
         $validated['is_active'] = $request->boolean('is_active');
         unset($validated['remove_image']);
 
@@ -55,7 +55,6 @@ class AdminCategoryController extends Controller
     {
         return view('admin.category-form', [
             'category' => $category,
-            'restaurants' => Restaurant::orderBy('name')->get(),
             'mode' => 'edit',
         ]);
     }
@@ -98,7 +97,6 @@ class AdminCategoryController extends Controller
     private function validateCategory(Request $request, ?Category $category = null): array
     {
         return $request->validate([
-            'restaurant_id' => ['nullable', 'exists:restaurants,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('categories', 'slug')->ignore($category?->id)],
             'description' => ['nullable', 'string', 'max:1000'],

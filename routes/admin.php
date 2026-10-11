@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminAddonUpsellController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminMenuItemController;
 use App\Http\Controllers\Admin\AdminOrderController;
@@ -30,5 +31,21 @@ Route::middleware(['auth', 'admin'])
 
         Route::resource('menu-items', AdminMenuItemController::class)->except(['show']);
         Route::resource('categories', AdminCategoryController::class)->except(['show']);
+        Route::get('/addons-upselling', [AdminAddonUpsellController::class, 'index'])->name('addons-upselling.index');
+        Route::get('/addons-upselling/addons', [AdminAddonUpsellController::class, 'addons'])->name('addons-upselling.addons.index');
+        Route::get('/addons-upselling/groups', [AdminAddonUpsellController::class, 'groups'])->name('addons-upselling.groups.index');
+        Route::get('/addons-upselling/assignments', [AdminAddonUpsellController::class, 'assignments'])->name('addons-upselling.assignments.index');
+        Route::get('/addons-upselling/rules', [AdminAddonUpsellController::class, 'rules'])->name('addons-upselling.rules.index');
+        Route::post('/addons-upselling/addons', [AdminAddonUpsellController::class, 'storeAddon'])->name('addons-upselling.addons.store');
+        Route::put('/addons-upselling/addons/{addon}', [AdminAddonUpsellController::class, 'updateAddon'])->name('addons-upselling.addons.update');
+        Route::delete('/addons-upselling/addons/{addon}', [AdminAddonUpsellController::class, 'destroyAddon'])->name('addons-upselling.addons.destroy');
+        Route::post('/addons-upselling/groups', [AdminAddonUpsellController::class, 'storeGroup'])->name('addons-upselling.groups.store');
+        Route::put('/addons-upselling/groups/{group}', [AdminAddonUpsellController::class, 'updateGroup'])->name('addons-upselling.groups.update');
+        Route::post('/addons-upselling/assign-product', [AdminAddonUpsellController::class, 'assignProduct'])->name('addons-upselling.assign-product');
+        Route::post('/addons-upselling/assign-category', [AdminAddonUpsellController::class, 'assignCategory'])->name('addons-upselling.assign-category');
+        Route::post('/addons-upselling/assign-global', [AdminAddonUpsellController::class, 'assignGlobal'])->name('addons-upselling.assign-global');
+        Route::post('/addons-upselling/rules', [AdminAddonUpsellController::class, 'storeRule'])->name('addons-upselling.rules.store');
+        Route::put('/addons-upselling/rules/{rule}', [AdminAddonUpsellController::class, 'updateRule'])->name('addons-upselling.rules.update');
+        Route::delete('/addons-upselling/rules/{rule}', [AdminAddonUpsellController::class, 'destroyRule'])->name('addons-upselling.rules.destroy');
         Route::resource('riders', AdminRiderController::class);
     });

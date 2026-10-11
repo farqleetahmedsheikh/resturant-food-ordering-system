@@ -787,7 +787,7 @@ method_exists($menuItems, 'items')
                             {{-- Actions --}}
                             <div class="grid grid-cols-[auto_1fr_auto] gap-2 sm:col-span-2 lg:col-span-1 lg:flex lg:justify-end">
                                 <a
-                                    href="{{ route('menu.show', $item) }}"
+                                    href="{{ $item->public_url }}"
                                     target="_blank"
                                     rel="noopener"
                                     class="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-warm-200 bg-white text-warm-600 transition active:scale-95 hover:border-warm-500 hover:bg-warm-50"

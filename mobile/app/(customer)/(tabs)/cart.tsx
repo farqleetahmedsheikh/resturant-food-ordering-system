@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
+import { getCartRecommendations, syncLocalCartToBackend } from '@/src/api/cart.api';
 import { getRestaurant } from '@/src/api/restaurant.api';
 import { AppBadge } from '@/src/components/common/AppBadge';
 import { AppButton } from '@/src/components/common/AppButton';
@@ -29,10 +30,21 @@ export default function CustomerCartScreen() {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const updateNotes = useCartStore((state) => state.updateNotes);
   const clearCart = useCartStore((state) => state.clearCart);
+  const addItem = useCartStore((state) => state.addItem);
   const subtotal = useCartStore((state) => state.getSubtotal());
+  const cartSignature = JSON.stringify(items.map((item) => [item.menuItemId, item.quantity, item.sizeId, item.addons.map((addon) => addon.id)]));
   const restaurantQuery = useQuery({
     queryKey: queryKeys.restaurant,
     queryFn: getRestaurant,
+  });
+  const recommendationsQuery = useQuery({
+    queryKey: queryKeys.cartRecommendations(cartSignature),
+    enabled: items.length > 0,
+    queryFn: async () => {
+      await syncLocalCartToBackend(items);
+
+      return getCartRecommendations('cart', 4);
+    },
   });
 
   const restaurant = restaurantQuery.data;
@@ -119,6 +131,32 @@ export default function CustomerCartScreen() {
             </Link>
             <AppButton label="Clear cart" variant="outline" fullWidth onPress={clearCart} />
           </AppCard>
+
+          {recommendationsQuery.data && recommendationsQuery.data.length > 0 ? (
+            <AppCard style={styles.summary}>
+              <SectionTitle title="Complete your meal" subtitle="Recommended from the restaurant." />
+              <View style={styles.recommendationList}>
+                {recommendationsQuery.data.map((item) => (
+                  <View key={item.id} style={styles.recommendationRow}>
+                    <View style={styles.recommendationImage}>
+                      {item.image_url ? (
+                        <Image source={{ uri: item.image_url }} style={styles.thumbnailImage} contentFit="cover" />
+                      ) : (
+                        <AppText variant="title" color={colors.brand.primary}>
+                          {item.name.slice(0, 1).toUpperCase()}
+                        </AppText>
+                      )}
+                    </View>
+                    <View style={styles.flex}>
+                      <AppText variant="title" numberOfLines={1}>{item.name}</AppText>
+                      <PriceText amount={item.price} />
+                    </View>
+                    <AppButton label="Add" onPress={() => addItem({ item })} />
+                  </View>
+                ))}
+              </View>
+            </AppCard>
+          ) : null}
         </>
       )}
     </AppScreen>
@@ -331,6 +369,27 @@ const styles = StyleSheet.create({
   },
   summary: {
     gap: spacing.md,
+  },
+  recommendationList: {
+    gap: spacing.sm,
+  },
+  recommendationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    padding: spacing.sm,
+  },
+  recommendationImage: {
+    width: 54,
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: radius.md,
+    backgroundColor: colors.surface.muted,
   },
   summaryRow: {
     flexDirection: 'row',

@@ -45,8 +45,7 @@ class CartController extends Controller
 
         if ($menuItem->activeSizes->isNotEmpty()) {
             if (empty($validated['size_id'])) {
-                return redirect()
-                    ->route('menu.show', $menuItem)
+                return redirect($menuItem->public_url)
                     ->with('status', 'Please choose a size before adding this item to your cart.');
             }
 
