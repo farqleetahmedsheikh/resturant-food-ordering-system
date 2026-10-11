@@ -30,6 +30,7 @@
         class="space-y-6"
         x-data="{
             drawerOpen: false,
+            editingGroup: null,
             drawerMode: 'create',
             addon: @js($emptyAddon),
             createAction: @js(route('admin.addons-upselling.addons.store')),
@@ -288,36 +289,67 @@
                     <p class="text-sm font-semibold text-warm-500">Collapsed summaries keep the page short. Open only the group you need.</p>
                     <div class="mt-5 grid gap-3 lg:grid-cols-2">
                         @forelse ($groups as $group)
-                            <details class="group rounded-3xl border border-warm-200 bg-warm-50/50 p-4 open:bg-white open:shadow-sm">
-                                <summary class="cursor-pointer list-none">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <h3 class="font-black text-warm-950">{{ $group->name }}</h3>
-                                            <p class="mt-1 text-xs font-bold text-warm-500">{{ $group->addons->count() }} add-ons · {{ $group->is_required ? 'Required' : 'Optional' }} · {{ $selectionTypes[$group->selection_type] ?? $group->selection_type }}</p>
-                                        </div>
-                                        <span class="rounded-full px-3 py-1 text-xs font-black {{ $group->is_active ? 'bg-leaf-50 text-leaf-700' : 'bg-warm-100 text-warm-600' }}">{{ $group->is_active ? 'Active' : 'Inactive' }}</span>
+                            <button type="button" x-on:click="editingGroup = {{ $group->id }}" class="group w-full rounded-3xl border border-warm-200 bg-warm-50/50 p-4 text-left transition hover:border-brand-200 hover:bg-brand-50">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <h3 class="break-words font-black text-warm-950">{{ $group->name }}</h3>
+                                        <p class="mt-1 text-xs font-bold text-warm-500">{{ $group->addons->count() }} add-ons · {{ $group->is_required ? 'Required' : 'Optional' }} · {{ $selectionTypes[$group->selection_type] ?? $group->selection_type }}</p>
                                     </div>
-                                </summary>
-                                <form method="POST" action="{{ route('admin.addons-upselling.groups.update', $group) }}" class="mt-4 grid gap-3 border-t border-warm-200 pt-4">
+                                    <span class="shrink-0 rounded-full px-3 py-1 text-xs font-black {{ $group->is_active ? 'bg-leaf-50 text-leaf-700' : 'bg-warm-100 text-warm-600' }}">{{ $group->is_active ? 'Active' : 'Inactive' }}</span>
+                                </div>
+                                <div class="mt-4 flex items-center justify-between border-t border-warm-200 pt-3 text-xs font-black text-brand-600">
+                                    <span>{{ $group->addons->where('pivot.is_default', true)->count() }} included by default</span>
+                                    <span> Edit group →</span>
+                                </div>
+                            </button>
+                        @empty
+                            <p class="rounded-3xl bg-warm-50 p-8 text-center text-sm font-bold text-warm-500 lg:col-span-2">No groups yet.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </section>
+
+            @foreach ($groups as $group)
+                <div x-cloak x-show="editingGroup === {{ $group->id }}" x-transition.opacity class="fixed inset-0 z-[80]" aria-modal="true" role="dialog">
+                    <div class="absolute inset-0 bg-warm-950/40 backdrop-blur-sm" x-on:click="editingGroup = null"></div>
+                    <aside class="absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col bg-white shadow-2xl">
+                        <div class="flex items-center justify-between border-b border-warm-200 px-6 py-5">
+                            <div class="min-w-0 pr-4">
+                                <p class="text-xs font-black uppercase tracking-[0.18em] text-brand-500">Edit add-on group</p>
+                                <h2 class="mt-1 break-words text-2xl font-black text-warm-950">{{ $group->name }}</h2>
+                            </div>
+                            <button type="button" x-on:click="editingGroup = null" class="{{ $softButtonClass }} shrink-0">Close</button>
+                        </div>
+                        <form method="POST" action="{{ route('admin.addons-upselling.groups.update', $group) }}" class="flex min-h-0 flex-1 flex-col">
                                     @csrf
                                     @method('PUT')
-                                    <input name="name" value="{{ $group->name }}" class="{{ $compactFieldClass }}" />
-                                    <div class="grid gap-3 sm:grid-cols-2">
-                                        <select name="selection_type" class="{{ $compactFieldClass }}">
+                            <div class="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
+                                <label class="grid gap-2">
+                                    <span class="{{ $labelClass }}">Group name</span>
+                                    <input name="name" value="{{ $group->name }}" class="{{ $fieldClass }}" />
+                                </label>
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <label class="grid gap-2">
+                                        <span class="{{ $labelClass }}">Selection type</span>
+                                        <select name="selection_type" class="{{ $fieldClass }}">
                                             @foreach ($selectionTypes as $value => $label)
                                                 <option value="{{ $value }}" @selected($group->selection_type === $value)>{{ $label }}</option>
                                             @endforeach
                                         </select>
-                                        <input name="max_selections" type="number" min="1" value="{{ $group->max_selections }}" placeholder="Max" class="{{ $compactFieldClass }}" />
-                                    </div>
-                                    <p class="text-xs font-semibold leading-5 text-warm-500">Choose one status for each add-on. This controls both whether it belongs to the group and whether it starts included.</p>
-                                    <div class="grid max-h-64 gap-2 overflow-y-auto rounded-2xl border border-warm-200 bg-white p-3">
+                                    </label>
+                                    <label class="grid gap-2">
+                                        <span class="{{ $labelClass }}">Maximum selections</span>
+                                        <input name="max_selections" type="number" min="1" value="{{ $group->max_selections }}" placeholder="No limit" class="{{ $fieldClass }}" />
+                                    </label>
+                                </div>
+                                <p class="text-xs font-semibold leading-5 text-warm-500">Choose one status for each add-on. This controls both whether it belongs to the group and whether it starts included.</p>
+                                <div class="grid max-h-[min(52vh,500px)] gap-2 overflow-y-auto rounded-2xl border border-warm-200 bg-warm-50/60 p-3">
                                         @foreach ($addons as $addon)
                                             @php
                                                 $groupAddon = $group->addons->firstWhere('id', $addon->id);
                                                 $addonState = $groupAddon ? ($groupAddon->pivot->is_default ? 'default' : 'optional') : 'none';
                                             @endphp
-                                            <label class="grid gap-2 rounded-xl px-2 py-2 text-xs font-bold text-warm-600 sm:grid-cols-[minmax(0,1fr)_170px] sm:items-center">
+                                            <label class="grid gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-warm-600 ring-1 ring-warm-100 sm:grid-cols-[minmax(0,1fr)_190px] sm:items-center">
                                                 <span class="break-words leading-5">{{ $addon->name }}</span>
                                                 <select name="addon_options[{{ $addon->id }}]" class="w-full rounded-lg border border-warm-200 bg-white px-2.5 py-2 text-xs font-black text-warm-700 focus:border-brand-400 focus:ring-2 focus:ring-brand-100">
                                                     <option value="none" @selected($addonState === 'none')>Not in this group</option>
@@ -326,23 +358,23 @@
                                                 </select>
                                             </label>
                                         @endforeach
-                                    </div>
-                                    <div class="flex flex-wrap gap-2">
-                                        <label class="{{ $toggleClass }}"><input type="checkbox" name="is_required" value="1" @checked($group->is_required) class="h-4 w-4 rounded border-warm-300 text-leaf-600"> Required</label>
-                                        <label class="{{ $toggleClass }}"><input type="checkbox" name="is_active" value="1" @checked($group->is_active) class="h-4 w-4 rounded border-warm-300 text-leaf-600"> Active</label>
-                                    </div>
-                                    <input type="hidden" name="min_selections" value="{{ $group->min_selections }}" />
-                                    <input type="hidden" name="quantity_limit" value="{{ $group->quantity_limit }}" />
-                                    <input type="hidden" name="sort_order" value="{{ $group->sort_order }}" />
-                                    <button class="{{ $darkButtonClass }} w-fit">Save Group</button>
-                                </form>
-                            </details>
-                        @empty
-                            <p class="rounded-3xl bg-warm-50 p-8 text-center text-sm font-bold text-warm-500 lg:col-span-2">No groups yet.</p>
-                        @endforelse
-                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <label class="{{ $toggleClass }}"><input type="checkbox" name="is_required" value="1" @checked($group->is_required) class="h-4 w-4 rounded border-warm-300 text-leaf-600"> Required</label>
+                                    <label class="{{ $toggleClass }}"><input type="checkbox" name="is_active" value="1" @checked($group->is_active) class="h-4 w-4 rounded border-warm-300 text-leaf-600"> Active</label>
+                                </div>
+                                <input type="hidden" name="min_selections" value="{{ $group->min_selections }}" />
+                                <input type="hidden" name="quantity_limit" value="{{ $group->quantity_limit }}" />
+                                <input type="hidden" name="sort_order" value="{{ $group->sort_order }}" />
+                            </div>
+                            <div class="flex items-center justify-end gap-3 border-t border-warm-200 px-6 py-5">
+                                <button type="button" x-on:click="editingGroup = null" class="{{ $softButtonClass }}">Cancel</button>
+                                <button class="{{ $buttonClass }}">Save Group</button>
+                            </div>
+                        </form>
+                    </aside>
                 </div>
-            </section>
+            @endforeach
         @endif
 
         @if ($section === 'assignments')
