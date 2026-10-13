@@ -80,6 +80,30 @@ class CheckoutAvailabilityTest extends TestCase
         $this->assertDatabaseCount('orders', 0);
     }
 
+    public function test_product_customization_form_can_add_multiple_units_at_once(): void
+    {
+        $customer = $this->user();
+        $menuItem = $this->menuItem();
+
+        $this->actingAs($customer)
+            ->post(route('cart.add', $menuItem), ['quantity' => 3])
+            ->assertRedirect();
+
+        $this->assertSame(3, Cart::count());
+        $this->assertSame(43.50, Cart::summary(Restaurant::current())['subtotal']);
+    }
+
+    public function test_product_customization_page_renders_the_redesigned_order_controls(): void
+    {
+        $menuItem = $this->menuItem();
+
+        $this->get($menuItem->public_url)
+            ->assertOk()
+            ->assertSee('Chicken Kebab')
+            ->assertSee('How many would you like?')
+            ->assertSee('Add to Cart');
+    }
+
     public function test_checkout_rejects_invalid_delivery_coordinates(): void
     {
         $customer = $this->user();

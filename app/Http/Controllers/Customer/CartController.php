@@ -11,6 +11,7 @@ use App\Services\AddonCatalogService;
 use App\Support\Cart;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -28,7 +29,7 @@ class CartController extends Controller
         ]);
     }
 
-    public function add(Request $request, MenuItem $menuItem): RedirectResponse
+    public function add(Request $request, MenuItem $menuItem): RedirectResponse|JsonResponse
     {
         $menuItem->load(['category', 'activeSizes', 'activeAddons']);
 
@@ -37,6 +38,7 @@ class CartController extends Controller
         }
 
         $validated = $request->validate([
+            'quantity' => ['nullable', 'integer', 'min:1', 'max:99'],
             'size_id' => ['nullable', 'integer'],
             'addon_ids' => ['nullable', 'array'],
             'addon_ids.*' => ['integer'],
@@ -81,12 +83,16 @@ class CartController extends Controller
             throw ValidationException::withMessages(['addon_ids' => 'One or more selected add-ons are unavailable.']);
         }
 
-        Cart::add($menuItem, 1, $size, $addonQuantities ? $addonQuantities : $addons, $addonData['customization_snapshot']);
+        Cart::add($menuItem, (int) ($validated['quantity'] ?? 1), $size, $addonQuantities ? $addonQuantities : $addons, $addonData['customization_snapshot']);
 
-        return back()->with('status', "{$menuItem->name} added to your cart.");
+        $message = "{$menuItem->name} added to your cart.";
+
+        return $request->expectsJson()
+            ? response()->json(['cart' => Cart::summary(Restaurant::current()), 'message' => $message])
+            : back()->with('status', $message);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'item' => ['required', 'string', 'max:64'],
@@ -95,14 +101,18 @@ class CartController extends Controller
 
         Cart::update($validated['item'], $validated['quantity']);
 
-        return back()->with('status', 'Cart updated.');
+        return $request->expectsJson()
+            ? response()->json(['cart' => Cart::summary(Restaurant::current()), 'message' => 'Cart updated.'])
+            : back()->with('status', 'Cart updated.');
     }
 
-    public function remove(string $item): RedirectResponse
+    public function remove(Request $request, string $item): RedirectResponse|JsonResponse
     {
         Cart::remove($item);
 
-        return back()->with('status', 'Item removed from cart.');
+        return $request->expectsJson()
+            ? response()->json(['cart' => Cart::summary(Restaurant::current()), 'message' => 'Item removed from cart.'])
+            : back()->with('status', 'Item removed from cart.');
     }
 
     public function clear(): RedirectResponse

@@ -192,13 +192,18 @@
 
                 <a
                     href="{{ route('admin.settings.restaurant.edit') }}"
-                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
+                    class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.restaurant.*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3" />
                         <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.1A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.35.28.7.5 1.1.6h.5v4h-.1a1.7 1.7 0 0 0-1.5 1.4z" />
                     </svg>
                     Restaurant Settings
+                </a>
+
+                <a href="{{ route('admin.settings.menu-hero.edit') }}" class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.menu-hero.*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg>
+                    Menu Hero Images
                 </a>
 
                 <a
@@ -370,13 +375,18 @@
 
                     <a
                         href="{{ route('admin.settings.restaurant.edit') }}"
-                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
+                        class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.restaurant.*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3" />
                             <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.1A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.35.28.7.5 1.1.6h.5v4h-.1a1.7 1.7 0 0 0-1.5 1.4z" />
                         </svg>
                         Restaurant Settings
+                    </a>
+
+                    <a href="{{ route('admin.settings.menu-hero.edit') }}" class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {{ request()->routeIs('admin.settings.menu-hero.*') ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'text-warm-600 hover:bg-brand-50 hover:text-brand-600' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg>
+                        Menu Hero Images
                     </a>
 
                     <a

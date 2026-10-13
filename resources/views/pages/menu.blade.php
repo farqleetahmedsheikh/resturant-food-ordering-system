@@ -9,6 +9,18 @@ $cartCount = \App\Support\Cart::count();
 
     $selectedCategoryName = $selectedCategory?->name ?? 'All Items';
     $visibleItemCount = $menuItems->count();
+    $menuSections = collect();
+    foreach ($categories as $menuCategory) {
+        $sectionItems = $menuItems->filter(fn ($menuItem) => $menuItem->category_id === $menuCategory->id)->values();
+        if ($sectionItems->isNotEmpty()) {
+            $menuSections->push(['name' => $menuCategory->name, 'slug' => $menuCategory->slug, 'items' => $sectionItems]);
+        }
+    }
+    $uncategorizedItems = $menuItems->filter(fn ($menuItem) => ! $menuItem->category_id)->values();
+    if ($uncategorizedItems->isNotEmpty()) {
+        $menuSections->push(['name' => 'More to enjoy', 'slug' => null, 'items' => $uncategorizedItems]);
+    }
+    $cartSummary = \App\Support\Cart::summary($restaurant);
     $searchQuery = $search ?? '';
     $currentSort = $sort ?? 'recommended';
     $hasActiveFilters = $selectedCategory || $searchQuery !== '' || $currentSort !== 'recommended';
@@ -18,253 +30,66 @@ $cartCount = \App\Support\Cart::count();
         'price_desc' => 'Price: high to low',
         'name' => 'Name A-Z',
     ];
+    $heroSlides = collect($restaurant?->menu_hero_slides ?: \App\Models\Restaurant::defaultMenuHeroSlides())
+        ->filter(fn ($slide) => (bool) ($slide['is_active'] ?? true))
+        ->sortBy(fn ($slide) => $slide['sort_order'] ?? 0)
+        ->map(fn ($slide) => [
+            'eyebrow' => $slide['eyebrow'] ?? 'Fresh food · Local favourite',
+            'title' => $slide['title'] ?? 'Made fresh',
+            'highlight' => $slide['highlight'] ?? 'for you.',
+            'description' => $slide['description'] ?? 'Order your favourites from Arcade Kebab House.',
+            'image' => str_starts_with((string) ($slide['image'] ?? ''), '/')
+                ? asset(ltrim($slide['image'], '/'))
+                : (\App\Support\ImageUpload::url($slide['image'] ?? null) ?? ''),
+        ])->values();
+    if ($heroSlides->isEmpty()) {
+        $heroSlides = collect(\App\Models\Restaurant::defaultMenuHeroSlides())->map(fn ($slide) => [
+            ...$slide,
+            'image' => asset(ltrim($slide['image'], '/')),
+        ]);
+    }
 @endphp
 
-<main class="min-h-screen bg-[var(--color-surface-warm)] pb-28 lg:pb-0">
-    {{-- Compact Mobile-First Menu Header --}}
-    <section class="relative overflow-hidden">
-        <div class="pointer-events-none absolute -left-24 -top-20 h-64 w-64 rounded-full bg-brand-200/50 blur-3xl"></div>
-        <div class="pointer-events-none absolute -right-28 bottom-0 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl"></div>
-
-        <div class="relative mx-auto max-w-7xl px-4 pb-6 pt-5 sm:px-6 sm:pb-9 sm:pt-8 lg:px-8 lg:pb-12 lg:pt-12">
-            {{-- Restaurant Identity --}}
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex min-w-0 items-center gap-3">
-                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-500 text-sm font-black text-white shadow-lg shadow-brand-500/20 sm:h-14 sm:w-14">
-                        @if ($restaurant?->logo_url)
-                            <img
-                                src="{{ $restaurant->logo_url }}"
-                                alt="{{ $restaurantName }}"
-                                class="h-full w-full object-cover"
-                            >
-                        @else
-                            {{ mb_strtoupper(mb_substr($restaurantName, 0, 2)) }}
-                        @endif
-                    </div>
-
-                    <div class="min-w-0">
-                        <p class="truncate text-sm font-black text-warm-950 sm:text-base">
-                            {{ $restaurantName }}
-                        </p>
-
-                        <div class="mt-1 flex flex-wrap items-center gap-2">
-                            <span
-                                @class([
-                                    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.12em]',
-                                    'bg-leaf-50 text-leaf-700' => $isOpen,
-                                    'bg-gold-50 text-gold-700' => ! $isOpen,
-                                ])
-                            >
-                                <span
-                                    @class([
-                                        'h-1.5 w-1.5 rounded-full',
-                                        'animate-pulse bg-leaf-500' => $isOpen,
-                                        'bg-gold-500' => ! $isOpen,
-                                    ])
-                                ></span>
-
-                                {{ $isOpen ? 'Open now' : 'Closed' }}
-                            </span>
-
-                            <span class="text-[10px] font-semibold text-warm-500 sm:text-xs">
-                                Secure card payment
-                            </span>
+<main
+    x-data="menuCartDrawer(@js($cartSummary), @js(route('cart.update')), @js(route('cart.remove', '__CART_KEY__')), @js(route('checkout.index')), @js((float) ($restaurant?->minimum_order_amount ?? 0)))"
+    x-on:open-cart-drawer.window="openDrawer()"
+    x-on:keydown.escape.window="closeDrawer()"
+    x-effect="document.body.classList.toggle('overflow-hidden', drawerOpen)"
+    class="min-h-screen bg-[var(--color-surface-warm)] pb-24 lg:pb-0"
+>
+    {{-- Rotating food photography hero --}}
+    <section class="px-3 pt-4 sm:px-5 sm:pt-6 lg:px-8" x-data="menuHeroCarousel(@js($heroSlides))" x-init="start()" x-on:mouseenter="pause()" x-on:mouseleave="resume()" x-on:focusin="pause()" x-on:focusout="resume()">
+        <div class="relative mx-auto h-[300px] max-w-[1600px] overflow-hidden rounded-3xl bg-warm-950 shadow-xl sm:h-[360px] lg:h-[430px]">
+            <template x-for="(slide, index) in slides" x-bind:key="index">
+                <div x-cloak x-show="active === index" x-transition:enter="transition-opacity duration-700" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="absolute inset-0 bg-cover bg-center" x-bind:style="`background-image: url('${slide.image}')`" role="img" x-bind:aria-label="slide.title + ' ' + slide.highlight">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/10"></div>
+                    <div class="relative flex h-full max-w-3xl flex-col justify-center px-6 py-8 text-white sm:px-12 lg:px-16">
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-red-300 sm:text-xs" x-text="slide.eyebrow"></p>
+                        <h1 class="mt-3 text-3xl font-black leading-tight sm:text-5xl lg:text-6xl"><span x-text="slide.title"></span> <span class="text-red-400" x-text="slide.highlight"></span></h1>
+                        <p class="mt-3 max-w-xl text-sm font-medium leading-6 text-white/85 sm:mt-5 sm:text-base" x-text="slide.description"></p>
+                        <div class="mt-6 flex flex-wrap items-center gap-3">
+                            <a href="#menu-content" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-500 px-5 text-sm font-black text-white transition hover:bg-brand-600">Explore the menu</a>
+                            <span @class(['inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold', 'bg-leaf-500/20 text-white' => $isOpen, 'bg-gold-500/25 text-white' => ! $isOpen])><span class="h-2 w-2 rounded-full {{ $isOpen ? 'bg-leaf-400' : 'bg-gold-400' }}"></span>{{ $isOpen ? 'Open now' : 'Currently closed' }}</span>
                         </div>
                     </div>
                 </div>
+            </template>
 
-                <a
-                    href="{{ route('cart.index') }}"
-                    class="relative grid h-11 w-11 shrink-0 place-items-center rounded-full border border-warm-200 bg-white text-brand-500 shadow-sm transition active:scale-95 lg:hidden"
-                    aria-label="Open cart"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        class="h-5 w-5"
-                    >
-                        <path d="M3 4h2l2 11h10l2-8H7" />
-                        <circle cx="9" cy="20" r="1" />
-                        <circle cx="17" cy="20" r="1" />
-                    </svg>
-
-                    @if ($cartCount > 0)
-                        <span class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-black text-white">
-                            {{ $cartCount > 99 ? '99+' : $cartCount }}
-                        </span>
-                    @endif
-                </a>
+            <div class="absolute bottom-4 right-4 z-10 flex items-center gap-2 sm:bottom-6 sm:right-6">
+                <button type="button" x-on:click="previous()" aria-label="Previous hero image" class="grid h-10 w-10 place-items-center rounded-full border border-white/40 bg-black/25 text-white backdrop-blur hover:bg-black/50">‹</button>
+                <template x-for="(slide, index) in slides" x-bind:key="`dot-${index}`"><button type="button" x-on:click="go(index)" x-bind:aria-label="`Show hero image ${index + 1}`" x-bind:aria-current="active === index ? 'true' : null" x-bind:class="active === index ? 'w-7 bg-white' : 'w-2 bg-white/60'" class="h-2 rounded-full transition-all"></button></template>
+                <button type="button" x-on:click="next()" aria-label="Next hero image" class="grid h-10 w-10 place-items-center rounded-full border border-white/40 bg-black/25 text-white backdrop-blur hover:bg-black/50">›</button>
             </div>
-
-            {{-- Menu Heading --}}
-            <div class="mt-6 lg:grid lg:grid-cols-[1fr_auto] lg:items-end lg:gap-8">
-                <div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.22em] text-brand-500 sm:text-xs">
-                        Explore Our Menu
-                    </p>
-
-                    <h1 class="mt-2 max-w-3xl text-3xl font-black leading-tight tracking-tight text-warm-950 sm:text-5xl lg:text-6xl">
-                        What are you
-                        <span class="text-brand-500">craving today?</span>
-                    </h1>
-
-                    <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-warm-600 sm:mt-5 sm:text-base sm:leading-8">
-                        Browse fresh meals, customize your favourites, and pay securely by card.
-                    </p>
-                </div>
-
-                {{-- Desktop Cart --}}
-                <a
-                    href="{{ route('cart.index') }}"
-                    class="mt-6 hidden min-h-12 items-center justify-center gap-3 rounded-2xl border border-brand-200 bg-white px-5 py-3 text-sm font-black text-brand-600 shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-50 lg:inline-flex"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        class="h-5 w-5"
-                    >
-                        <path d="M3 4h2l2 11h10l2-8H7" />
-                        <circle cx="9" cy="20" r="1" />
-                        <circle cx="17" cy="20" r="1" />
-                    </svg>
-
-                    Cart
-
-                    @if ($cartCount > 0)
-                        <span class="grid h-6 min-w-6 place-items-center rounded-full bg-brand-500 px-1.5 text-[10px] font-black text-white">
-                            {{ $cartCount }}
-                        </span>
-                    @endif
-                </a>
-            </div>
-
-            {{-- Essential Service Information --}}
-            <div class="mt-5 grid grid-cols-3 gap-2 sm:mt-7 sm:max-w-2xl sm:gap-3">
-                <div class="rounded-xl border border-warm-200 bg-white px-3 py-3 shadow-sm sm:rounded-2xl sm:px-4 sm:py-4">
-                    <div class="flex items-center gap-2">
-                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-500 sm:h-9 sm:w-9 sm:rounded-xl">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                class="h-4 w-4"
-                            >
-                                <path d="M3 7h11v10H3z" />
-                                <path d="M14 10h4l3 3v4h-7z" />
-                            </svg>
-                        </span>
-
-                        <div class="min-w-0">
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500 sm:text-[10px]">
-                                Delivery
-                            </p>
-
-                            <p class="mt-0.5 truncate text-xs font-black text-warm-950 sm:text-sm">
-                                {{ $deliveryFee }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="rounded-xl border border-leaf-100 bg-white px-3 py-3 shadow-sm sm:rounded-2xl sm:px-4 sm:py-4">
-                    <div class="flex items-center gap-2">
-                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-leaf-50 text-leaf-700 sm:h-9 sm:w-9 sm:rounded-xl">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                class="h-4 w-4"
-                            >
-                                <rect x="3" y="6" width="18" height="12" rx="2" />
-                                <circle cx="12" cy="12" r="2" />
-                            </svg>
-                        </span>
-
-                        <div class="min-w-0">
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500 sm:text-[10px]">
-                                Payment
-                            </p>
-
-                            <p class="mt-0.5 text-xs font-black text-leaf-700 sm:text-sm">
-                                Card
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="rounded-xl border border-gold-100 bg-white px-3 py-3 shadow-sm sm:rounded-2xl sm:px-4 sm:py-4">
-                    <div class="flex items-center gap-2">
-                        <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gold-50 text-gold-500 sm:h-9 sm:w-9 sm:rounded-xl">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                class="h-4 w-4"
-                            >
-                                <path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" />
-                            </svg>
-                        </span>
-
-                        <div class="min-w-0">
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] text-warm-500 sm:text-[10px]">
-                                Minimum
-                            </p>
-
-                            <p class="mt-0.5 truncate text-xs font-black text-warm-950 sm:text-sm">
-                                {{ $minimumOrder }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            @if (! $isOpen)
-                <div class="mt-4 rounded-2xl border border-gold-100 bg-gold-50 p-4">
-                    <div class="flex items-start gap-3">
-                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-gold-500 shadow-sm">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                class="h-5 w-5"
-                            >
-                                <circle cx="12" cy="12" r="9" />
-                                <path stroke-linecap="round" d="M12 7v5M12 16h.01" />
-                            </svg>
-                        </span>
-
-                        <div>
-                            <p class="text-sm font-black text-gold-700">
-                                Restaurant currently closed
-                            </p>
-
-                            <p class="mt-1 text-xs font-semibold leading-5 text-gold-700 sm:text-sm">
-                                You can still add items to cart now and checkout later when the restaurant opens.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            @endif
         </div>
+
+        @if (! $isOpen)
+            <div class="mx-auto mt-3 max-w-[1600px] rounded-xl border border-gold-200 bg-gold-50 px-4 py-3 text-sm font-semibold text-gold-800">You can browse and add items now; checkout when the restaurant is open.</div>
+        @endif
     </section>
 
     {{-- Category Navigation --}}
     <section class="sticky top-[4.5rem] z-30 border-y border-warm-200 bg-white/95 shadow-sm backdrop-blur">
-        <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1600px] px-3 py-3 sm:px-5 lg:px-8">
             <form
                 action="{{ route('menu') }}"
                 method="GET"
@@ -381,6 +206,11 @@ $cartCount = \App\Support\Cart::count();
                             'bg-warm-50 text-warm-600 hover:bg-brand-50 hover:text-brand-600' => ! $isSelectedCategory,
                         ])
                     >
+                        @if ($category->image_url)
+                            <img src="{{ $category->image_url }}" alt="" class="h-7 w-7 rounded-full object-cover">
+                        @else
+                            <span class="grid h-7 w-7 place-items-center rounded-full bg-brand-100 text-[10px] font-black text-brand-600">{{ mb_strtoupper(mb_substr($category->name, 0, 1)) }}</span>
+                        @endif
                         <span>{{ $category->name }}</span>
 
                         <span
@@ -400,9 +230,9 @@ $cartCount = \App\Support\Cart::count();
 
     {{-- Featured Items --}}
     @if ($featuredItems->isNotEmpty() && ! request('category'))
-        <section class="bg-white py-8 sm:py-12 lg:py-16">
-            <div class="mx-auto max-w-7xl">
-                <div class="flex items-end justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <section class="bg-white py-6 sm:py-8 lg:py-9">
+            <div class="mx-auto max-w-[1600px] px-3 sm:px-5 lg:px-8">
+                <div class="flex items-end justify-between gap-4">
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 sm:text-xs">
                             Featured Items
@@ -423,7 +253,7 @@ $cartCount = \App\Support\Cart::count();
                 </div>
 
                 {{-- Swipeable Featured Products --}}
-                <div class="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:px-6 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-8">
+                <div class="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
                     @foreach ($featuredItems as $item)
                         @php
                             $featuredCustomizable =
@@ -431,12 +261,12 @@ $cartCount = \App\Support\Cart::count();
                                 || ($item->active_addons_count ?? 0) > 0;
                         @endphp
 
-                        <article class="group flex min-w-[72vw] max-w-[270px] snap-start flex-col overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm sm:min-w-[270px] lg:min-w-0 lg:max-w-none lg:transition lg:hover:-translate-y-1 lg:hover:shadow-xl">
+                        <article class="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-warm-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
                             <a
                                 href="{{ $item->public_url }}"
                                 class="block"
                             >
-                                <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream">
+                                <div class="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream">
                                     @if ($item->image_url)
                                         <img
                                             src="{{ $item->image_url }}"
@@ -458,7 +288,7 @@ $cartCount = \App\Support\Cart::count();
                                 </div>
                             </a>
 
-                            <div class="flex flex-1 flex-col p-4">
+                            <div class="flex min-h-[142px] flex-1 flex-col p-3 sm:min-h-[154px] sm:p-4">
                                 <p class="text-[9px] font-black uppercase tracking-[0.14em] text-brand-500">
                                     {{ $item->category?->name ?? 'Arcade Kebab House' }}
                                 </p>
@@ -486,14 +316,13 @@ $cartCount = \App\Support\Cart::count();
                                         <form
                                             action="{{ route('cart.add', $item) }}"
                                             method="POST"
-                                            x-data="{ loading: false }"
-                                            x-on:submit="loading = true"
+                                            x-on:submit.prevent="addForm($event)"
                                         >
                                             @csrf
 
                                             <button
                                                 type="submit"
-                                                x-bind:disabled="loading"
+                                                x-bind:disabled="pending"
                                                 class="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-brand-500 px-3.5 py-2 text-[10px] font-black text-white shadow-sm transition active:scale-[0.97] hover:bg-brand-600 disabled:opacity-70"
                                             >
                                                 <svg
@@ -507,7 +336,7 @@ $cartCount = \App\Support\Cart::count();
                                                     <path stroke-linecap="round" d="M12 5v14M5 12h14" />
                                                 </svg>
 
-                                                <span x-text="loading ? 'Adding...' : 'Add'"></span>
+                                                <span x-text="pending ? 'Adding...' : 'Add'"></span>
                                             </button>
                                         </form>
                                     @endif
@@ -517,18 +346,15 @@ $cartCount = \App\Support\Cart::count();
                     @endforeach
                 </div>
 
-                <p class="mt-1 px-4 text-[10px] font-semibold text-warm-500 sm:hidden">
-                    Swipe to explore featured dishes
-                </p>
             </div>
         </section>
     @endif
 
     {{-- Main Menu --}}
-    <section class="py-8 sm:py-12 lg:py-16">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="menu-content" class="scroll-mt-44 py-6 sm:py-8 lg:py-10">
+        <div class="mx-auto max-w-[1600px] px-3 sm:px-5 lg:px-8">
             {{-- Results Heading --}}
-            <div class="mb-5 rounded-[1.5rem] border border-warm-200 bg-white p-4 shadow-sm sm:mb-8 sm:p-5">
+            <div class="mb-5 rounded-2xl border border-warm-200 bg-white p-4 shadow-sm sm:mb-6 sm:p-5">
                 <div class="flex items-end justify-between gap-4">
                 <div class="min-w-0">
                     <p class="truncate text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 sm:text-xs">
@@ -540,10 +366,15 @@ $cartCount = \App\Support\Cart::count();
                     </h2>
                 </div>
 
-                <span class="shrink-0 rounded-full bg-white px-3 py-1.5 text-[10px] font-black text-warm-600 shadow-sm sm:px-4 sm:py-2 sm:text-xs">
-                    {{ $visibleItemCount }}
-                    {{ $visibleItemCount === 1 ? 'item' : 'items' }}
-                </span>
+                <div class="flex shrink-0 items-center gap-2">
+                    <span class="hidden rounded-full bg-white px-3 py-1.5 text-[10px] font-black text-warm-600 shadow-sm sm:inline-flex sm:px-4 sm:py-2 sm:text-xs">
+                        {{ $visibleItemCount }} {{ $visibleItemCount === 1 ? 'item' : 'items' }}
+                    </span>
+                    <button type="button" x-on:click="openDrawer()" class="inline-flex min-h-10 items-center gap-2 rounded-xl bg-brand-500 px-3.5 text-xs font-black text-white shadow-sm hover:bg-brand-600 sm:min-h-11 sm:px-4 sm:text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path d="M3 4h2l2 11h10l2-8H7"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
+                        Cart <span class="grid h-5 min-w-5 place-items-center rounded-full bg-white/20 px-1" x-text="cart.count"></span>
+                    </button>
+                </div>
                 </div>
 
                 @if ($hasActiveFilters)
@@ -569,9 +400,18 @@ $cartCount = \App\Support\Cart::count();
                 @endif
             </div>
 
-            {{-- Mobile-First Product Grid --}}
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-                @forelse ($menuItems as $item)
+            <div class="min-w-0 space-y-9">
+            @forelse ($menuSections as $menuSection)
+                <section id="category-{{ $menuSection['slug'] ?? 'more' }}" class="scroll-mt-44">
+                    <div class="mb-4 flex items-end justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">Freshly prepared favourites</p>
+                            <h3 class="mt-1 text-xl font-black text-warm-950 sm:text-2xl">{{ $menuSection['name'] }}</h3>
+                        </div>
+                        <span class="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-warm-600 shadow-sm">{{ $menuSection['items']->count() }} {{ $menuSection['items']->count() === 1 ? 'item' : 'items' }}</span>
+                    </div>
+                    <div class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($menuSection['items'] as $item)
                     @php
                         $itemIsAvailable = (bool) ($item->is_available ?? true);
 
@@ -592,13 +432,13 @@ $cartCount = \App\Support\Cart::count();
                             : null;
                     @endphp
 
-                    <article class="group flex min-w-0 flex-col overflow-hidden rounded-[1.5rem] border border-warm-200 bg-white shadow-sm sm:rounded-[1.75rem] lg:transition lg:hover:-translate-y-1 lg:hover:shadow-2xl lg:hover:shadow-brand-900/10">
+                    <article class="group flex h-full min-h-[390px] min-w-0 flex-col overflow-hidden rounded-2xl border border-warm-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl sm:min-h-[410px]">
                         {{-- Product Image --}}
                         <a
                             href="{{ $item->public_url }}"
                             class="block"
                         >
-                            <div class="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream sm:aspect-[4/3]">
+                            <div class="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream">
                                 @if ($item->image_url)
                                     <img
                                         src="{{ $item->image_url }}"
@@ -646,7 +486,7 @@ $cartCount = \App\Support\Cart::count();
                         </a>
 
                         {{-- Product Content --}}
-                        <div class="flex flex-1 flex-col p-4 sm:p-5 lg:p-6">
+                        <div class="flex min-h-[210px] flex-1 flex-col p-4 sm:p-5">
                             <a
                                 href="{{ $item->public_url }}"
                                 class="line-clamp-2 text-lg font-black leading-6 tracking-tight text-warm-950 transition hover:text-brand-600 sm:text-xl sm:leading-7"
@@ -730,18 +570,17 @@ $cartCount = \App\Support\Cart::count();
                                             <form
                                                 action="{{ route('cart.add', $item) }}"
                                                 method="POST"
-                                                x-data="{ loading: false }"
-                                                x-on:submit="loading = true"
+                                                x-on:submit.prevent="addForm($event)"
                                             >
                                                 @csrf
 
                                                 <button
                                                     type="submit"
-                                                    x-bind:disabled="loading"
+                                                    x-bind:disabled="pending"
                                                     class="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-2 py-2 text-[10px] font-black text-white shadow-md shadow-brand-500/15 transition active:scale-[0.97] hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70 sm:min-h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
                                                 >
                                                     <svg
-                                                        x-show="! loading"
+                                                        x-show="! pending"
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         viewBox="0 0 24 24"
                                                         fill="none"
@@ -753,7 +592,7 @@ $cartCount = \App\Support\Cart::count();
                                                     </svg>
 
                                                     <svg
-                                                        x-show="loading"
+                                                        x-show="pending"
                                                         x-cloak
                                                         class="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4"
                                                         viewBox="0 0 24 24"
@@ -775,7 +614,7 @@ $cartCount = \App\Support\Cart::count();
                                                         ></path>
                                                     </svg>
 
-                                                    <span x-text="loading ? 'Adding...' : 'Add to Cart'"></span>
+                                                    <span x-text="pending ? 'Adding...' : 'Add to Cart'"></span>
                                                 </button>
                                             </form>
                                         @endif
@@ -788,7 +627,10 @@ $cartCount = \App\Support\Cart::count();
                             </div>
                         </div>
                     </article>
-                @empty
+                @endforeach
+                    </div>
+                </section>
+            @empty
                     <div class="col-span-2 rounded-[1.75rem] border border-dashed border-brand-200 bg-white p-8 text-center shadow-sm lg:col-span-3 lg:p-12">
                         <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-500">
                             <svg
@@ -819,7 +661,7 @@ $cartCount = \App\Support\Cart::count();
                             View All Items
                         </a>
                     </div>
-                @endforelse
+            @endforelse
             </div>
 
             {{-- Safe Pagination Support --}}
@@ -831,56 +673,151 @@ $cartCount = \App\Support\Cart::count();
         </div>
     </section>
 
-    {{-- Persistent Mobile Cart Bar --}}
-    @if ($cartCount > 0)
-        <div class="fixed inset-x-0 bottom-0 z-40 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-[var(--shadow-bottom-nav)] backdrop-blur lg:hidden">
-            <div class="mx-auto flex max-w-7xl items-center gap-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-                <div class="min-w-0 shrink-0">
-                    <p class="text-[9px] font-black uppercase tracking-[0.13em] text-warm-500">
-                        Your Cart
-                    </p>
-
-                    <p class="mt-0.5 whitespace-nowrap text-sm font-black text-warm-950">
-                        {{ $cartCount }}
-                        {{ $cartCount === 1 ? 'item' : 'items' }}
-                    </p>
-                </div>
-
-                <a
-                    href="{{ route('cart.index') }}"
-                    class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition active:scale-[0.98]"
-                >
-                    <span class="flex items-center gap-2">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            class="h-5 w-5"
-                        >
-                            <path d="M3 4h2l2 11h10l2-8H7" />
-                            <circle cx="9" cy="20" r="1" />
-                            <circle cx="17" cy="20" r="1" />
-                        </svg>
-
-                        View Cart
-                    </span>
-
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        class="h-4 w-4"
-                    >
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
-                    </svg>
-                </a>
-            </div>
+    <div x-cloak x-show="cart.count > 0" x-transition class="fixed inset-x-0 bottom-0 z-40 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-lg backdrop-blur lg:hidden">
+        <div class="mx-auto flex max-w-[1600px] items-center gap-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+            <p class="min-w-0 shrink-0 text-sm font-black text-warm-950"><span x-text="cart.count"></span> <span x-text="cart.count === 1 ? 'item' : 'items'"></span> · <span x-text="money(cart.total)"></span></p>
+            <button type="button" x-on:click="openDrawer()" class="inline-flex min-h-12 min-w-0 flex-1 items-center justify-between gap-3 rounded-xl bg-brand-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/25 active:scale-[0.98]"><span>View cart</span><span aria-hidden="true">→</span></button>
         </div>
-    @endif
+    </div>
+
+    <div x-cloak x-show="drawerOpen" x-transition.opacity class="fixed inset-0 z-[250] bg-warm-950/50 backdrop-blur-[2px]" x-on:click.self="closeDrawer()">
+        <section x-show="drawerOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full" class="absolute inset-y-0 right-0 flex w-full max-w-[460px] flex-col bg-white shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="cart-drawer-title" x-on:click.stop>
+            <header class="flex items-center justify-between border-b border-warm-200 px-5 py-4 sm:px-6">
+                <div><p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">Your order</p><h2 id="cart-drawer-title" class="mt-1 text-xl font-black text-warm-950">Cart <span class="text-warm-500" x-text="`(${cart.count})`"></span></h2></div>
+                <button x-ref="drawerClose" type="button" x-on:click="closeDrawer()" aria-label="Close cart" class="grid h-10 w-10 place-items-center rounded-full border border-warm-200 text-warm-600 hover:bg-warm-50"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5"><path stroke-linecap="round" d="m6 6 12 12M18 6 6 18"/></svg></button>
+            </header>
+            <div x-show="error" x-text="error" class="mx-4 mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" role="alert"></div>
+
+            <div x-show="cart.count === 0" class="flex flex-1 flex-col items-center justify-center px-8 text-center">
+                <span class="grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-500"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-7 w-7"><path d="M3 4h2l2 11h10l2-8H7"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg></span>
+                <h3 class="mt-4 text-lg font-black text-warm-950">Your cart is empty</h3><p class="mt-1 text-sm text-warm-500">Add a favourite and it will show up here.</p>
+                <button type="button" x-on:click="closeDrawer()" class="mt-5 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white hover:bg-brand-600">Continue browsing</button>
+            </div>
+
+            <div x-show="cart.count > 0" class="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6">
+                <div class="space-y-3">
+                    <template x-for="item in cart.items" x-bind:key="item.cart_key">
+                        <article class="rounded-2xl border border-warm-200 p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0"><h3 class="font-black text-warm-950" x-text="item.name"></h3><p class="mt-1 text-xs text-warm-500" x-show="item.size_name" x-text="item.size_name"></p><p class="mt-1 text-xs font-semibold text-warm-600" x-text="money(item.price) + ' each'"></p></div>
+                                <button type="button" x-on:click="removeItem(item)" x-bind:disabled="busyKey === item.cart_key" aria-label="Remove item" class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/></svg></button>
+                            </div>
+                            <div x-show="item.addons?.length" class="mt-2 space-y-1 text-xs text-warm-600"><template x-for="addon in item.addons" x-bind:key="addon.id"><p x-text="`+ ${addon.name}${addon.quantity > 1 ? ` ×${addon.quantity}` : ''}`"></p></template></div>
+                            <div x-show="item.customizations?.length" class="mt-2 space-y-2"><template x-for="group in item.customizations" x-bind:key="group.group_id || group.group_name"><div class="rounded-lg bg-warm-50 px-3 py-2 text-xs"><p class="font-bold text-warm-800" x-text="group.group_name || 'Customization'"></p><p class="mt-1 text-warm-600" x-text="(group.selected || []).map(option => `${option.name}${option.quantity > 1 ? ` ×${option.quantity}` : ''}`).join(', ') || 'No selections'"></p><p x-show="group.removed?.length" class="mt-1 font-semibold text-red-700" x-text="`No ${group.removed.map(option => option.name).join(', ')}`"></p></div></template></div>
+                            <div class="mt-3 flex items-center justify-between border-t border-warm-100 pt-3">
+                                <div class="inline-flex items-center gap-1 rounded-xl border border-warm-200 bg-warm-50 p-1"><button type="button" x-on:click="changeQuantity(item, -1)" x-bind:disabled="busyKey === item.cart_key" aria-label="Decrease quantity" class="grid h-8 w-8 place-items-center rounded-lg bg-white font-black text-warm-700 shadow-sm disabled:opacity-50">−</button><span class="grid min-w-9 place-items-center text-sm font-black text-warm-950" x-text="item.quantity"></span><button type="button" x-on:click="changeQuantity(item, 1)" x-bind:disabled="busyKey === item.cart_key || item.quantity >= 99" aria-label="Increase quantity" class="grid h-8 w-8 place-items-center rounded-lg bg-white font-black text-warm-700 shadow-sm disabled:opacity-50">+</button></div>
+                                <p class="font-black text-warm-950" x-text="money(item.total)"></p>
+                            </div>
+                        </article>
+                    </template>
+                </div>
+            </div>
+
+            <footer x-show="cart.count > 0" class="border-t border-warm-200 bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4 sm:px-6">
+                <p x-show="minimumOrder > 0 && cart.subtotal < minimumOrder" class="mb-3 rounded-xl bg-gold-50 px-3 py-2 text-xs font-semibold text-gold-800">Add <span x-text="money(minimumOrder - cart.subtotal)"></span> more to reach the <span x-text="money(minimumOrder)"></span> minimum order.</p>
+                <div class="space-y-2 text-sm"><div class="flex justify-between text-warm-600"><span>Subtotal</span><span x-text="money(cart.subtotal)"></span></div><div class="flex justify-between text-warm-600"><span>Delivery</span><span x-text="money(cart.delivery_fee)"></span></div><div class="flex justify-between border-t border-warm-200 pt-3 text-base font-black text-warm-950"><span>Total</span><span x-text="money(cart.total)"></span></div></div>
+                <a x-bind:href="checkoutUrl" x-bind:aria-disabled="cart.count === 0 || (minimumOrder > 0 && cart.subtotal < minimumOrder)" x-bind:class="cart.count === 0 || (minimumOrder > 0 && cart.subtotal < minimumOrder) ? 'pointer-events-none opacity-50' : ''" class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-500 px-4 text-sm font-black text-white shadow-lg shadow-brand-500/20 hover:bg-brand-600">Continue to checkout</a>
+                <a href="{{ route('cart.index') }}" class="mt-2 inline-flex min-h-10 w-full items-center justify-center text-xs font-bold text-warm-600 hover:text-brand-600">Open full cart</a>
+            </footer>
+        </section>
+    </div>
 </main>
+
+@push('scripts')
+<script>
+    window.menuCartDrawer = (initialCart, updateUrl, removeUrl, checkoutUrl, minimumOrder) => ({
+        cart: initialCart,
+        updateUrl,
+        removeUrl,
+        checkoutUrl,
+        minimumOrder,
+        drawerOpen: false,
+        pending: false,
+        busyKey: null,
+        error: '',
+        openDrawer() {
+            this.lastFocus = document.activeElement;
+            this.drawerOpen = true;
+            this.$nextTick(() => this.$refs.drawerClose?.focus());
+        },
+        closeDrawer() {
+            this.drawerOpen = false;
+            this.$nextTick(() => this.lastFocus?.focus?.());
+        },
+        money(value) {
+            return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(Number(value || 0));
+        },
+        async addForm(event) {
+            if (this.pending) return;
+            this.pending = true;
+            this.error = '';
+            try {
+                await this.request(event.currentTarget.action, new FormData(event.currentTarget));
+                this.openDrawer();
+            } catch (error) {
+                this.error = error.message || 'Could not add this item. Please try again.';
+            } finally {
+                this.pending = false;
+            }
+        },
+        async changeQuantity(item, amount) {
+            this.busyKey = item.cart_key;
+            this.error = '';
+            const form = new FormData();
+            form.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+            form.append('item', item.cart_key);
+            form.append('quantity', Math.max(0, Math.min(99, Number(item.quantity) + amount)));
+            try { await this.request(this.updateUrl, form); }
+            catch (error) { this.error = error.message || 'Could not update this item.'; }
+            finally { this.busyKey = null; }
+        },
+        async removeItem(item) {
+            this.busyKey = item.cart_key;
+            this.error = '';
+            const form = new FormData();
+            form.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+            try { await this.request(this.removeUrl.replace('__CART_KEY__', encodeURIComponent(item.cart_key)), form); }
+            catch (error) { this.error = error.message || 'Could not remove this item.'; }
+            finally { this.busyKey = null; }
+        },
+        async request(url, formData) {
+            const response = await fetch(url, { method: 'POST', body: formData, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                window.location.assign(response.url);
+                throw new Error('Please sign in to update your cart.');
+            }
+            const payload = await response.json();
+            if (!response.ok) {
+                const validationMessage = Object.values(payload.errors || {}).flat()[0];
+                throw new Error(validationMessage || payload.message || 'Cart update failed.');
+            }
+            this.cart = payload.cart;
+            window.dispatchEvent(new CustomEvent('cart-count-updated', { detail: this.cart.count }));
+            return payload;
+        },
+    });
+
+    window.menuHeroCarousel = (slides) => ({
+        slides,
+        active: 0,
+        timer: null,
+        start() {
+            if (this.slides.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            this.timer = window.setInterval(() => this.next(), 3000);
+        },
+        pause() {
+            if (this.timer) window.clearInterval(this.timer);
+            this.timer = null;
+        },
+        resume() {
+            if (!this.timer) this.start();
+        },
+        next() { this.active = (this.active + 1) % this.slides.length; },
+        previous() { this.active = (this.active - 1 + this.slides.length) % this.slides.length; },
+        go(index) { this.active = index; },
+    });
+</script>
+@endpush
 
 @endcomponent

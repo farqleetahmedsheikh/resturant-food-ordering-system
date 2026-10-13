@@ -110,8 +110,9 @@
 <body class="min-h-screen bg-[var(--color-surface-warm)] font-sans text-warm-900 antialiased">
     <div
         class="min-h-screen overflow-x-hidden"
-        x-data="{ open: false }"
+        x-data="{ open: false, cartCount: @js(\App\Support\Cart::count()) }"
         x-on:keydown.escape.window="open = false"
+        x-on:cart-count-updated.window="cartCount = $event.detail"
     >
         {{-- Navbar --}}
         <header
@@ -187,11 +188,12 @@
                     @else
                         <a
                             href="{{ route('cart.index') }}"
+                            @if (request()->routeIs('menu')) x-on:click.prevent="$dispatch('open-cart-drawer')" @endif
                             class="relative rounded-full border border-brand-200 bg-white px-4 py-2 text-sm font-black text-warm-900 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"
                         >
                             Cart
                             <span class="ml-1 rounded-full bg-brand-500 px-2 py-0.5 text-xs font-black text-white">
-                                {{ \App\Support\Cart::count() }}
+                                <span x-text="cartCount"></span>
                             </span>
                         </a>
 
@@ -280,8 +282,8 @@
                             Rider Dashboard
                         </a>
                     @else
-                        <a href="{{ route('cart.index') }}" class="rounded-2xl px-4 py-3 text-warm-600 hover:bg-brand-50">
-                            Cart ({{ \App\Support\Cart::count() }})
+                        <a href="{{ route('cart.index') }}" @if (request()->routeIs('menu')) x-on:click.prevent="$dispatch('open-cart-drawer'); open = false" @endif class="rounded-2xl px-4 py-3 text-warm-600 hover:bg-brand-50">
+                            Cart (<span x-text="cartCount"></span>)
                         </a>
 
                         <a href="{{ route('customer.dashboard') }}" class="rounded-2xl px-4 py-3 text-warm-600 hover:bg-brand-50">

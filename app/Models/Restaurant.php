@@ -29,6 +29,7 @@ class Restaurant extends Model
         'minimum_order_amount',
         'logo',
         'cover_image',
+        'menu_hero_slides',
         'is_open',
     ];
 
@@ -40,6 +41,40 @@ class Restaurant extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'is_open' => 'boolean',
+            'menu_hero_slides' => 'array',
+        ];
+    }
+
+    public static function defaultMenuHeroSlides(): array
+    {
+        return [
+            [
+                'id' => 'kebab-grill',
+                'eyebrow' => 'Fresh off the grill · Made to order',
+                'title' => 'Authentic kebabs,',
+                'highlight' => 'made your way.',
+                'description' => 'Fresh ingredients, bold flavour, and your favourite sauce in every bite.',
+                'image' => '/images/menu-hero/kebab-grill.jpg',
+                'is_active' => true,
+            ],
+            [
+                'id' => 'wood-fired-pizza',
+                'eyebrow' => 'Local favourite · Big flavour',
+                'title' => 'Pizza nights',
+                'highlight' => 'start here.',
+                'description' => 'Choose a classic, load up the toppings, and make dinner easy.',
+                'image' => '/images/menu-hero/pizza.jpg',
+                'is_active' => true,
+            ],
+            [
+                'id' => 'mixed-feast',
+                'eyebrow' => 'Good food · Generous portions',
+                'title' => 'Make it a',
+                'highlight' => 'proper feast.',
+                'description' => 'Kebabs, chips, fresh salad and sauces, all in one satisfying spread.',
+                'image' => '/images/menu-hero/mixed-platter.jpg',
+                'is_active' => true,
+            ],
         ];
     }
 

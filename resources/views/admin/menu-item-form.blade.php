@@ -135,6 +135,12 @@ $isCreateMode = $mode === 'create';
     $initialAddonGroupIds = collect(
         old('addon_group_ids', $menuItem->addonGroups?->pluck('id')->all() ?? [])
     )->map(fn ($id): int => (int) $id)->values()->all();
+
+    $initialOptionTab = collect($errors->keys())->contains(
+        fn ($key) => $key === 'sizes' || str_starts_with($key, 'sizes.')
+    ) ? 'sizes' : (collect($errors->keys())->contains(
+        fn ($key) => $key === 'addons' || str_starts_with($key, 'addons.')
+    ) ? 'extras' : 'groups');
 @endphp
 
 <div
@@ -157,6 +163,8 @@ $isCreateMode = $mode === 'create';
         sizes: @js($sizeRows),
         addons: @js($addonRows),
         addonGroupIds: @js($initialAddonGroupIds),
+        groupSearch: '',
+        optionTab: @js($initialOptionTab),
         submitting: false,
 
         slugify(value) {
@@ -262,10 +270,10 @@ $isCreateMode = $mode === 'create';
             this.addons.splice(index, 1);
         }
     }"
-    class="space-y-5 pb-28 sm:space-y-6 xl:pb-8"
+    class="space-y-5 pb-28 sm:space-y-6 lg:pb-8"
 >
     {{-- Mobile Header --}}
-    <header class="xl:hidden">
+    <header class="lg:hidden">
         <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
                 <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
@@ -307,7 +315,7 @@ $isCreateMode = $mode === 'create';
     </header>
 
     {{-- Desktop Header --}}
-    <header class="hidden items-end justify-between gap-8 xl:flex">
+    <header class="hidden items-end justify-between gap-8 lg:flex">
         <div>
             <p class="text-xs font-black uppercase tracking-[0.2em] text-brand-500">
                 Menu Management
@@ -324,27 +332,16 @@ $isCreateMode = $mode === 'create';
             </p>
         </div>
 
-        <a
-            href="{{ route('admin.menu-items.index') }}"
-            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-5 py-3 text-sm font-black text-brand-600 shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-50"
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="h-4 w-4"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m15 18-6-6 6-6"
-                />
-            </svg>
-
-            Back to Menu
-        </a>
+        <div class="flex shrink-0 items-center gap-2">
+            <a href="{{ route('admin.menu-items.index') }}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-warm-200 bg-white px-4 py-2.5 text-sm font-black text-warm-700 transition hover:bg-warm-50">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
+                Back to Menu
+            </a>
+            <button type="submit" form="menu-item-form" x-bind:disabled="submitting" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-70">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path d="M5 5h12l2 2v12H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg>
+                <span x-text="submitting ? 'Saving...' : @js($submitLabel)"></span>
+            </button>
+        </div>
     </header>
 
     {{-- Workflow Overview --}}
@@ -480,7 +477,7 @@ $isCreateMode = $mode === 'create';
             : route('admin.menu-items.update', $menuItem) }}"
         method="POST"
         enctype="multipart/form-data"
-        class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_390px] xl:items-start xl:gap-6"
+        class="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,.65fr)] lg:items-start lg:gap-6"
         x-on:submit="submitting = true"
     >
         @csrf
@@ -490,9 +487,9 @@ $isCreateMode = $mode === 'create';
         @endunless
 
         {{-- Main Form --}}
-        <div class="min-w-0 space-y-5">
+        <div class="contents">
             {{-- Step 1: Essentials --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm lg:col-start-1 lg:row-start-1">
                 <div class="border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div class="flex items-start gap-3">
                         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-500 text-sm font-black text-white shadow-lg shadow-brand-500/20">
@@ -737,7 +734,7 @@ $isCreateMode = $mode === 'create';
             </section>
 
             {{-- Step 2: Selling Setup --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm lg:col-start-1 lg:row-start-2">
                 <div class="border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div class="flex items-start gap-3">
                         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-100 text-sm font-black text-brand-600">
@@ -1162,7 +1159,7 @@ $isCreateMode = $mode === 'create';
             </section>
 
             {{-- Step 3: Ordering Options --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm lg:col-span-2">
                 <div class="flex flex-col gap-4 border-b border-warm-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
                     <div class="flex items-start gap-3">
                         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-100 text-sm font-black text-brand-600">
@@ -1175,7 +1172,7 @@ $isCreateMode = $mode === 'create';
                             </p>
 
                             <h2 class="mt-1 text-xl font-black tracking-tight text-warm-950 sm:text-2xl">
-                                Sizes and paid extras
+                                Sizes, add-ons and extras
                             </h2>
 
                             <p class="mt-1 text-xs font-semibold leading-5 text-warm-500 sm:text-sm">
@@ -1197,7 +1194,19 @@ $isCreateMode = $mode === 'create';
                     </div>
                 </div>
 
-                <div class="border-b border-warm-200 p-4 sm:p-6">
+                <div class="flex gap-2 overflow-x-auto border-b border-warm-200 px-4 py-3 sm:px-6" role="group" aria-label="Customization options">
+                    <button type="button" x-bind:aria-pressed="optionTab === 'groups'" x-on:click="optionTab = 'groups'" x-bind:class="optionTab === 'groups' ? 'bg-brand-500 text-white shadow-sm' : 'bg-warm-50 text-warm-600 hover:bg-brand-50'" class="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition">
+                        Add-ons / Groups <span class="rounded-full px-2 py-0.5 text-[10px]" x-bind:class="optionTab === 'groups' ? 'bg-white/20' : 'bg-white'" x-text="addonGroupIds.length"></span>
+                    </button>
+                    <button type="button" x-bind:aria-pressed="optionTab === 'sizes'" x-on:click="optionTab = 'sizes'" x-bind:class="optionTab === 'sizes' ? 'bg-brand-500 text-white shadow-sm' : 'bg-warm-50 text-warm-600 hover:bg-brand-50'" class="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition">
+                        Size Options <span class="rounded-full px-2 py-0.5 text-[10px]" x-bind:class="optionTab === 'sizes' ? 'bg-white/20' : 'bg-white'" x-text="sizes.length"></span>
+                    </button>
+                    <button type="button" x-bind:aria-pressed="optionTab === 'extras'" x-on:click="optionTab = 'extras'" x-bind:class="optionTab === 'extras' ? 'bg-brand-500 text-white shadow-sm' : 'bg-warm-50 text-warm-600 hover:bg-brand-50'" class="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition">
+                        Legacy Extras <span class="rounded-full px-2 py-0.5 text-[10px]" x-bind:class="optionTab === 'extras' ? 'bg-white/20' : 'bg-white'" x-text="addons.length"></span>
+                    </button>
+                </div>
+
+                <div x-show="optionTab === 'groups'" x-cloak class="border-b border-warm-200 p-4 sm:p-6">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                             <h3 class="text-base font-black text-warm-950">
@@ -1209,12 +1218,17 @@ $isCreateMode = $mode === 'create';
                             </p>
                         </div>
 
-                        <a
-                            href="{{ route('admin.addons-upselling.groups.index') }}"
-                            class="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3.5 py-2 text-xs font-black text-brand-600 transition hover:bg-brand-100"
-                        >
-                            Manage groups
-                        </a>
+                        <div class="flex shrink-0 flex-wrap items-center gap-2">
+                            <span class="rounded-full bg-brand-50 px-3 py-2 text-xs font-black text-brand-700">
+                                <span x-text="addonGroupIds.length"></span> selected
+                            </span>
+                            <a
+                                href="{{ route('admin.addons-upselling.groups.index') }}"
+                                class="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3.5 py-2 text-xs font-black text-brand-600 transition hover:bg-brand-100"
+                            >
+                                Manage groups
+                            </a>
+                        </div>
                     </div>
 
                     @if ($addonGroups->isEmpty())
@@ -1225,10 +1239,17 @@ $isCreateMode = $mode === 'create';
                             </p>
                         </div>
                     @else
-                        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                        <label class="mt-4 flex min-h-11 items-center gap-3 rounded-xl border border-warm-200 bg-white px-3.5 focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 shrink-0 text-warm-400"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                            <input type="search" x-model="groupSearch" placeholder="Search groups by name or option..." class="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm font-semibold text-warm-900 outline-none placeholder:text-warm-400 focus:ring-0">
+                            <span class="shrink-0 text-[10px] font-bold text-warm-400" x-show="groupSearch">Filtering</span>
+                        </label>
+
+                        <div x-ref="addonGroupList" class="mt-3 grid max-h-[min(52vh,460px)] gap-2 overflow-y-auto overscroll-contain rounded-2xl border border-warm-200 bg-warm-50/70 p-2 sm:grid-cols-2">
                             @foreach ($addonGroups as $group)
                                 <label
-                                    class="flex cursor-pointer items-start gap-3 rounded-2xl border border-warm-200 bg-warm-50 p-4 transition hover:border-brand-200 hover:bg-brand-50"
+                                    x-show='!groupSearch.trim() || @js(mb_strtolower($group->name." ".$group->activeAddons->pluck("name")->join(" "))).includes(groupSearch.trim().toLowerCase())'
+                                    class="flex cursor-pointer items-start gap-3 rounded-xl border border-warm-200 bg-white p-3 transition hover:border-brand-200 hover:bg-brand-50"
                                     x-bind:class="addonGroupIds.includes({{ $group->id }}) ? 'border-brand-300 bg-brand-50 ring-2 ring-brand-100' : ''"
                                 >
                                     <input
@@ -1246,11 +1267,13 @@ $isCreateMode = $mode === 'create';
                                                 <span class="rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-red-600">Required</span>
                                             @endif
                                         </span>
-                                        <span class="mt-1 block text-xs font-semibold leading-5 text-warm-500">
-                                            {{ $group->activeAddons->pluck('name')->join(', ') }}
+                                        <span class="mt-1 block line-clamp-2 text-[11px] font-semibold leading-4 text-warm-500">
+                                            {{ $group->activeAddons->pluck('name')->join(', ') ?: 'No available options' }}
                                         </span>
-                                        <span class="mt-2 block text-[10px] font-black uppercase tracking-[0.1em] text-brand-600">
-                                            {{ $group->selection_type === 'single' ? 'Choose one' : 'Choose multiple' }}
+                                        <span class="mt-2 flex flex-wrap items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.08em] text-brand-600">
+                                            <span>{{ $group->selection_type === 'single' ? 'Choose one' : 'Choose multiple' }}</span>
+                                            <span class="text-warm-300">·</span>
+                                            <span>{{ $group->activeAddons->count() }} options</span>
                                         </span>
                                     </span>
                                 </label>
@@ -1263,9 +1286,9 @@ $isCreateMode = $mode === 'create';
                     @enderror
                 </div>
 
-                <div class="grid gap-5 p-4 sm:p-6 2xl:grid-cols-2">
+                <div class="p-4 sm:p-6">
                     {{-- Sizes --}}
-                    <div class="rounded-[1.5rem] border border-warm-200 bg-warm-50 p-4 sm:p-5">
+                    <div x-show="optionTab === 'sizes'" x-cloak class="rounded-[1.5rem] border border-warm-200 bg-warm-50 p-4 sm:p-5">
                         <div class="flex items-start justify-between gap-4">
                             <div>
                                 <h3 class="text-base font-black text-warm-950">
@@ -1300,7 +1323,7 @@ $isCreateMode = $mode === 'create';
                             </button>
                         </div>
 
-                        <div class="mt-4 space-y-3">
+                        <div class="mt-4 max-h-[420px] space-y-2 overflow-y-auto overscroll-contain pr-2">
                             <template x-if="sizes.length === 0">
                                 <div class="rounded-2xl border border-dashed border-warm-300 bg-white px-5 py-7 text-center">
                                     <span class="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-500">
@@ -1331,10 +1354,10 @@ $isCreateMode = $mode === 'create';
                                 x-for="(size, index) in sizes"
                                 x-bind:key="'size-' + index"
                             >
-                                <div class="rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
+                                <div class="rounded-xl border border-warm-200 bg-white p-3 shadow-sm">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="flex min-w-0 items-center gap-3">
-                                            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-xs font-black text-brand-600">
+                                            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-xs font-black text-brand-600">
                                                 <span x-text="index + 1"></span>
                                             </span>
 
@@ -1353,7 +1376,7 @@ $isCreateMode = $mode === 'create';
                                         <button
                                             type="button"
                                             x-on:click="removeSize(index)"
-                                            class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600 transition active:scale-95 hover:bg-red-600 hover:text-white"
+                                            class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-red-50 text-red-600 transition active:scale-95 hover:bg-red-600 hover:text-white"
                                             aria-label="Remove size"
                                         >
                                             <svg
@@ -1371,8 +1394,8 @@ $isCreateMode = $mode === 'create';
                                         </button>
                                     </div>
 
-                                    <div class="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_130px_85px]">
-                                        <div>
+                                    <div class="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,.8fr)_80px] sm:items-end">
+                                        <div class="sm:min-w-0">
                                             <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                                 Size Name
                                             </label>
@@ -1402,7 +1425,7 @@ $isCreateMode = $mode === 'create';
                                                     step="0.01"
                                                     x-model="size.price"
                                                     x-bind:name="'sizes[' + index + '][price]'"
-                                                    placeholder="1499"
+                                                    placeholder="0.00"
                                                     class="min-h-11 w-full rounded-xl border border-warm-200 bg-warm-50 py-2.5 pl-9 pr-3 text-sm font-semibold text-warm-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
                                                 >
                                             </div>
@@ -1410,7 +1433,7 @@ $isCreateMode = $mode === 'create';
 
                                         <div>
                                             <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
-                                                Sort
+                                                Order
                                             </label>
 
                                             <input
@@ -1423,7 +1446,7 @@ $isCreateMode = $mode === 'create';
                                         </div>
                                     </div>
 
-                                    <label class="mt-3 flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-warm-50 px-3 py-3">
+                                    <label class="mt-2 flex cursor-pointer items-center justify-between gap-4 rounded-lg bg-warm-50 px-3 py-2.5 sm:mt-3">
                                         <span class="text-xs font-black text-warm-600">
                                             Available to customers
                                         </span>
@@ -1454,7 +1477,7 @@ $isCreateMode = $mode === 'create';
                     </div>
 
                     {{-- Add-ons --}}
-                    <div class="rounded-[1.5rem] border border-warm-200 bg-warm-50 p-4 sm:p-5">
+                    <div x-show="optionTab === 'extras'" x-cloak class="rounded-[1.5rem] border border-warm-200 bg-warm-50 p-4 sm:p-5">
                         <div class="flex items-start justify-between gap-4">
                             <div>
                                 <h3 class="text-base font-black text-warm-950">
@@ -1489,7 +1512,7 @@ $isCreateMode = $mode === 'create';
                             </button>
                         </div>
 
-                        <div class="mt-4 space-y-3">
+                        <div class="mt-4 grid max-h-[420px] gap-2 overflow-y-auto overscroll-contain pr-2 sm:grid-cols-2">
                             <template x-if="addons.length === 0">
                                 <div class="rounded-2xl border border-dashed border-warm-300 bg-white px-5 py-7 text-center">
                                     <span class="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-500">
@@ -1519,10 +1542,10 @@ $isCreateMode = $mode === 'create';
                                 x-for="(addon, index) in addons"
                                 x-bind:key="'addon-' + index"
                             >
-                                <div class="rounded-2xl border border-warm-200 bg-white p-4 shadow-sm">
+                                <div class="rounded-xl border border-warm-200 bg-white p-3 shadow-sm">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="flex min-w-0 items-center gap-3">
-                                            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-xs font-black text-brand-600">
+                                            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-xs font-black text-brand-600">
                                                 <span x-text="index + 1"></span>
                                             </span>
 
@@ -1541,7 +1564,7 @@ $isCreateMode = $mode === 'create';
                                         <button
                                             type="button"
                                             x-on:click="removeAddon(index)"
-                                            class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600 transition active:scale-95 hover:bg-red-600 hover:text-white"
+                                            class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-red-50 text-red-600 transition active:scale-95 hover:bg-red-600 hover:text-white"
                                             aria-label="Remove add-on"
                                         >
                                             <svg
@@ -1559,8 +1582,8 @@ $isCreateMode = $mode === 'create';
                                         </button>
                                     </div>
 
-                                    <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                                        <div>
+                                    <div class="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1.2fr)_minmax(105px,.8fr)]">
+                                        <div class="sm:min-w-0">
                                             <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                                 Name
                                             </label>
@@ -1574,7 +1597,7 @@ $isCreateMode = $mode === 'create';
                                             >
                                         </div>
 
-                                        <div>
+                                        <div class="sm:min-w-0">
                                             <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                                 Type
                                             </label>
@@ -1592,7 +1615,7 @@ $isCreateMode = $mode === 'create';
                                             </select>
                                         </div>
 
-                                        <div>
+                                        <div class="sm:min-w-0">
                                             <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
                                                 Additional Price
                                             </label>
@@ -1614,9 +1637,9 @@ $isCreateMode = $mode === 'create';
                                             </div>
                                         </div>
 
-                                        <div>
+                                        <div class="sm:min-w-0">
                                             <label class="block text-[9px] font-black uppercase tracking-[0.12em] text-warm-500">
-                                                Display Position
+                                                Order
                                             </label>
 
                                             <input
@@ -1629,7 +1652,7 @@ $isCreateMode = $mode === 'create';
                                         </div>
                                     </div>
 
-                                    <label class="mt-3 flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-warm-50 px-3 py-3">
+                                    <label class="mt-2 flex cursor-pointer items-center justify-between gap-4 rounded-lg bg-warm-50 px-3 py-2.5">
                                         <span class="text-xs font-black text-warm-600">
                                             Available to customers
                                         </span>
@@ -1674,7 +1697,7 @@ $isCreateMode = $mode === 'create';
             </section>
 
             {{-- Step 4: Image --}}
-            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm">
+            <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-sm lg:col-span-2">
                 <div class="border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div class="flex items-start gap-3">
                         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-100 text-sm font-black text-brand-600">
@@ -1697,7 +1720,8 @@ $isCreateMode = $mode === 'create';
                     </div>
                 </div>
 
-                <div class="p-4 sm:p-6">
+                <div class="grid gap-4 p-4 sm:p-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(240px,.75fr)]">
+                    <div class="min-w-0">
                     <label
                         for="image"
                         class="group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[1.5rem] border-2 border-dashed border-brand-200 bg-brand-50/60 px-5 py-9 text-center transition hover:border-brand-500 hover:bg-brand-50 sm:py-10"
@@ -1819,12 +1843,27 @@ $isCreateMode = $mode === 'create';
                             {{ $message }}
                         </p>
                     @enderror
+                    </div>
+
+                    <aside class="rounded-2xl border border-warm-200 bg-warm-50/70 p-4">
+                        <h3 class="text-sm font-black text-warm-950">Image Guidelines</h3>
+                        <div class="mt-4 space-y-3">
+                            @foreach (['Use a clear, well-lit photo', 'Show the dish clearly', 'Choose a close-up angle', 'Recommended size: 1200 × 800', 'Maximum file size: 2 MB'] as $guideline)
+                                <div class="flex items-start gap-2.5">
+                                    <span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-leaf-100 text-leaf-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="h-3 w-3"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6"/></svg>
+                                    </span>
+                                    <span class="text-xs font-semibold leading-5 text-warm-600">{{ $guideline }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </aside>
                 </div>
             </section>
         </div>
 
         {{-- Preview and Actions --}}
-        <aside class="order-first space-y-5 xl:order-none xl:sticky xl:top-24">
+        <aside class="order-last space-y-5 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:order-none lg:sticky lg:top-24">
             {{-- Live Preview --}}
             <section class="overflow-hidden rounded-[1.75rem] border border-warm-200 bg-white shadow-xl shadow-brand-900/5">
                 <div class="flex items-center justify-between gap-4 border-b border-warm-200 px-5 py-4">
@@ -2039,154 +2078,44 @@ $isCreateMode = $mode === 'create';
                 </div>
             </section>
 
-            {{-- Completion Summary --}}
-            <section class="rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm">
+            {{-- Quick Tips --}}
+            <section class="rounded-[1.5rem] border border-gold-200 bg-gold-50/60 p-5 shadow-sm">
                 <p class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-500">
-                    Item Summary
+                    Quick Tips
                 </p>
 
                 <h2 class="mt-1 text-lg font-black text-warm-950">
-                    Before publishing
+                    Make it menu-ready
                 </h2>
 
-                <div class="mt-4 space-y-2">
-                    <div class="flex items-center justify-between gap-4 rounded-xl bg-warm-50 px-3 py-3">
-                        <span class="text-xs font-semibold text-warm-500">
-                            Base price
-                        </span>
-
-                        <span class="text-sm font-black text-warm-950">
-	                            A$
-                            <span x-text="Number(price || 0).toLocaleString()"></span>
-                        </span>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-4 rounded-xl bg-warm-50 px-3 py-3">
-                        <span class="text-xs font-semibold text-warm-500">
-                            Size options
-                        </span>
-
-                        <span
-                            class="text-sm font-black text-warm-950"
-                            x-text="sizes.length"
-                        ></span>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-4 rounded-xl bg-warm-50 px-3 py-3">
-                        <span class="text-xs font-semibold text-warm-500">
-                            Paid extras
-                        </span>
-
-                        <span
-                            class="text-sm font-black text-warm-950"
-                            x-text="addons.length"
-                        ></span>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-4 rounded-xl bg-warm-50 px-3 py-3">
-                        <span class="text-xs font-semibold text-warm-500">
-                            Public status
-                        </span>
-
-                        <span
-                            class="rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em]"
-                            x-bind:class="available
-                                ? 'bg-leaf-100 text-leaf-700'
-                                : 'bg-red-100 text-red-700'"
-                            x-text="available ? 'Available' : 'Unavailable'"
-                        ></span>
-                    </div>
+                <div class="mt-4 space-y-3">
+                    @foreach (['Use a clear, recognizable name', 'Add a short ingredient description', 'Check the selling price and size prices', 'Attach only relevant customization groups', 'Use a bright photo of the actual dish'] as $tip)
+                        <div class="flex items-start gap-2.5">
+                            <span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-leaf-100 text-leaf-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="h-3 w-3"><path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6"/></svg>
+                            </span>
+                            <span class="text-xs font-semibold leading-5 text-warm-700">{{ $tip }}</span>
+                        </div>
+                    @endforeach
                 </div>
             </section>
 
-            {{-- Desktop Save Actions --}}
-            <section class="hidden rounded-[1.75rem] border border-warm-200 bg-white p-5 shadow-sm xl:block">
-                <div class="flex items-start gap-3">
-                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-500">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            class="h-5 w-5"
-                        >
-                            <path d="M5 5h12l2 2v12H5z" />
-                            <path d="M8 5v5h8V5M8 19v-6h8v6" />
-                        </svg>
-                    </span>
-
-                    <div>
-                        <p class="text-sm font-black text-warm-950">
-                            Ready to save?
-                        </p>
-
-                        <p class="mt-1 text-xs font-semibold leading-5 text-warm-500">
-                            Review the preview, price, availability, and ordering options.
-                        </p>
-                    </div>
-                </div>
-
-                <button
-                    type="submit"
-                    x-bind:disabled="submitting"
-                    class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:-translate-y-0.5 hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                    <svg
-                        x-show="submitting"
-                        x-cloak
-                        class="h-5 w-5 animate-spin"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                    >
-                        <circle
-                            class="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="4"
-                        ></circle>
-
-                        <path
-                            class="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                        ></path>
-                    </svg>
-
-                    <svg
-                        x-show="! submitting"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        class="h-5 w-5"
-                    >
-                        <path d="M5 5h12l2 2v12H5z" />
-                        <path d="M8 5v5h8V5M8 19v-6h8v6" />
-                    </svg>
-
-                    <span
-                        x-text="submitting
-                            ? 'Saving menu item...'
-                            : @js($submitLabel)"
-                    ></span>
-                </button>
-
-                <a
-                    href="{{ route('admin.menu-items.index') }}"
-                    class="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600"
-                >
-                    Cancel
-                </a>
-            </section>
         </aside>
+
+        <div class="hidden items-center justify-between gap-4 rounded-2xl border border-warm-200 bg-white p-4 shadow-sm lg:col-span-2 lg:flex">
+            <a href="{{ route('admin.menu-items.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-warm-200 bg-white px-5 py-3 text-sm font-black text-warm-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600">
+                Cancel
+            </a>
+            <button type="submit" x-bind:disabled="submitting" class="inline-flex min-h-12 min-w-52 items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 py-3 text-sm font-black text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70">
+                <svg x-show="!submitting" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path d="M5 5h12l2 2v12H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg>
+                <svg x-show="submitting" x-cloak class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/></svg>
+                <span x-text="submitting ? 'Saving menu item...' : @js($submitLabel)"></span>
+            </button>
+        </div>
     </form>
 
     {{-- Persistent Mobile / Tablet Actions --}}
-    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-[var(--shadow-bottom-nav)] backdrop-blur xl:hidden">
+    <div class="fixed inset-x-0 bottom-0 z-50 border-t border-warm-200 bg-white/95 px-4 pt-3 shadow-[var(--shadow-bottom-nav)] backdrop-blur lg:hidden">
         <div class="mx-auto flex items-center gap-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
             <a
                 href="{{ route('admin.menu-items.index') }}"

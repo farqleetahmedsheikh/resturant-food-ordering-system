@@ -9,6 +9,7 @@ use App\Support\ImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Str;
 
 class AdminRestaurantSettingsController extends Controller
 {
@@ -125,5 +126,76 @@ class AdminRestaurantSettingsController extends Controller
         $restaurant->forceFill(['cover_image' => null])->save();
 
         return back()->with('status', 'Restaurant cover image removed successfully.');
+    }
+
+    public function editMenuHero(): View
+    {
+        $restaurant = Restaurant::current() ?? new Restaurant(['name' => 'Arcade Kebab House']);
+        $slides = $restaurant->menu_hero_slides ?: Restaurant::defaultMenuHeroSlides();
+
+        return view('admin.menu-hero-slides', compact('restaurant', 'slides'));
+    }
+
+    public function updateMenuHero(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'slides' => ['required', 'array', 'min:1', 'max:8'],
+            'slides.*.id' => ['nullable', 'string', 'max:80'],
+            'slides.*.eyebrow' => ['required', 'string', 'max:100'],
+            'slides.*.title' => ['required', 'string', 'max:80'],
+            'slides.*.highlight' => ['required', 'string', 'max:80'],
+            'slides.*.description' => ['required', 'string', 'max:200'],
+            'slides.*.is_active' => ['nullable', 'boolean'],
+            'slides.*.image' => ImageUpload::validationRules(),
+        ]);
+
+        if (! collect($validated['slides'])->contains(fn (array $slide): bool => (bool) ($slide['is_active'] ?? false))) {
+            return back()->withErrors(['slides' => 'Keep at least one hero slide active.'])->withInput();
+        }
+
+        $restaurant = Restaurant::current() ?? new Restaurant(['name' => 'Arcade Kebab House']);
+        $existingSlides = collect($restaurant->menu_hero_slides ?: Restaurant::defaultMenuHeroSlides())->keyBy('id');
+        $savedSlides = [];
+
+        foreach ($validated['slides'] as $index => $slide) {
+            $id = (string) ($slide['id'] ?? '');
+            $existing = $id !== '' ? $existingSlides->get($id) : null;
+
+            if ($id !== '' && ! $existing) {
+                return back()->withErrors(['slides' => 'A slide was not recognized. Refresh the page and try again.'])->withInput();
+            }
+
+            $imagePath = $existing['image'] ?? null;
+            $upload = $request->file("slides.{$index}.image");
+
+            if ($upload) {
+                $imagePath = ImageUpload::store($upload, 'restaurant/menu-hero', $imagePath);
+            } elseif (! $imagePath) {
+                return back()->withErrors(["slides.{$index}.image" => 'Please choose an image for this slide.'])->withInput();
+            }
+
+            $savedSlides[] = [
+                'id' => $existing['id'] ?? Str::uuid()->toString(),
+                'eyebrow' => $slide['eyebrow'],
+                'title' => $slide['title'],
+                'highlight' => $slide['highlight'],
+                'description' => $slide['description'],
+                'image' => $imagePath,
+                'is_active' => (bool) ($slide['is_active'] ?? false),
+                'sort_order' => $index,
+            ];
+        }
+
+        $retainedIds = collect($savedSlides)->pluck('id')->all();
+        $existingSlides->each(function (array $slide) use ($retainedIds): void {
+            if (! in_array($slide['id'], $retainedIds, true) && ! str_starts_with((string) $slide['image'], '/')) {
+                ImageUpload::delete($slide['image'] ?? null);
+            }
+        });
+
+        $restaurant->menu_hero_slides = $savedSlides;
+        $restaurant->save();
+
+        return redirect()->route('admin.settings.menu-hero.edit')->with('status', 'Menu hero slides updated.');
     }
 }

@@ -86,6 +86,7 @@ $cartCount = \App\Support\Cart::count();
         selectedSizeId: @js($selectedSizeId),
         selectedAddonIds: @js($selectedAddonIds->all()),
         selectedAddonQuantities: @js($defaultAddonQuantities),
+        quantity: 1,
         submitting: false,
 
         get selectedSize() {
@@ -117,6 +118,7 @@ $cartCount = \App\Support\Cart::count();
             if (! this.selectedAddonQuantities[groupId]) this.selectedAddonQuantities[groupId] = {};
             const group = this.groups.find(entry => Number(entry.id) === Number(groupId));
             const limit = Number(group?.quantity_limit || 1);
+            if (quantity > 0 && group?.selection_type === 'single') this.selectedAddonQuantities[groupId] = {};
             this.selectedAddonQuantities[groupId][addonId] = Math.max(0, Math.min(limit, Number(quantity || 0)));
         },
 
@@ -135,16 +137,24 @@ $cartCount = \App\Support\Cart::count();
             return productPrice + (this.groups.length ? this.groupedAddonsTotal : this.addonsTotal);
         },
 
+        get lineTotal() {
+            return this.unitPrice * this.quantity;
+        },
+
+        changeQuantity(amount) {
+            this.quantity = Math.max(1, Math.min(99, Number(this.quantity || 1) + amount));
+        },
+
         formatPrice(value) {
             return '$' + Number(value || 0).toFixed(2);
         }
     }"
-    class="min-h-screen bg-[var(--color-surface-warm)] pb-28 lg:pb-0"
+    class="min-h-screen bg-[#fffaf7] pb-28 lg:pb-0"
 >
-    <section class="pb-8 lg:py-12">
-        <div class="mx-auto max-w-7xl lg:px-8">
+    <section class="pb-8 pt-4 sm:pt-6 lg:pb-14">
+        <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10">
             {{-- Desktop Breadcrumb --}}
-            <nav class="hidden items-center gap-2 pb-6 text-sm font-bold text-warm-500 lg:flex">
+            <nav class="mb-4 hidden items-center gap-2 pb-2 text-xs font-semibold text-warm-500 sm:flex lg:mb-6 lg:text-sm">
                 <a
                     href="{{ route('home') }}"
                     class="transition hover:text-brand-500"
@@ -181,10 +191,10 @@ $cartCount = \App\Support\Cart::count();
                 </span>
             </nav>
 
-            <div class="lg:grid lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:gap-8">
+            <div class="grid items-start gap-5 lg:grid-cols-[1.08fr_0.92fr] lg:gap-7 xl:gap-9">
                 {{-- Product Image --}}
                 <div class="relative lg:sticky lg:top-24">
-                    <div class="relative aspect-[5/4] overflow-hidden bg-gradient-to-br from-brand-100 via-gold-50 to-food-cream sm:aspect-[16/10] lg:aspect-[4/5] lg:rounded-[2rem] lg:border lg:border-warm-200 lg:shadow-2xl lg:shadow-brand-900/10">
+                    <div class="relative aspect-[4/3] overflow-hidden rounded-2xl border border-warm-200 bg-warm-100 shadow-sm sm:aspect-[16/10] lg:aspect-[1/0.92] lg:rounded-3xl">
                         @if ($menuItem->image_url)
                             <img
                                 src="{{ $menuItem->image_url }}"
@@ -206,8 +216,9 @@ $cartCount = \App\Support\Cart::count();
                             </div>
                         @endif
 
-                        <div class="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-warm-950/55 to-transparent"></div>
-                        <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-warm-950/65 to-transparent"></div>
+                        @if ($menuItem->image_url)
+                            <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/55 to-transparent"></div>
+                        @endif
 
                         {{-- Mobile Navigation Over Image --}}
                         <div class="absolute inset-x-0 top-0 z-10 flex items-center justify-between p-4 lg:hidden">
@@ -332,7 +343,7 @@ $cartCount = \App\Support\Cart::count();
                 </div>
 
                 {{-- Product Bottom Sheet / Desktop Card --}}
-                <div class="relative z-20 -mt-7 rounded-t-[2rem] bg-white px-4 pb-7 pt-5 shadow-[var(--shadow-card)] sm:-mt-10 sm:px-6 sm:pt-7 lg:mt-0 lg:rounded-[2rem] lg:border lg:border-warm-200 lg:p-9 lg:shadow-sm">
+                <div class="relative z-20 -mt-7 rounded-2xl border border-warm-200 bg-white px-4 pb-6 pt-5 shadow-sm sm:-mt-9 sm:px-6 sm:pt-6 lg:mt-0 lg:rounded-3xl lg:p-7 xl:p-8">
                     {{-- Product Header --}}
                     <header>
                         <div class="flex items-center justify-between gap-3">
@@ -568,6 +579,7 @@ $cartCount = \App\Support\Cart::count();
                         x-on:submit="submitting = true"
                     >
                         @csrf
+                        <input type="hidden" name="quantity" x-bind:value="quantity">
 
                         {{-- Size Selection --}}
                         @if ($sizeOptions->isNotEmpty())
@@ -589,10 +601,10 @@ $cartCount = \App\Support\Cart::count();
                                 </div>
 
                                 {{-- No Horizontal Scrolling --}}
-                                <div class="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3">
+                                <div class="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
                                     @foreach ($sizeOptions as $size)
                                         <label
-                                            class="relative cursor-pointer rounded-2xl border p-3.5 transition active:scale-[0.98] sm:p-4"
+                                            class="relative min-h-24 cursor-pointer rounded-2xl border p-3.5 transition active:scale-[0.98] sm:p-4"
                                             x-bind:class="String(selectedSizeId) === '{{ $size['id'] }}'
                                                 ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-100'
                                                 : 'border-warm-200 bg-white'"
@@ -627,25 +639,28 @@ $cartCount = \App\Support\Cart::count();
 
                         {{-- Structured customizations --}}
                         @if ($customizationOptions->isNotEmpty())
-                            <section class="space-y-5">
+                            <section class="space-y-6">
                                 @foreach ($customizationOptions as $group)
-                                    <div>
-                                        <div class="flex items-start justify-between gap-4">
-                                            <div>
-                                                <h2 class="text-base font-black text-warm-950">{{ $group['name'] }}</h2>
-                                                <p class="mt-1 text-xs font-semibold text-warm-500">{{ $group['description'] ?: ($group['selection_type'] === 'single' ? 'Choose one option.' : 'Choose as many as you like.') }}</p>
+                                    <div class="border-t border-warm-100 pt-5 first:border-0 first:pt-0">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div class="flex min-w-0 items-start gap-3">
+                                                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-500 text-sm font-black text-white">{{ $loop->iteration }}</span>
+                                                <div class="min-w-0">
+                                                    <h2 class="text-base font-black text-warm-950">{{ $group['name'] }}</h2>
+                                                    <p class="mt-1 text-xs font-medium leading-5 text-warm-500">{{ $group['description'] ?: ($group['selection_type'] === 'single' ? 'Choose one option.' : 'Choose as many as you like.') }}</p>
+                                                </div>
                                             </div>
-                                            <span class="rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider {{ $group['is_required'] ? 'bg-brand-50 text-brand-600' : 'bg-warm-100 text-warm-500' }}">{{ $group['is_required'] ? 'Required' : 'Optional' }}</span>
+                                            <span class="shrink-0 rounded-full px-2.5 py-1 text-[9px] font-bold {{ $group['is_required'] ? 'bg-brand-50 text-brand-600' : 'bg-warm-100 text-warm-500' }}">{{ $group['is_required'] ? 'Required' : 'Optional' }}</span>
                                         </div>
-                                        <div class="mt-3 space-y-2.5">
+                                        <div class="mt-3 grid gap-2 sm:grid-cols-2">
                                             @foreach ($group['addons'] as $addon)
-                                                <div class="rounded-2xl border border-warm-200 bg-white px-4 py-3 transition" x-bind:class="Number(selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0) > 0 ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-100' : ''">
+                                                <div class="rounded-xl border border-warm-200 bg-white p-3 transition" x-bind:class="Number(selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0) > 0 ? 'border-brand-500 bg-brand-50/60 ring-1 ring-brand-100' : 'hover:border-warm-300'">
                                                     <div class="flex items-center justify-between gap-3">
                                                         <label class="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
-                                                            <input type="{{ $group['selection_type'] === 'single' ? 'radio' : 'checkbox' }}" @if ($group['selection_type'] === 'single') name="addon_group_{{ $group['id'] }}" @endif value="{{ $addon['id'] }}" class="h-5 w-5 shrink-0 border-warm-300 text-brand-500 focus:ring-brand-500" @change="setAddonQuantity({{ $group['id'] }}, {{ $addon['id'] }}, $event.target.checked ? 1 : 0)">
-                                                            <span class="min-w-0"><span class="block truncate text-sm font-black text-warm-950">{{ $addon['name'] }}</span><span class="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.1em] text-warm-500">{{ ucfirst($addon['type']) }}</span></span>
+                                                            <input type="{{ $group['selection_type'] === 'single' ? 'radio' : 'checkbox' }}" @if ($group['selection_type'] === 'single') name="addon_group_{{ $group['id'] }}" @endif value="{{ $addon['id'] }}" x-bind:checked="Number(selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0) > 0" class="h-5 w-5 shrink-0 border-warm-300 text-brand-500 focus:ring-brand-500" @change="setAddonQuantity({{ $group['id'] }}, {{ $addon['id'] }}, $event.target.checked ? 1 : 0)">
+                                                            <span class="min-w-0"><span class="block break-words text-sm font-bold text-warm-950">{{ $addon['name'] }}</span></span>
                                                         </label>
-                                                        <span class="shrink-0 text-sm font-black text-brand-500">{{ ($addon['is_default'] ?? false) ? 'Included' : '+ '.\App\Support\Money::format($addon['price']) }}</span>
+                                                        <span class="shrink-0 text-xs font-black {{ ($addon['is_default'] ?? false) ? 'text-leaf-700' : 'text-brand-600' }}">{{ ($addon['is_default'] ?? false) ? 'Included' : '+ '.\App\Support\Money::format($addon['price']) }}</span>
                                                     </div>
                                                     @if ($group['quantity_limit'] > 1 && $group['selection_type'] !== 'single')
                                                         <div class="mt-3 flex items-center justify-end gap-2" x-show="Number(selectedAddonQuantities[{{ $group['id'] }}]?.[{{ $addon['id'] }}] || 0) > 0" x-cloak>
@@ -729,43 +744,38 @@ $cartCount = \App\Support\Cart::count();
                             </section>
                         @endif
 
+                        <section class="flex items-center justify-between gap-4 border-t border-warm-100 pt-5">
+                            <div class="flex items-center gap-3">
+                                <span class="grid h-8 w-8 place-items-center rounded-full bg-brand-500 text-sm font-black text-white">{{ $sizeOptions->isNotEmpty() || $customizationOptions->isNotEmpty() ? ($customizationOptions->count() + ($sizeOptions->isNotEmpty() ? 2 : 1)) : 1 }}</span>
+                                <div>
+                                    <h2 class="text-sm font-black text-warm-950">Quantity</h2>
+                                    <p class="text-xs text-warm-500">How many would you like?</p>
+                                </div>
+                            </div>
+                            <div class="flex h-10 items-center overflow-hidden rounded-xl border border-warm-200 bg-white">
+                                <button type="button" aria-label="Decrease quantity" class="grid h-10 w-10 place-items-center text-lg font-bold text-warm-600 hover:bg-warm-50" @click="changeQuantity(-1)" x-bind:disabled="quantity <= 1">−</button>
+                                <span class="grid h-10 min-w-10 place-items-center border-x border-warm-100 px-2 text-sm font-black" x-text="quantity"></span>
+                                <button type="button" aria-label="Increase quantity" class="grid h-10 w-10 place-items-center text-lg font-bold text-warm-600 hover:bg-warm-50" @click="changeQuantity(1)" x-bind:disabled="quantity >= 99">+</button>
+                            </div>
+                        </section>
+
                         {{-- Selected Configuration Summary --}}
                         @if ($sizeOptions->isNotEmpty() || $addonOptions->isNotEmpty() || $customizationOptions->isNotEmpty())
-                            <div class="rounded-2xl border border-warm-200 bg-brand-50 p-4">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p class="text-[9px] font-black uppercase tracking-[0.12em] text-brand-500">
-                                            Your Selection
-                                        </p>
-
-                                        <p
-                                            x-show="selectedSize"
-                                            class="mt-1 text-sm font-black text-warm-950"
-                                        >
-                                            <span x-text="selectedSize ? selectedSize.name : ''"></span>
-                                        </p>
-
-                                        <p
-                                            x-show="selectedAddonCount > 0"
-                                            x-cloak
-                                            class="mt-1 text-xs font-semibold text-warm-600"
-                                        >
-                                            <span x-text="selectedAddonCount"></span>
-                                            extra<span x-show="selectedAddonCount !== 1">s</span>
-                                            added
-                                        </p>
-
-                                        <p
-                                            x-show="selectedAddonCount === 0"
-                                            class="mt-1 text-xs font-semibold text-warm-500"
-                                        >
-                                            No extras selected
-                                        </p>
+                            <div class="rounded-2xl bg-[#fff1f1] p-4 sm:p-5">
+                                <div class="flex items-start justify-between gap-4 border-b border-brand-100 pb-3">
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-black text-warm-950">Order summary</p>
+                                        <p class="mt-1 truncate text-xs text-warm-600"><span x-text="selectedSize?.name || @js($menuItem->name)"></span></p>
+                                        <p class="mt-1 text-xs text-warm-600" x-show="selectedAddonCount > 0"><span x-text="selectedAddonCount"></span> customization<span x-show="selectedAddonCount !== 1">s</span> selected</p>
                                     </div>
-
-                                    <p class="shrink-0 text-lg font-black text-brand-500">
-                                        <span x-text="formatPrice(unitPrice)"></span>
-                                    </p>
+                                    <div class="shrink-0 text-right">
+                                        <p class="text-xs text-warm-500">Each</p>
+                                        <p class="text-sm font-bold text-warm-800" x-text="formatPrice(unitPrice)"></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between pt-3">
+                                    <span class="text-sm font-black text-warm-950">Total</span>
+                                    <span class="text-xl font-black text-brand-600" x-text="formatPrice(lineTotal)"></span>
                                 </div>
                             </div>
                         @endif
@@ -818,7 +828,7 @@ $cartCount = \App\Support\Cart::count();
                                     <span x-text="submitting ? 'Adding...' : 'Add to Cart'"></span>
 
                                     <span>
-                                        · <span x-text="formatPrice(unitPrice)"></span>
+                                        · <span x-text="formatPrice(lineTotal)"></span>
                                     </span>
                                 </button>
                             @else
@@ -1049,7 +1059,7 @@ $cartCount = \App\Support\Cart::count();
                     aria-live="polite"
                     class="mt-0.5 whitespace-nowrap text-lg font-black text-warm-950"
                 >
-                    <span x-text="formatPrice(unitPrice)"></span>
+                    <span x-text="formatPrice(lineTotal)"></span>
                 </p>
             </div>
 
