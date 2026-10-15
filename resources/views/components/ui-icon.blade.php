@@ -120,6 +120,12 @@
         </svg>
         @break
 
+    @case('download')
+        <svg {{ $iconAttributes }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3" />
+        </svg>
+        @break
+
     @case('trash')
         <svg {{ $iconAttributes }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" d="M4 7h16M9 7V4h6v3" />
