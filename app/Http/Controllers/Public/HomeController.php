@@ -22,12 +22,12 @@ class HomeController extends Controller
             ->withCount(['menuItems as available_items_count' => fn ($query) => $query->where('is_available', true)])
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->take(5)
+            ->take(6)
             ->get();
 
         $featuredItems = MenuItem::query()
             ->with('category')
-            ->withCount(['activeSizes', 'activeAddons'])
+            ->withCount(['activeSizes', 'activeAddons', 'activeAddonGroups'])
             ->where('is_available', true)
             ->where('is_featured', true)
             ->orderBy('sort_order')
@@ -48,7 +48,19 @@ class HomeController extends Controller
             $topSellingItems = $featuredItems->take(4)->values();
         }
 
-        return view('pages.home', compact('restaurant', 'availabilityStatus', 'categories', 'featuredItems', 'topSellingItems', 'topSellerWindow'));
+        $comboItems = MenuItem::query()
+            ->with('category')
+            ->where('is_available', true)
+            ->where(function ($query): void {
+                $query->where('name', 'like', '%combo%')
+                    ->orWhereHas('category', fn ($categoryQuery) => $categoryQuery->where('name', 'like', '%combo%'));
+            })
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->take(3)
+            ->get();
+
+        return view('pages.home', compact('restaurant', 'availabilityStatus', 'categories', 'featuredItems', 'topSellingItems', 'topSellerWindow', 'comboItems'));
     }
 
     private function topSellingItems(mixed $from = null, int $limit = 4)
@@ -69,7 +81,7 @@ class HomeController extends Controller
 
         $items = MenuItem::query()
             ->with('category')
-            ->withCount(['activeSizes', 'activeAddons'])
+            ->withCount(['activeSizes', 'activeAddons', 'activeAddonGroups'])
             ->where('is_available', true)
             ->whereIn('id', $sales->pluck('menu_item_id'))
             ->where(function ($query): void {

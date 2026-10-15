@@ -94,6 +94,32 @@
         </svg>
         @break
 
+    @case('check-circle')
+        <svg {{ $iconAttributes }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8 12 2.5 2.5L16 9" />
+        </svg>
+        @break
+
+    @case('arrow-right')
+        <svg {{ $iconAttributes }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+        </svg>
+        @break
+
+    @case('plus')
+        <svg {{ $iconAttributes }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" d="M12 5v14M5 12h14" />
+        </svg>
+        @break
+
+    @case('search')
+        <svg {{ $iconAttributes }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="10.8" cy="10.8" r="6.8" />
+            <path stroke-linecap="round" d="m16 16 4.5 4.5" />
+        </svg>
+        @break
+
     @case('trash')
         <svg {{ $iconAttributes }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" d="M4 7h16M9 7V4h6v3" />
