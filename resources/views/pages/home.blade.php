@@ -189,11 +189,11 @@
         <section class="bg-white py-10 sm:py-14">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex items-end justify-between gap-4"><div><p class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-600">Good value</p><h2 class="mt-1 text-2xl font-black text-warm-950 sm:text-3xl">Meal combos</h2><p class="mt-1 text-sm text-warm-600">A satisfying meal, ready to order.</p></div><a href="{{ route('menu') }}" class="shrink-0 text-xs font-black text-brand-600">View all combos <span aria-hidden="true">→</span></a></div>
-                <div class="mt-5 grid gap-3 md:grid-cols-3">
+                <div class="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
                     @foreach ($comboItems as $item)
-                        <a href="{{ $item->public_url }}" class="flex overflow-hidden rounded-xl border border-warm-200 bg-white transition hover:border-brand-300 hover:shadow-md">
-                            <div class="h-28 w-32 shrink-0 bg-[#f5eee7] sm:h-32 sm:w-40">@if ($item->image_url)<img src="{{ $item->image_url }}" alt="{{ $item->name }}" loading="lazy" class="h-full w-full object-cover">@else<div class="grid h-full place-items-center text-brand-600"><x-ui-icon name="utensils" class="h-8 w-8" /></div>@endif</div>
-                            <div class="flex min-w-0 flex-1 flex-col justify-center p-3 sm:p-4"><span class="line-clamp-1 text-sm font-black text-warm-950">{{ $item->name }}</span><span class="mt-1 line-clamp-2 text-xs text-warm-600">{{ $item->description ?: 'A delicious combination of customer favourites.' }}</span><span class="mt-2 text-sm font-black text-brand-600">@money($item->price)</span></div>
+                        <a href="{{ $item->public_url }}" class="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-warm-200 bg-white transition hover:border-brand-300 hover:shadow-md">
+                            <div class="aspect-[1.6/1] w-full bg-[#f5eee7]">@if ($item->image_url)<img src="{{ $item->image_url }}" alt="{{ $item->name }}" loading="lazy" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">@else<div class="grid h-full place-items-center text-brand-600"><x-ui-icon name="utensils" class="h-8 w-8" /></div>@endif</div>
+                            <div class="flex min-w-0 flex-1 flex-col p-3 sm:p-4"><span class="line-clamp-1 text-sm font-black text-warm-950">{{ $item->name }}</span><span class="mt-1 line-clamp-2 text-xs text-warm-600">{{ $item->description ?: 'A delicious combination of customer favourites.' }}</span><span class="mt-auto pt-2 text-sm font-black text-brand-600">@money($item->price)</span></div>
                         </a>
                     @endforeach
                 </div>

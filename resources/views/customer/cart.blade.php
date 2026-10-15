@@ -600,7 +600,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                     </a>
                                 </div>
 
-                                <div class="flex snap-x snap-mandatory gap-3 overflow-x-auto p-4 sm:grid sm:grid-cols-2 sm:overflow-visible sm:p-5">
+                                <div class="grid grid-cols-2 gap-3 p-4 sm:grid-cols-2 sm:p-5">
                                     @foreach ($suggestions as $suggestion)
                                         @php
                                             $suggestionCustomizable =
@@ -610,10 +610,10 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                             $suggestionAvailable = (bool) ($suggestion->is_available ?? true);
                                         @endphp
 
-                                        <article class="flex min-w-[260px] snap-start items-center gap-3 rounded-2xl border border-warm-100 bg-warm-50 p-3 sm:min-w-0">
+                                        <article class="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-warm-100 bg-warm-50 p-2.5 sm:p-3">
                                             <a
                                                 href="{{ $suggestion->public_url }}"
-                                                class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-brand-100 to-food-cream"
+                                                class="grid aspect-[16/10] w-full place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-brand-100 to-food-cream"
                                             >
                                                 @if ($suggestion->image_url)
                                                     <img
@@ -629,10 +629,10 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                                 @endif
                                             </a>
 
-                                            <div class="min-w-0 flex-1">
+                                            <div class="min-w-0 flex-1 pt-2">
                                                 <a
                                                     href="{{ $suggestion->public_url }}"
-                                                    class="line-clamp-1 text-sm font-black text-warm-950 hover:text-brand-600"
+                                                    class="line-clamp-2 min-h-10 text-xs font-black leading-5 text-warm-950 hover:text-brand-600 sm:text-sm"
                                                 >
                                                     {{ $suggestion->name }}
                                                 </a>
@@ -646,7 +646,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                                 @if ($suggestionCustomizable)
                                                     <a
                                                         href="{{ $suggestion->public_url }}"
-                                                        class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white shadow-sm transition active:scale-95 hover:bg-brand-600"
+                                                        class="inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm transition active:scale-95 hover:bg-brand-600 sm:h-10"
                                                         aria-label="Customize {{ $suggestion->name }}"
                                                     >
                                                         <svg
@@ -659,6 +659,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                                         >
                                                             <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
                                                         </svg>
+                                                        <span class="ml-1 text-[10px] font-black">Customize</span>
                                                     </a>
                                                 @else
                                                     <form
@@ -672,7 +673,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                                         <button
                                                             type="submit"
                                                             x-bind:disabled="adding"
-                                                            class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500 text-white shadow-sm transition active:scale-95 hover:bg-brand-600 disabled:opacity-60"
+                                                            class="inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm transition active:scale-95 hover:bg-brand-600 disabled:opacity-60 sm:h-10"
                                                             aria-label="Add {{ $suggestion->name }} to cart"
                                                         >
                                                             <svg
@@ -686,6 +687,7 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                                             >
                                                                 <path stroke-linecap="round" d="M12 5v14M5 12h14" />
                                                             </svg>
+                                                            <span class="ml-1 text-[10px] font-black">Add</span>
 
                                                             <svg
                                                                 x-show="adding"
@@ -717,9 +719,6 @@ $cartCount = (int) ($cart['count'] ?? 0);
                                     @endforeach
                                 </div>
 
-                                <p class="px-4 pb-4 text-[10px] font-semibold text-warm-500 sm:hidden">
-                                    Swipe to see more suggestions
-                                </p>
                             </section>
                         @endif
 

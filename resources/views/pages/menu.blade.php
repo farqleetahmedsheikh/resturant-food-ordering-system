@@ -410,7 +410,7 @@ $cartCount = \App\Support\Cart::count();
                         </div>
                         <span class="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-warm-600 shadow-sm">{{ $menuSection['items']->count() }} {{ $menuSection['items']->count() === 1 ? 'item' : 'items' }}</span>
                     </div>
-                    <div class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="grid grid-cols-2 items-stretch gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
                 @foreach ($menuSection['items'] as $item)
                     @php
                         $itemIsAvailable = (bool) ($item->is_available ?? true);
@@ -432,7 +432,7 @@ $cartCount = \App\Support\Cart::count();
                             : null;
                     @endphp
 
-                    <article class="group flex h-full min-h-[390px] min-w-0 flex-col overflow-hidden rounded-2xl border border-warm-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl sm:min-h-[410px]">
+                    <article class="group flex h-full min-h-[340px] min-w-0 flex-col overflow-hidden rounded-2xl border border-warm-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl sm:min-h-[410px]">
                         {{-- Product Image --}}
                         <a
                             href="{{ $item->public_url }}"
@@ -486,7 +486,7 @@ $cartCount = \App\Support\Cart::count();
                         </a>
 
                         {{-- Product Content --}}
-                        <div class="flex min-h-[210px] flex-1 flex-col p-4 sm:p-5">
+                        <div class="flex min-h-[205px] flex-1 flex-col p-3 sm:min-h-[210px] sm:p-5">
                             <a
                                 href="{{ $item->public_url }}"
                                 class="line-clamp-2 text-lg font-black leading-6 tracking-tight text-warm-950 transition hover:text-brand-600 sm:text-xl sm:leading-7"

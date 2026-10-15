@@ -877,8 +877,7 @@ $cartCount = \App\Support\Cart::count();
                     </a>
                 </div>
 
-                {{-- Compact Mobile List --}}
-                <div class="mt-5 grid gap-3 lg:grid-cols-4">
+                <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
                     @foreach ($suggestions as $suggestion)
                         @php
                             $suggestionCustomizable =
@@ -886,12 +885,12 @@ $cartCount = \App\Support\Cart::count();
                                 || ($suggestion->active_addons_count ?? 0) > 0;
                         @endphp
 
-                        <article class="flex items-center gap-3 rounded-2xl border border-warm-200 bg-white p-3 shadow-sm lg:block lg:overflow-hidden lg:p-0">
+                        <article class="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-warm-200 bg-white shadow-sm">
                             <a
                                 href="{{ $suggestion->public_url }}"
-                                class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50 lg:block lg:h-auto lg:w-auto lg:rounded-none"
+                                class="block aspect-[16/10] overflow-hidden bg-brand-50"
                             >
-                                <div class="grid h-full w-full place-items-center lg:aspect-[4/3]">
+                                <div class="grid h-full w-full place-items-center">
                                     @if ($suggestion->image_url)
                                         <img
                                             src="{{ $suggestion->image_url }}"
@@ -907,23 +906,23 @@ $cartCount = \App\Support\Cart::count();
                                 </div>
                             </a>
 
-                            <div class="min-w-0 flex-1 lg:p-4">
+                            <div class="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
                                 <a
                                     href="{{ $suggestion->public_url }}"
-                                    class="line-clamp-1 text-sm font-black text-warm-950 hover:text-brand-600 lg:text-base"
+                                    class="line-clamp-2 min-h-10 text-xs font-black leading-5 text-warm-950 hover:text-brand-600 sm:text-base"
                                 >
                                     {{ $suggestion->name }}
                                 </a>
 
-                                <p class="mt-1 text-sm font-black text-brand-500">
+                                <p class="mt-2 text-sm font-black text-brand-500">
                                     @money($suggestion->price)
                                 </p>
 
-                                <div class="mt-2">
+                                <div class="mt-auto pt-3">
                                     @if ($suggestionCustomizable)
                                         <a
                                             href="{{ $suggestion->public_url }}"
-                                            class="inline-flex min-h-9 items-center justify-center rounded-lg bg-brand-50 px-3 py-2 text-[10px] font-black text-brand-600 transition active:scale-[0.97]"
+                                            class="inline-flex min-h-9 w-full items-center justify-center rounded-lg bg-brand-50 px-2 py-2 text-[10px] font-black text-brand-600 transition active:scale-[0.97] sm:px-3"
                                         >
                                             Customize
                                         </a>
@@ -936,7 +935,7 @@ $cartCount = \App\Support\Cart::count();
 
                                             <button
                                                 type="submit"
-                                                class="inline-flex min-h-9 items-center justify-center gap-1 rounded-lg bg-brand-500 px-3 py-2 text-[10px] font-black text-white transition active:scale-[0.97]"
+                                                class="inline-flex min-h-9 w-full items-center justify-center gap-1 rounded-lg bg-brand-500 px-2 py-2 text-[10px] font-black text-white transition active:scale-[0.97] sm:px-3"
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -985,14 +984,14 @@ $cartCount = \App\Support\Cart::count();
                     </a>
                 </div>
 
-                <div class="mt-5 grid gap-3 lg:grid-cols-3">
+                <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
                     @foreach ($relatedItems as $item)
                         <a
                             href="{{ $item->public_url }}"
-                            class="group flex items-center gap-3 rounded-2xl border border-warm-200 bg-white p-3 shadow-sm transition active:scale-[0.99] lg:block lg:overflow-hidden lg:p-0"
+                            class="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-warm-200 bg-white shadow-sm transition active:scale-[0.99]"
                         >
-                            <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-50 lg:h-auto lg:w-auto lg:rounded-none">
-                                <div class="grid h-full w-full place-items-center lg:aspect-[16/9]">
+                            <div class="aspect-[16/10] w-full overflow-hidden bg-brand-50">
+                                <div class="grid h-full w-full place-items-center">
                                     @if ($item->image_url)
                                         <img
                                             src="{{ $item->image_url }}"
@@ -1008,17 +1007,17 @@ $cartCount = \App\Support\Cart::count();
                                 </div>
                             </div>
 
-                            <div class="min-w-0 flex-1 lg:p-5">
-                                <h3 class="line-clamp-1 text-sm font-black text-warm-950 lg:text-lg">
+                            <div class="flex min-w-0 flex-1 flex-col p-3 sm:p-5">
+                                <h3 class="line-clamp-2 min-h-10 text-xs font-black leading-5 text-warm-950 sm:text-lg">
                                     {{ $item->name }}
                                 </h3>
 
-                                <p class="mt-1 line-clamp-1 text-xs font-semibold text-warm-500 lg:line-clamp-2 lg:text-sm">
+                                <p class="mt-1 line-clamp-2 min-h-8 text-[10px] font-semibold leading-4 text-warm-500 sm:text-sm sm:leading-5">
                                     {{ $item->description ?: 'Freshly prepared with quality ingredients.' }}
                                 </p>
 
-                                <div class="mt-2 flex items-center justify-between gap-3">
-                                    <p class="text-sm font-black text-brand-500 lg:text-lg">
+                                <div class="mt-auto flex items-center justify-between gap-2 pt-3">
+                                    <p class="text-sm font-black text-brand-500 sm:text-lg">
                                         @money($item->price)
                                     </p>
 
