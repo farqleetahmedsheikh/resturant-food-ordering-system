@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
+import type { SetStateAction } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { getMenuItem } from '@/src/api/menu.api';
@@ -30,7 +31,10 @@ export default function MenuItemDetailScreen() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
   const [selectedAddonIds, setSelectedAddonIds] = useState<number[]>([]);
-  const [selectedAddonQuantities, setSelectedAddonQuantities] = useState<Record<number, Record<number, number>>>({});
+  const [editedAddonQuantities, setEditedAddonQuantities] = useState<{
+    itemId: string;
+    values: Record<number, Record<number, number>>;
+  } | null>(null);
   const [notes, setNotes] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const addItem = useCartStore((state) => state.addItem);
@@ -45,8 +49,9 @@ export default function MenuItemDetailScreen() {
     queryFn: getRestaurant,
   });
 
-  useEffect(() => {
-    const defaults = itemQuery.data?.customization_groups?.reduce<Record<number, Record<number, number>>>((result, group) => {
+  const itemId = String(itemQuery.data?.id ?? id);
+  const defaultAddonQuantities = useMemo(() => {
+    return itemQuery.data?.customization_groups?.reduce<Record<number, Record<number, number>>>((result, group) => {
       const groupDefaults = (group.addons ?? []).reduce<Record<number, number>>((values, addon) => {
         if ((addon as typeof addon & { is_default?: boolean }).is_default) values[addon.id] = 1;
         return values;
@@ -54,8 +59,20 @@ export default function MenuItemDetailScreen() {
       if (Object.keys(groupDefaults).length > 0) result[group.id] = groupDefaults;
       return result;
     }, {}) ?? {};
-    setSelectedAddonQuantities(defaults);
-  }, [itemQuery.data?.id]);
+  }, [itemQuery.data?.customization_groups]);
+  const selectedAddonQuantities = editedAddonQuantities?.itemId === itemId
+    ? editedAddonQuantities.values
+    : defaultAddonQuantities;
+
+  function setSelectedAddonQuantities(action: SetStateAction<Record<number, Record<number, number>>>) {
+    setEditedAddonQuantities((current) => {
+      const values = current?.itemId === itemId ? current.values : defaultAddonQuantities;
+      return {
+        itemId,
+        values: typeof action === 'function' ? action(values) : action,
+      };
+    });
+  }
 
   if (itemQuery.isLoading || restaurantQuery.isLoading) {
     return <LoadingScreen label="Loading item..." />;

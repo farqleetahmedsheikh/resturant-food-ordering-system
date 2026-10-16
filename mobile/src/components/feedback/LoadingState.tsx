@@ -1,6 +1,7 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/src/components/common/AppText';
+import { LoadingDots } from '@/src/components/feedback/BrandLoadingMark';
 import { colors, spacing } from '@/src/theme';
 
 type LoadingStateProps = {
@@ -9,8 +10,8 @@ type LoadingStateProps = {
 
 export function LoadingState({ label = 'Loading...' }: LoadingStateProps) {
   return (
-    <View style={styles.wrapper}>
-      <ActivityIndicator color={colors.brand.primary} />
+    <View style={styles.wrapper} accessibilityLiveRegion="polite">
+      <LoadingDots />
       <AppText color={colors.text.secondary}>{label}</AppText>
     </View>
   );

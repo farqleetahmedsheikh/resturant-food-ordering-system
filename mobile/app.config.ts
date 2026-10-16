@@ -30,6 +30,7 @@ const config: ExpoConfig = {
   android: {
     package: "com.arcadekebab.app",
     versionCode: 1,
+    softwareKeyboardLayoutMode: "resize",
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#E60C1A",
@@ -53,12 +54,14 @@ const config: ExpoConfig = {
     "expo-router",
     "expo-secure-store",
     "expo-notifications",
+    "expo-web-browser",
     "expo-image",
     "expo-status-bar",
     [
       "expo-splash-screen",
       {
         image: "./assets/adaptive-icon.png",
+        imageWidth: 160,
         resizeMode: "contain",
         backgroundColor: "#FFF9F5",
       },

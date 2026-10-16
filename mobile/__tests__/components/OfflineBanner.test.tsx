@@ -1,7 +1,8 @@
 import * as Network from 'expo-network';
-import { act, render, waitFor } from '@testing-library/react-native';
+import { act, waitFor } from '@testing-library/react-native';
 
 import { OfflineBanner } from '@/src/components/feedback/OfflineBanner';
+import { renderWithTheme } from '../test-utils';
 
 describe('OfflineBanner', () => {
   it('renders when network is unavailable', async () => {
@@ -11,7 +12,7 @@ describe('OfflineBanner', () => {
       type: 'none' as Network.NetworkStateType,
     });
 
-    const screen = render(<OfflineBanner />);
+    const screen = renderWithTheme(<OfflineBanner />);
 
     await waitFor(() => {
       expect(screen.getByText(/offline/i)).toBeTruthy();

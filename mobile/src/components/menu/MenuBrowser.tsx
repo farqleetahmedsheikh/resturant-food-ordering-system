@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useMemo, useState } from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import type { Href } from "expo-router";
 import {
     Pressable,
@@ -28,6 +28,7 @@ import { FeedbackMessage } from "@/src/components/feedback/FeedbackMessage";
 import { LoadingState } from "@/src/components/feedback/LoadingState";
 import { AppScreen } from "@/src/components/layout/AppScreen";
 import { MenuItemCard } from "@/src/components/menu/MenuItemCard";
+import { MenuHeroCarousel } from "@/src/components/menu/MenuHeroCarousel";
 import { queryKeys } from "@/src/constants/queryKeys";
 import { useCartStore } from "@/src/store/cart.store";
 import { colors, radius, shadows, spacing } from "@/src/theme";
@@ -86,7 +87,6 @@ export function MenuBrowser({ mode }: MenuBrowserProps) {
     const addDisabled = mode === "customer" && !availability.isOpenForOrders;
     const selectedCategory = categories.find((item) => item.id === category);
     const visibleCategories = categories.filter((item) => item.is_active);
-    const isWide = width >= 820;
     const isCompact = width < 680;
     const featuredItems = items.filter(
         (item) => item.is_featured && item.is_available,
@@ -95,23 +95,10 @@ export function MenuBrowser({ mode }: MenuBrowserProps) {
         featuredItems.length > 0
             ? featuredItems
             : items.filter((item) => item.is_available)
-    ).slice(0, isCompact ? 3 : 6);
-    const availableCount = items.filter((item) => item.is_available).length;
+    ).slice(0, isCompact ? 4 : 6);
     const hasFilters = Boolean(category || search.trim());
     const cardWidth: DimensionValue =
-        width >= 980 ? "31.8%" : width >= 680 ? "48.4%" : "100%";
-    const popularCardWidth: DimensionValue = isCompact
-        ? "100%"
-        : Math.min(330, Math.max(264, width * 0.78));
-    const title =
-        mode === "customer"
-            ? "Choose your favourites"
-            : "Fresh kebabs, plates & drinks";
-    const subtitle =
-        mode === "customer"
-            ? "Build your order in a few taps and checkout securely."
-            : "Browse the live Arcade Kebab House menu before signing in.";
-
+        width >= 980 ? "23.8%" : width >= 680 ? "48.4%" : "48.3%";
     function retry() {
         void restaurantQuery.refetch();
         void categoriesQuery.refetch();
@@ -123,6 +110,17 @@ export function MenuBrowser({ mode }: MenuBrowserProps) {
     }
 
     function handleAdd(item: MenuItem) {
+        const customizable = Boolean(
+            item.sizes?.some((size) => size.is_active) ||
+                item.addons?.some((addon) => addon.is_active) ||
+                item.customization_groups?.length,
+        );
+
+        if (customizable) {
+            router.push(`/(public)/item/${item.id}`);
+            return;
+        }
+
         addItem({ item, quantity: 1 });
         setFeedback(`${item.name} added to cart.`);
     }
@@ -141,75 +139,15 @@ export function MenuBrowser({ mode }: MenuBrowserProps) {
                 mode === "customer" && styles.screenWithCartDock,
             ]}
         >
-            <View style={[styles.hero, isWide && styles.heroWide]}>
-                <View style={styles.heroGlow} />
-                <View style={styles.heroCopy}>
-                    <View style={styles.badgeRow}>
-                        <AppBadge
-                            label={availability.label}
-                            tone={
-                                availability.isOpenForOrders ? "green" : "gold"
-                            }
-                        />
-                        <AppBadge
-                            label={`${availableCount} available`}
-                            tone="neutral"
-                        />
-                    </View>
-
-                    <AppText variant="h1" style={styles.heroTitle}>
-                        {title}
-                    </AppText>
-                    <AppText color={colors.text.secondary}>{subtitle}</AppText>
-
-                    <View style={styles.heroActions}>
-                        {mode === "customer" ? (
-                            <Link
-                                href={
-                                    cartCount > 0
-                                        ? "/(customer)/(tabs)/cart"
-                                        : "/(customer)/(tabs)/menu"
-                                }
-                                asChild
-                            >
-                                <AppButton
-                                    label={
-                                        cartCount > 0
-                                            ? `View cart (${cartCount})`
-                                            : "Start ordering"
-                                    }
-                                    variant="primary"
-                                />
-                            </Link>
-                        ) : (
-                            <Link href="/(auth)/login" asChild>
-                                <AppButton
-                                    label="Sign in to order"
-                                    variant="primary"
-                                />
-                            </Link>
-                        )}
-                    </View>
-                </View>
-
-                <View style={styles.heroStats}>
-                    <InfoPill
-                        label="Delivery"
-                        value={
-                            <PriceText amount={restaurant?.delivery_fee ?? 0} />
-                        }
-                    />
-                    <InfoPill
-                        label="Minimum"
-                        value={
-                            <PriceText
-                                amount={restaurant?.minimum_order_amount ?? 0}
-                            />
-                        }
-                    />
-                    <InfoPill label="Items" value={`${availableCount} live`} />
-                </View>
-            </View>
+            {restaurant ? (
+                <MenuHeroCarousel
+                    restaurant={restaurant}
+                    statusLabel={availability.label}
+                    isOpen={availability.isOpenForOrders}
+                    actionHref={mode === "customer" ? (cartCount > 0 ? "/(customer)/(tabs)/cart" : "/(customer)/(tabs)/menu") : "/(auth)/login"}
+                    actionLabel={mode === "customer" ? (cartCount > 0 ? `View cart (${cartCount})` : "Start ordering") : "Sign in to order"}
+                />
+            ) : null}
 
             {mode === "customer" && !availability.isOpenForOrders ? (
                 <FeedbackMessage
@@ -251,40 +189,19 @@ export function MenuBrowser({ mode }: MenuBrowserProps) {
                         ) : null}
                     </View>
 
-                    {isCompact ? (
-                        <View style={styles.popularStack}>
-                            {popularItems.map((item) => (
-                                <PopularItemCard
-                                    key={item.id}
-                                    item={item}
-                                    mode={mode}
-                                    width="100%"
-                                    addDisabled={addDisabled}
-                                    disabledReason={availability.label}
-                                    onAdd={handleAdd}
-                                />
-                            ))}
-                        </View>
-                    ) : (
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={styles.popularScroller}
-                            decelerationRate="fast"
-                        >
-                            {popularItems.map((item) => (
+                    <View style={styles.popularGrid}>
+                        {popularItems.map((item) => (
                             <PopularItemCard
                                 key={item.id}
                                 item={item}
                                 mode={mode}
-                                width={popularCardWidth}
+                                width={cardWidth}
                                 addDisabled={addDisabled}
                                 disabledReason={availability.label}
                                 onAdd={handleAdd}
                             />
-                            ))}
-                        </ScrollView>
-                    )}
+                        ))}
+                    </View>
                 </View>
             ) : null}
 
@@ -411,7 +328,7 @@ export function MenuBrowser({ mode }: MenuBrowserProps) {
                                 >
                                     <MenuItemCard
                                         item={item}
-                                        variant={isCompact ? "compact" : "default"}
+                                        variant="default"
                                         detailHref={
                                             mode === "public"
                                                 ? (`/(public)/item/${item.id}` as Href)
@@ -538,11 +455,11 @@ function PopularItemCard({
     const detailHref = `/(public)/item/${item.id}` as Href;
     const description =
         item.description ?? "Freshly prepared and packed with flavour.";
+    const customizable = Boolean(item.sizes?.some((size) => size.is_active) || item.addons?.some((addon) => addon.is_active) || item.customization_groups?.length);
 
     return (
         <AppCard style={[styles.popularCard, { width }]}>
-            <View style={styles.popularTopRow}>
-                <View style={styles.popularImageFallback}>
+            <View style={styles.popularImageFallback}>
                     {item.image_url ? (
                         <Image
                             source={{ uri: item.image_url }}
@@ -556,8 +473,8 @@ function PopularItemCard({
                             {item.name.charAt(0).toUpperCase()}
                         </AppText>
                     )}
-                </View>
-                <View style={styles.popularMeta}>
+            </View>
+            <View style={styles.popularMeta}>
                     <View style={styles.badgeRow}>
                         {item.is_featured ? (
                             <AppBadge label="Popular" tone="gold" />
@@ -575,7 +492,6 @@ function PopularItemCard({
                     <AppText color={colors.text.secondary} numberOfLines={2}>
                         {description}
                     </AppText>
-                </View>
             </View>
 
             <View style={styles.popularBottomRow}>
@@ -600,9 +516,9 @@ function PopularItemCard({
                 ) : (
                     <Pressable
                         accessibilityRole="button"
-                        accessibilityLabel={`Add ${item.name} to cart`}
+                        accessibilityLabel={`${customizable ? "Customize" : "Add"} ${item.name}`}
                         disabled={addDisabled || !item.is_available}
-                        onPress={() => onAdd(item)}
+                        onPress={() => customizable ? router.push(detailHref) : onAdd(item)}
                         style={({ pressed }) => [
                             styles.smallPrimaryButton,
                             (addDisabled || !item.is_available) &&
@@ -614,33 +530,13 @@ function PopularItemCard({
                             {addDisabled
                                 ? (disabledReason ?? "Closed")
                                 : item.is_available
-                                  ? "Add"
+                                  ? customizable ? "Customize" : "Add"
                                   : "Sold out"}
                         </AppText>
                     </Pressable>
                 )}
             </View>
         </AppCard>
-    );
-}
-
-type InfoPillProps = {
-    label: string;
-    value: string | ReactNode;
-};
-
-function InfoPill({ label, value }: InfoPillProps) {
-    return (
-        <View style={styles.infoPill}>
-            <AppText variant="caption" color={colors.text.secondary}>
-                {label}
-            </AppText>
-            {typeof value === "string" ? (
-                <AppText variant="title">{value}</AppText>
-            ) : (
-                value
-            )}
-        </View>
     );
 }
 
@@ -676,145 +572,31 @@ const styles = StyleSheet.create({
     screenWithCartDock: {
         paddingBottom: 110,
     },
-    mobileHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: spacing.md,
-    },
-    brandRow: {
-        minWidth: 0,
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.md,
-    },
-    brandCopy: {
-        flex: 1,
-        gap: 2,
-    },
-    cartPill: {
-        minHeight: 44,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.sm,
-        borderRadius: radius.pill,
-        borderWidth: 1,
-        borderColor: colors.brand.primary,
-        backgroundColor: colors.brand.primary,
-        paddingHorizontal: spacing.md,
-    },
-    signInPill: {
-        minHeight: 44,
-        justifyContent: "center",
-        borderRadius: radius.pill,
-        borderWidth: 1,
-        borderColor: colors.border.strong,
-        backgroundColor: colors.surface.card,
-        paddingHorizontal: spacing.lg,
-    },
-    cartCount: {
-        minWidth: 24,
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: radius.pill,
-        backgroundColor: colors.surface.muted,
-        paddingHorizontal: spacing.xs,
-        paddingVertical: 2,
-    },
-    activeCartCount: {
-        backgroundColor: colors.surface.card,
-    },
-    hero: {
-        position: "relative",
-        overflow: "hidden",
-        gap: spacing.md,
-        borderRadius: 26,
-        borderWidth: 1,
-        borderColor: colors.border.light,
-        backgroundColor: colors.surface.card,
-        padding: spacing.lg,
-        ...shadows.card,
-    },
-    heroWide: {
-        flexDirection: "row",
-        alignItems: "stretch",
-        justifyContent: "space-between",
-    },
-    heroGlow: {
-        position: "absolute",
-        top: -86,
-        right: -78,
-        height: 180,
-        width: 180,
-        borderRadius: 999,
-        backgroundColor: colors.brand.soft,
-    },
-    heroCopy: {
-        flex: 1,
-        minWidth: 0,
-        maxWidth: 640,
-        gap: spacing.md,
-    },
-    heroTitle: {
-        fontSize: 28,
-        lineHeight: 34,
-    },
     badgeRow: {
         flexDirection: "row",
         flexWrap: "wrap",
         gap: spacing.sm,
     },
-    heroActions: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: spacing.sm,
-        paddingTop: spacing.xs,
-    },
-    heroStats: {
-        minWidth: 220,
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: spacing.xs,
-    },
-    infoPill: {
-        minWidth: 94,
-        flex: 1,
-        gap: 2,
-        justifyContent: "center",
-        borderRadius: radius.lg,
-        borderWidth: 1,
-        borderColor: colors.border.light,
-        backgroundColor: colors.surface.muted,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-    },
     popularSection: {
         gap: spacing.md,
     },
-    popularStack: {
-        gap: spacing.sm,
-    },
-    popularScroller: {
+    popularGrid: {
+        flexDirection: "row",
+        flexWrap: "wrap",
         gap: spacing.md,
-        paddingRight: spacing.md,
     },
     popularCard: {
+        minWidth: 0,
+        overflow: "hidden",
         gap: spacing.sm,
-        padding: spacing.md,
-    },
-    popularTopRow: {
-        flexDirection: "row",
-        gap: spacing.md,
+        padding: 0,
     },
     popularImageFallback: {
-        height: 78,
-        width: 78,
-        flexShrink: 0,
+        aspectRatio: 1.6,
+        width: "100%",
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        borderRadius: radius.lg,
         backgroundColor: colors.brand.soft,
     },
     popularImage: {
@@ -825,21 +607,24 @@ const styles = StyleSheet.create({
         minWidth: 0,
         flex: 1,
         gap: spacing.xs,
+        paddingHorizontal: spacing.md,
+        paddingTop: spacing.md,
     },
     popularBottomRow: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
         gap: spacing.md,
+        padding: spacing.md,
     },
     smallPrimaryButton: {
         minHeight: 42,
-        minWidth: 82,
+        minWidth: 0,
         alignItems: "center",
         justifyContent: "center",
         borderRadius: radius.pill,
         backgroundColor: colors.brand.primary,
-        paddingHorizontal: spacing.lg,
+        paddingHorizontal: spacing.md,
     },
     disabledButton: {
         backgroundColor: colors.text.secondary,

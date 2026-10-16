@@ -39,6 +39,8 @@ export function AppScreen({
       style={styles.flex}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={[styles.content, contentStyle]}
+      automaticallyAdjustKeyboardInsets={keyboard}
+      keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
       refreshControl={
         onRefresh ? <RefreshControl refreshing={Boolean(refreshing)} onRefresh={onRefresh} /> : undefined
       }
@@ -54,7 +56,7 @@ export function AppScreen({
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.surface.page }]}>
       {keyboard ? (
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.flex}
         >
           {resolvedHeader}

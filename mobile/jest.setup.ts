@@ -29,8 +29,11 @@ jest.mock('expo-router', () => {
       push: jest.fn(),
       replace: jest.fn(),
       back: jest.fn(),
+      canGoBack: jest.fn(() => false),
     },
     useLocalSearchParams: jest.fn(() => ({ id: '1' })),
+    useSegments: jest.fn(() => []),
+    usePathname: jest.fn(() => '/'),
   };
 });
 

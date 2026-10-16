@@ -61,11 +61,13 @@ export function AppNavigationHeader({
               onPress={() => router.back()}
             />
           ) : null}
-          <IconButton
-            label="Open menu"
-            icon={appIcons.menu}
-            onPress={() => setOpen(true)}
-          />
+          {!canGoBack ? (
+            <IconButton
+              label="Open menu"
+              icon={appIcons.menu}
+              onPress={() => setOpen(true)}
+            />
+          ) : null}
         </View>
 
         <View style={styles.brand}>
@@ -345,7 +347,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border.light,
     backgroundColor: colors.surface.page,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
   },
   leftControls: {

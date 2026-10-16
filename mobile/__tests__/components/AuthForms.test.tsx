@@ -1,11 +1,12 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 
 import LoginScreen from '@/app/(auth)/login';
 import RegisterScreen from '@/app/(auth)/register';
+import { renderWithTheme } from '../test-utils';
 
 describe('auth forms', () => {
   it('shows login validation errors', async () => {
-    const screen = render(<LoginScreen />);
+    const screen = renderWithTheme(<LoginScreen />);
 
     fireEvent.press(screen.getAllByText('Login')[1]);
 
@@ -16,13 +17,13 @@ describe('auth forms', () => {
   });
 
   it('shows register validation errors', async () => {
-    const screen = render(<RegisterScreen />);
+    const screen = renderWithTheme(<RegisterScreen />);
 
     fireEvent.press(screen.getByText('Create Account'));
 
     await waitFor(() => {
       expect(screen.getByText('Enter your full name.')).toBeTruthy();
-      expect(screen.getByText('Please acknowledge the account terms placeholder.')).toBeTruthy();
+      expect(screen.getByText('Please agree to the Terms and Conditions and acknowledge the Privacy Policy.')).toBeTruthy();
     });
   });
 });

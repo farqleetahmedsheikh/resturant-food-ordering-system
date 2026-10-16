@@ -8,7 +8,7 @@ type PriceTextProps = {
   color?: string;
 };
 
-export function PriceText({ amount, variant = 'title', color = colors.gold.dark }: PriceTextProps) {
+export function PriceText({ amount, variant = 'title', color = colors.brand.primary }: PriceTextProps) {
   return (
     <AppText variant={variant} color={color}>
       {formatCurrency(amount)}

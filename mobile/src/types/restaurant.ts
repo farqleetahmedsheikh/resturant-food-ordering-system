@@ -15,6 +15,7 @@ export type Restaurant = {
   minimum_order_amount: number;
   logo_url: string | null;
   cover_image_url: string | null;
+  menu_hero_slides?: MenuHeroSlide[];
   initials: string;
   is_open: boolean;
   is_open_for_orders?: boolean;
@@ -23,4 +24,13 @@ export type Restaurant = {
   next_opening_time?: string | null;
   current_closing_time?: string | null;
   currency: string;
+};
+
+export type MenuHeroSlide = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  highlight: string;
+  description: string;
+  image_url: string | null;
 };

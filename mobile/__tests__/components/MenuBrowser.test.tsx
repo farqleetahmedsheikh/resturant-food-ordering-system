@@ -61,7 +61,7 @@ describe('MenuBrowser', () => {
     const screen = renderWithQueryClient(<MenuBrowser mode="public" />);
 
     await waitFor(() => {
-      expect(screen.getByText('Unable to load menu items.')).toBeTruthy();
+      expect(screen.getByText('We couldn’t load the menu. Try again.')).toBeTruthy();
     });
   });
 

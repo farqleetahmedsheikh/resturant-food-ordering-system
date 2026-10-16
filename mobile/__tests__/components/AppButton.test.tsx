@@ -1,10 +1,9 @@
-import { render } from '@testing-library/react-native';
-
 import { AppButton } from '@/src/components/common/AppButton';
+import { renderWithTheme } from '../test-utils';
 
 describe('AppButton', () => {
   it('shows busy accessibility state while loading', () => {
-    const { getByRole } = render(<AppButton label="Login" loading />);
+    const { getByRole } = renderWithTheme(<AppButton label="Login" loading />);
 
     expect(getByRole('button').props.accessibilityState).toMatchObject({
       busy: true,

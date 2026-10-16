@@ -79,6 +79,7 @@ export function MenuItemCard({
                   label={unavailable ? 'Sold out' : 'Add'}
                   disabled={unavailable || addDisabled}
                   variant={unavailable || addDisabled ? 'secondary' : 'primary'}
+                  style={styles.cardActionButton}
                   onPress={(event) => {
                     event.stopPropagation();
                     onAdd?.(item);
@@ -137,9 +138,10 @@ export function MenuItemCard({
             <PriceText amount={item.price} />
             {showAddButton ? (
               <AppButton
-                label={unavailable ? 'Unavailable' : 'Add'}
+                label={unavailable ? 'Sold out' : 'Add'}
                 disabled={unavailable || addDisabled}
                 variant={unavailable || addDisabled ? 'secondary' : 'primary'}
+                style={styles.cardActionButton}
                 onPress={(event) => {
                   event.stopPropagation();
                   onAdd?.(item);
@@ -179,7 +181,8 @@ const styles = StyleSheet.create({
     opacity: 0.72,
   },
   imageShell: {
-    height: 148,
+    width: '100%',
+    aspectRatio: 1.6,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.gold.pale,
@@ -219,7 +222,7 @@ const styles = StyleSheet.create({
   },
   body: {
     gap: spacing.sm,
-    padding: spacing.lg,
+    padding: spacing.md,
   },
   badgeRow: {
     flexDirection: 'row',
@@ -230,7 +233,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacing.md,
+    gap: spacing.xs,
+  },
+  cardActionButton: {
+    minWidth: 0,
+    minHeight: 38,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   viewPill: {
     minHeight: 40,

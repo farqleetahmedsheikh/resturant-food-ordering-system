@@ -16,7 +16,6 @@ import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
 import { PriceText } from '@/src/components/common/PriceText';
-import { RestaurantLogo } from '@/src/components/common/RestaurantLogo';
 import { SectionTitle } from '@/src/components/common/SectionTitle';
 import { EmptyState } from '@/src/components/feedback/EmptyState';
 import { ErrorState } from '@/src/components/feedback/ErrorState';
@@ -24,6 +23,7 @@ import { FeedbackMessage } from '@/src/components/feedback/FeedbackMessage';
 import { LoadingScreen } from '@/src/components/feedback/LoadingScreen';
 import { AppNavigationHeader } from '@/src/components/layout/AppNavigationHeader';
 import { AppScreen } from '@/src/components/layout/AppScreen';
+import { MenuHeroCarousel } from '@/src/components/menu/MenuHeroCarousel';
 import { env } from '@/src/config/env';
 import { queryKeys } from '@/src/constants/queryKeys';
 import { useCartStore } from '@/src/store/cart.store';
@@ -65,7 +65,8 @@ function friendlyStatus(availability: RestaurantAvailability) {
 function hasCustomizations(item: MenuItem) {
   return Boolean(
     item.sizes?.some((size) => size.is_active) ||
-    item.addons?.some((addon) => addon.is_active),
+    item.addons?.some((addon) => addon.is_active) ||
+    item.customization_groups?.length,
   );
 }
 
@@ -98,10 +99,9 @@ export default function PublicHomeScreen() {
   const availability = getRestaurantAvailability(restaurant);
   const status = friendlyStatus(availability);
   const featuredItems = featuredQuery.data?.items ?? [];
-  const isTablet = width >= 680;
   const isDesktop = width >= 900;
   const isMobile = width < 768;
-  const popularCardWidth: DimensionValue = isTablet ? '48.2%' : '100%';
+  const popularCardWidth: DimensionValue = width >= 680 ? '48.2%' : '48.3%';
   const customerHomeHref = getRoleRedirect(user, env.enableAdminMobile) as Href;
   const cartHref = (user ? '/(customer)/(tabs)/cart' : '/(auth)/login') as Href;
   const quickActions: QuickAction[] = [
@@ -170,65 +170,15 @@ export default function PublicHomeScreen() {
         ) : null
       }
     >
-      <View style={[styles.hero, isTablet && styles.heroWide]}>
-        <View pointerEvents="none" style={styles.heroGlow} />
-        <View style={styles.heroCopy}>
-          <View style={styles.heroKicker}>
-            <AppBadge label={status.label} tone={status.tone} />
-            <View style={styles.securePill}>
-              <AppIcon name={appIcons.cart} size={16} color={colors.brand.primary} />
-              <AppText variant="caption" color={colors.brand.primary}>
-                Secure checkout
-              </AppText>
-            </View>
-          </View>
-          <AppText variant="h1" accessibilityRole="header" style={styles.heroTitle}>
-            Fresh kebabs, grilled plates & drinks - ready to order.
-          </AppText>
-          <AppText color={colors.text.secondary}>
-            Order from Arcade Kebab House with simple pickup and delivery tracking.
-          </AppText>
-          <View style={styles.heroActions}>
-            <Link href="/(public)/menu" asChild>
-              <AppButton label="Start Order" />
-            </Link>
-            <Link href="/(public)/menu" asChild>
-              <AppButton label="View Menu" variant="outline" />
-            </Link>
-          </View>
-          <View style={styles.heroStats}>
-            <MiniStat label="Minimum" value={<PriceText amount={restaurant?.minimum_order_amount ?? 0} />} />
-            <MiniStat label="Delivery" value={<PriceText amount={restaurant?.delivery_fee ?? 0} />} />
-            <MiniStat label="Browse" value="Anytime" />
-          </View>
-        </View>
-
-        {isTablet || restaurant?.cover_image_url ? (
-          <View style={styles.heroVisual}>
-          {restaurant?.cover_image_url ? (
-            <Image
-              source={{ uri: restaurant.cover_image_url }}
-              style={styles.coverImage}
-              contentFit="cover"
-              accessibilityRole="image"
-              accessibilityLabel={`${restaurant.name} food photo`}
-            />
-          ) : (
-            <View style={styles.foodPlaceholder}>
-              <RestaurantLogo
-                name={restaurant?.name}
-                logoUrl={restaurant?.logo_url}
-                initials={restaurant?.initials}
-                size={82}
-              />
-              <AppText variant="caption" color={colors.text.secondary}>
-                Fresh from the grill
-              </AppText>
-            </View>
-          )}
-          </View>
-        ) : null}
-      </View>
+      {restaurant ? (
+        <MenuHeroCarousel
+          restaurant={restaurant}
+          statusLabel={status.label}
+          isOpen={availability.isOpenForOrders}
+          actionHref="/(public)/menu"
+          actionLabel="Order now"
+        />
+      ) : null}
 
       {!availability.isOpenForOrders ? (
         <AppCard style={styles.closedCard}>
@@ -394,17 +344,6 @@ function QuickActionCard({ action }: { action: QuickAction }) {
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string | React.ReactNode }) {
-  return (
-    <View style={styles.miniStat}>
-      <AppText variant="caption" color={colors.text.secondary}>
-        {label}
-      </AppText>
-      {typeof value === 'string' ? <AppText variant="caption">{value}</AppText> : value}
-    </View>
-  );
-}
-
 type DetailRowProps = {
   label: string;
   value: string | React.ReactNode;
@@ -464,94 +403,6 @@ const styles = StyleSheet.create({
   },
   desktopScreen: {
     paddingBottom: spacing['4xl'],
-  },
-  hero: {
-    position: 'relative',
-    gap: spacing.md,
-    overflow: 'hidden',
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: '#F1D2C2',
-    backgroundColor: colors.surface.card,
-    padding: spacing.lg,
-    ...shadows.card,
-  },
-  heroGlow: {
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    backgroundColor: '#FFF4EA',
-    opacity: 0.86,
-  },
-  heroWide: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-  },
-  heroCopy: {
-    flex: 1,
-    minWidth: 260,
-    gap: spacing.lg,
-  },
-  heroKicker: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  securePill: {
-    minHeight: 28,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    borderRadius: radius.pill,
-    backgroundColor: colors.brand.soft,
-    paddingHorizontal: spacing.md,
-  },
-  heroTitle: {
-    maxWidth: 620,
-    fontSize: 28,
-    lineHeight: 34,
-  },
-  heroActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  heroStats: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  miniStat: {
-    minWidth: 92,
-    flex: 1,
-    gap: 2,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    backgroundColor: 'rgba(255,255,255,0.82)',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  heroVisual: {
-    minWidth: 230,
-    flex: 0.78,
-  },
-  coverImage: {
-    height: 190,
-    width: '100%',
-    overflow: 'hidden',
-    borderRadius: radius.xl,
-    backgroundColor: colors.gold.pale,
-  },
-  foodPlaceholder: {
-    minHeight: 190,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderRadius: radius.xl,
-    backgroundColor: colors.gold.pale,
   },
   closedCard: {
     gap: spacing.md,

@@ -47,7 +47,7 @@ export default function RegisterScreen() {
   }
 
   return (
-    <AppScreen keyboard contentStyle={styles.screen}>
+    <AppScreen keyboard header={null} contentStyle={styles.screen}>
       <View style={styles.topNav}>
         <Link href="/(public)" asChild>
           <Pressable style={({ pressed }) => [styles.navButton, pressed && styles.pressed]} accessibilityRole="link">
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   hero: {
     gap: spacing.lg,
     borderRadius: 30,
-    backgroundColor: colors.surface.dark,
+    backgroundColor: colors.brand.primary,
     padding: spacing['2xl'],
     ...shadows.card,
   },

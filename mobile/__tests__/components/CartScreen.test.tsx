@@ -43,6 +43,7 @@ describe('cart screen', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Your cart is empty')).toBeTruthy();
+      expect(screen.getByText('Open')).toBeTruthy();
     });
   });
 });

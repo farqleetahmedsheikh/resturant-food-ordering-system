@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { getMenuItems } from '@/src/api/menu.api';
 import { getCustomerOrders } from '@/src/api/orders.api';
 import { getRestaurant } from '@/src/api/restaurant.api';
-import { useAuthStore } from '@/src/auth/auth.store';
 import { AppIcon, appIcons, type AppIconName } from '@/src/components/common/AppIcon';
-import { AppBadge } from '@/src/components/common/AppBadge';
 import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
@@ -19,9 +17,10 @@ import { FeedbackMessage } from '@/src/components/feedback/FeedbackMessage';
 import { LoadingState } from '@/src/components/feedback/LoadingState';
 import { AppScreen } from '@/src/components/layout/AppScreen';
 import { MenuItemCard } from '@/src/components/menu/MenuItemCard';
+import { MenuHeroCarousel } from '@/src/components/menu/MenuHeroCarousel';
 import { queryKeys } from '@/src/constants/queryKeys';
 import { useCartStore } from '@/src/store/cart.store';
-import { colors, radius, shadows, spacing } from '@/src/theme';
+import { colors, radius, spacing } from '@/src/theme';
 import type { MenuItem } from '@/src/types/menu';
 import { formatDate } from '@/src/utils/date';
 import { getRestaurantAvailability } from '@/src/utils/restaurant';
@@ -37,8 +36,8 @@ type QuickAction = {
 };
 
 export default function CustomerHomeScreen() {
+  const { width } = useWindowDimensions();
   const [message, setMessage] = useState<string | null>(null);
-  const user = useAuthStore((state) => state.session?.user);
   const addItem = useCartStore((state) => state.addItem);
   const cartCount = useCartStore((state) => state.getItemCount());
   const restaurantQuery = useQuery({
@@ -50,8 +49,8 @@ export default function CustomerHomeScreen() {
     queryFn: getCustomerOrders,
   });
   const featuredQuery = useQuery({
-    queryKey: queryKeys.menuItems({ featured: true, per_page: 3 }),
-    queryFn: () => getMenuItems({ featured: true, per_page: 3 }),
+    queryKey: queryKeys.menuItems({ featured: true, per_page: 4 }),
+    queryFn: () => getMenuItems({ featured: true, per_page: 4 }),
   });
 
   const availability = getRestaurantAvailability(restaurantQuery.data);
@@ -74,6 +73,13 @@ export default function CustomerHomeScreen() {
   }
 
   function handleAdd(item: MenuItem) {
+    const customizable = Boolean(item.sizes?.some((size) => size.is_active) || item.addons?.some((addon) => addon.is_active) || item.customization_groups?.length);
+
+    if (customizable) {
+      router.push(`/(public)/item/${item.id}`);
+      return;
+    }
+
     addItem({ item, quantity: 1 });
     setMessage(`${item.name} added to cart.`);
   }
@@ -89,27 +95,15 @@ export default function CustomerHomeScreen() {
 
       {!isLoading && !isError ? (
         <>
-          <View style={styles.heroCard}>
-            <View style={styles.heroTop}>
-              <View style={styles.flex}>
-                <AppText variant="caption" color={colors.brand.primary}>
-                  ORDER ONLINE
-                </AppText>
-                <AppText variant="h1" numberOfLines={2}>
-                  What would you like to eat, {user?.name?.split(' ')[0] ?? 'there'}?
-                </AppText>
-              </View>
-              <AppBadge label={availability.isOpenForOrders ? 'Open now' : 'Paused'} tone={availability.isOpenForOrders ? 'green' : 'gold'} />
-            </View>
-            <AppText color={colors.text.secondary}>
-              {availability.isOpenForOrders
-                ? 'Choose from popular kebabs, plates, sides, and drinks.'
-                : availability.reason ?? 'Ordering is paused, but you can still browse the menu.'}
-            </AppText>
-            <Link href="/(customer)/(tabs)/menu" asChild>
-              <AppButton label="Browse full menu" fullWidth />
-            </Link>
-          </View>
+          {restaurantQuery.data ? (
+            <MenuHeroCarousel
+              restaurant={restaurantQuery.data}
+              statusLabel={availability.isOpenForOrders ? 'Open now' : 'Closed now'}
+              isOpen={availability.isOpenForOrders}
+              actionHref="/(customer)/(tabs)/menu"
+              actionLabel="Browse menu"
+            />
+          ) : null}
 
           {message ? <FeedbackMessage tone="success" message={message} /> : null}
 
@@ -125,17 +119,20 @@ export default function CustomerHomeScreen() {
                 <AppText color={colors.text.secondary}>Featured menu items will appear here soon.</AppText>
               </AppCard>
             ) : (
-              featuredItems.map((item) => (
-                <MenuItemCard
-                  key={item.id}
-                  item={item}
-                  variant="compact"
-                  showAddButton
-                  addDisabled={!availability.isOpenForOrders}
-                  addDisabledReason={availability.label}
-                  onAdd={handleAdd}
-                />
-              ))
+              <View style={styles.featuredGrid}>
+                {featuredItems.map((item) => (
+                  <View key={item.id} style={[styles.featuredCell, { width: width >= 980 ? '23.8%' : '48.3%' }]}>
+                    <MenuItemCard
+                      item={item}
+                      detailHref={`/(public)/item/${item.id}`}
+                      showAddButton
+                      addDisabled={!availability.isOpenForOrders}
+                      addDisabledReason={availability.label}
+                      onAdd={handleAdd}
+                    />
+                  </View>
+                ))}
+              </View>
             )}
           </View>
 
@@ -204,21 +201,13 @@ const styles = StyleSheet.create({
   screen: {
     gap: spacing.lg,
   },
-  heroCard: {
-    gap: spacing.lg,
-    overflow: 'hidden',
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-    backgroundColor: colors.surface.card,
-    padding: spacing.lg,
-    ...shadows.card,
-  },
-  heroTop: {
+  featuredGrid: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     gap: spacing.md,
+  },
+  featuredCell: {
+    minWidth: 0,
   },
   statusRow: {
     flexDirection: 'row',

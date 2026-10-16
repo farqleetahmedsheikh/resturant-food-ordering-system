@@ -64,6 +64,23 @@ class MobileApiTest extends TestCase
             ->assertJsonPath('data.currency', 'AUD');
     }
 
+    public function test_public_restaurant_endpoint_exposes_active_configured_menu_hero_slides(): void
+    {
+        Restaurant::create([
+            'name' => 'Arcade Kebab House',
+            'menu_hero_slides' => [
+                ['id' => 'active', 'eyebrow' => 'Fresh food', 'title' => 'Authentic', 'highlight' => 'kebabs', 'description' => 'Made fresh.', 'image' => '/images/menu-hero/kebab-grill.jpg', 'is_active' => true, 'sort_order' => 1],
+                ['id' => 'inactive', 'eyebrow' => 'Hidden', 'title' => 'Not shown', 'highlight' => 'now', 'description' => 'Inactive slide.', 'image' => '/images/menu-hero/pizza.jpg', 'is_active' => false, 'sort_order' => 0],
+            ],
+        ]);
+
+        $this->getJson('/api/v1/restaurant')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.menu_hero_slides')
+            ->assertJsonPath('data.menu_hero_slides.0.id', 'active')
+            ->assertJsonPath('data.menu_hero_slides.0.image_url', url('/images/menu-hero/kebab-grill.jpg'));
+    }
+
     public function test_public_menu_can_include_unavailable_items_for_mobile_state(): void
     {
         $available = $this->createMenuItem();
